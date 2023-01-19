@@ -1,7 +1,6 @@
 import numpy as np
 import casadi as cs
 import time
-import xloil as xlo
 
 def SolveODEs(x,f,x0,opts,Time):
     dae={"x":x,"t":Time,"ode":f}
@@ -11,8 +10,8 @@ def SolveODEs(x,f,x0,opts,Time):
 
 def averaging(a):
     return (a[1:]+a[:-1])/2
-@xlo.func()
-def Diffusion_MS(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),volatile:xlo.Array(bool,dims=1)):
+
+def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -111,7 +110,7 @@ def Diffusion_MS(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),
         for i in range(nc): 
             wik[i,:]=rhoik[i,:]/cs.sum1(rhoik)
         wt[:,k]=cs.sum2(wik[:,:-1]/nz).full().flatten()
-    return wt.T
+    return wt if not full_output else (wt,x_sol)
 
 
 def BIJ_Matrix(D,wi,volatile):
@@ -140,8 +139,8 @@ def D_Matrix(Dvec,nc):
         D[np.triu_indices_from(D,k=1)]=Dvec
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
-@xlo.func()
-def Diffusion1D(t:xlo.Array(float,dims=1),L0:float,Ds:float,ws0:float,ws8:float):
+
+def Diffusion1D(t,L0,Ds,ws0,ws8):
     """
     Method that computes the solvent sorption kinetics in a multi-component mixture 
     of non-volatile components
@@ -204,7 +203,7 @@ if __name__=="__main__":
     wi8=np.asarray([w18,w28,w38])
     Mi=np.asarray([25700,18.015,357.787])
     volatile=np.asarray([False,True,False])
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,refsegment=1)
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots()
     ax.plot(t/60,wt[0,:])
