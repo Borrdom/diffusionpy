@@ -11,7 +11,7 @@ def SolveODEs(x,f,x0,opts,Time):
 def averaging(a):
     return (a[1:]+a[:-1])/2
 
-def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
+def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -24,6 +24,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
     w0:    array_like   Mass fractions at t=0               /-
     w8:    array_like   Mass fraction at t=infinity         /-
     Mi:    array_like   Molar mass of components nc         /g/mol
+    lngammai: array_like estimate for lngammai at t         /t
     Returns
     -------
     wt:    array_like   Matrix of mass fractions at t       /-
@@ -38,6 +39,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
     D=D_Matrix(Dvec,nc)
     nz=200
     nf=np.sum(volatile)
+    nt=len(t)
     rho=1200
     refsegment=np.argmin(Mi)
     #initial
@@ -49,34 +51,45 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
 
     #decision variable vector
     rhov=cs.MX.sym("rhov",(nf,nz+1))
+    Time=cs.MX.sym("Time")
+    #lngammai=np.zeros((nc,nt))
+    #lngammai=lngammai.T
+    #lngamma0i=lngammai[:,0]
+    #lngamma8i=lngammai[:,-1]
+    #lngammaiT=cs.MX.zeros(nc)
+    Gammai=Gammai.T if Gammai is not None else np.ones((nc,nt))
+    GammaiT=cs.MX.zeros(nc)
+    for i in range(nc):
+        GammaiT[i]=cs.interpolant("Gammai_fun","linear",[t],Gammai[i,:])(Time)
+        #GammaiT[i]=cs.gradient(lngammaiT[i],Time)
     rhoi=cs.MX.ones((nc,nz+1))
     rhoi[np.where(volatile)[0],:]=rhov
     rhoi[np.where(~volatile)[0],:]=rhoiinit[np.where(~volatile)[0],:]
 
 
 
-    Time=cs.MX.sym("Time")
+    
     ji=cs.MX.zeros((nc,nz))
     dlnwi=cs.MX.ones((nc,nz))
     wibar=cs.MX.ones((nc,nz))
     rhoibar=cs.MX.ones((nc,nz))
     drhoidt=cs.MX.ones((nc,nz+1))
     wi=cs.MX.zeros((nc,nz+1))
-    
+    dz=L/nz
     ri= Mi/Mi[refsegment]
 
     for i in range(nc):
         wi[i,:]=rhoi[i,:]/cs.sum1(rhoi)
-        dlnwi[i,:]= cs.diff(cs.log(wi[i,:]))
+        dlnwi[i,:]= cs.diff(cs.log(wi[i,:]))*GammaiT[i]
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
 
-    dz=L/nz
+    
     for z in range(nz):
         B=BIJ_Matrix(D,wibar[:,z],volatile)
         allflux=nc==nf
         Binv=cs.inv(B)
-        dmui=dlnwi[:,z]/dz
+        dmui=(dlnwi[:,z])/dz
         di=rhoibar[:,z]*dmui/ri
         if not allflux:
             ji[np.where(volatile)[0],z]=cs.sum1(di[np.where(volatile)[0]]*Binv)
@@ -110,7 +123,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False):
         for i in range(nc): 
             wik[i,:]=rhoik[i,:]/cs.sum1(rhoik)
         wt[:,k]=cs.sum2(wik[:,:-1]/nz).full().flatten()
-    return wt if not full_output else (wt,x_sol)
+    return wt.T if not full_output else (wt,x_sol)
 
 
 def BIJ_Matrix(D,wi,volatile):
