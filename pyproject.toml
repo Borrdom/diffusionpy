@@ -21,3 +21,5 @@ requires = [
   "setuptools >= 40.9.0",
   "wheel",
 ]
+[tool.setuptools.packages.find]
+include = ["epcsaftpy"]
