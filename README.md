@@ -1,3 +1,3 @@
-# PyFusion
+# diffusionpy
 
-![alt text](https://github.com/Borrdom/PyFusion/blob/main/PyFusion.png?raw=true)
+![alt text](https://github.com/Borrdom/diffusionpy/blob/main/PyFusion.png?raw=true)
