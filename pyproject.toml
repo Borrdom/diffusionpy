@@ -1,0 +1,23 @@
+
+[project]
+name = "diffusionpy"
+version = "0.0.1"
+authors = [
+    {name = "Dominik Borrmann", email = "dominik.borrmann@tu-dortmund.de"},
+]
+description = "A package for describing diffusion in and out of liquids and amorphous substances"
+readme = "README.md"
+license = {text = "MIT"}
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "pywin32",
+    "casadi",
+    "matplotlib"
+]
+[build-system]
+requires = [
+  "setuptools >= 40.9.0",
+  "wheel",
+]

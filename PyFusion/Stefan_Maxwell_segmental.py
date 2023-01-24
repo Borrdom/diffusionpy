@@ -1,12 +1,17 @@
-import xloil as xlo
-from Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D,D_Matrix,averaging,BIJ_Matrix,SolveODEs
 import numpy as np
 import casadi as cs
 import time
 
-@xlo.func
-def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-volatile:xlo.Array(bool,dims=1),full_output:bool,Gammai:xlo.Array(float,dims=2)):
+def SolveODEs(x,f,x0,opts,Time):
+    dae={"x":x,"t":Time,"ode":f}
+    fint=cs.integrator("integrator","cvodes",dae,opts)
+    F=fint(x0=x0)
+    return F["xf"] 
+
+def averaging(a):
+    return (a[1:]+a[:-1])/2
+
+def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -52,7 +57,7 @@ volatile:xlo.Array(bool,dims=1),full_output:bool,Gammai:xlo.Array(float,dims=2))
     #lngamma0i=lngammai[:,0]
     #lngamma8i=lngammai[:,-1]
     #lngammaiT=cs.MX.zeros(nc)
-    Gammai=Gammai.T
+    Gammai=Gammai.T if Gammai is not None else np.ones((nc,nt))
     GammaiT=cs.MX.zeros(nc)
     for i in range(nc):
         GammaiT[i]=cs.interpolant("Gammai_fun","linear",[t],Gammai[i,:])(Time)
@@ -118,12 +123,107 @@ volatile:xlo.Array(bool,dims=1),full_output:bool,Gammai:xlo.Array(float,dims=2))
         for i in range(nc): 
             wik[i,:]=rhoik[i,:]/cs.sum1(rhoik)
         wt[:,k]=cs.sum2(wik[:,:-1]/nz).full().flatten()
-    return wt.T if not full_output else (wt,x_sol)
+    return wt.T if not full_output else (wt,x_sol.full())
 
-@xlo.func
-def Diffusion1D_xloil(t:xlo.Array(float,dims=1),L0:float,Ds:float,ws0:float,ws8:float):
-    return Diffusion1D(t,L0,Ds,ws0,ws8)
-    
-@xlo.func
-def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
-    return np.gradient(x,y)
+
+def BIJ_Matrix(D,wi,volatile):
+    nc=wi.shape[0]
+    nf=np.sum(volatile)
+    allflux=nc==nf
+    B=cs.MX.ones((nc,nc))
+    comp=np.arange(0,nc)
+    for i in range(nc):
+        Din=wi[-1]/D[i,-1] if (i+1)!=nc else 0
+        Dij=-wi[i]/D[i,:]
+        BIJ= Dij if not allflux else Dij+Din
+        Dii=cs.sum1((wi/D[i,:])[comp[comp!=i]])
+        BII=Dii if not allflux else Dii+Din
+        B[i,:]=BIJ
+        B[i,i]=BII
+
+    return B[np.where(volatile)[0],np.where(volatile)[0]] if not allflux else B[:-1,:-1]  #8E-13
+
+def D_Matrix(Dvec,nc):
+    nd=(nc-1)*nc//2 
+    if len(Dvec)!=nd: 
+        raise Exception("Wrong number of diffusion coefficients. Provide array with "+str(nd)+" entries")
+    else:
+        D=np.zeros((nc,nc))
+        D[np.triu_indices_from(D,k=1)]=Dvec
+        D[np.tril_indices_from(D,k=-1)]=Dvec
+    return D
+
+def Diffusion1D(t,L0,Ds,ws0,ws8):
+    """
+    Method that computes the solvent sorption kinetics in a multi-component mixture 
+    of non-volatile components
+    Inputs
+    ----------
+    t  :    array_like  time                                /s
+    L0 :    float       dry thickness                       /m
+    Ds :    float       Solvent diffusion coefficient       /m^2/s
+    ws0:    float       Solvent mass fraction at t=0        /-
+    ws8:    float       Solvent mass fraction at t=infinity /-
+    lnphi_fun
+    Returns
+    -------
+    wst:    array_like  Solvent mass fraction at t          /-
+    """
+    nz=200
+    deltaz=L0/nz
+    Xs0=ws0/(1-ws0)
+    Xs8=ws8/(1-ws8)
+    Xs_ini=np.ones(nz+1)*Xs0
+    Xs_ini[nz]=Xs8
+    Ds0=Ds/deltaz**2
+    Time=cs.MX.sym("Time")
+    Xs=cs.MX.sym("Xs",nz+1)
+    ws=Xs/(Xs+1)
+    wsbar=averaging(ws)
+    Xsbar= averaging(Xs)
+    Ds=Ds0/(1-wsbar)
+    lnfs= np.log(ws)
+    TDF= cs.diff(lnfs)
+    j_bnd=np.asarray([0.])
+    js= cs.vertcat(j_bnd,Xsbar*Ds*TDF)
+    dXsdt_bnd=np.asarray([0.])
+    dXsdt=cs.vertcat(cs.diff(js),dXsdt_bnd)
+    opts = {"grid":t,"max_num_steps":10000,"regularity_check":True,"output_t0":True}
+    start=time.time_ns()
+    Xs_sol=SolveODEs(Xs,dXsdt,Xs_ini,opts,Time).full()
+    end=time.time_ns()
+    print((end-start)/1E9)
+    Xst=np.sum(Xs_sol[:-1,:],axis=0)/(nz)
+    wst=Xst/(1+Xst)
+    return wst
+
+if __name__=="__main__":
+    nt=100
+    t=np.linspace(0,100,nt)*60
+    nc=3
+    nd=(nc-1)*nc//2 
+    Dvec=np.asarray([1E-13,1E-13,1E-13])
+    #np.fill_diagonal(D,np.ones(nc)*1E-30)
+    L=1E-5
+    DL=0.6
+    w20=0.2
+    w28=0.3
+    w10=(1-DL)*(1-w20)
+    w30=(DL)*(1-w20)
+    w18=(1-DL)*(1-w28)
+    w38=(DL)*(1-w28)
+    wi0=np.asarray([w10,w20,w30])
+    wi8=np.asarray([w18,w28,w38])
+    Mi=np.asarray([25700,18.015,357.787])
+    volatile=np.asarray([False,True,False])
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
+    import matplotlib.pyplot as plt
+    fig,ax=plt.subplots()
+    ax.plot(t/60,wt[0,:])
+    ax.plot(t/60,wt[1,:])
+    ax.plot(t/60,wt[2,:])
+    ax.set_xlabel("t/min")
+    ax.set_ylabel("wi/-")
+    ax.legend(["w1","w2","w3"])
+    plt.show()
+
