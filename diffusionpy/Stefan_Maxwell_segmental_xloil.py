@@ -1,5 +1,5 @@
 import xloil as xlo
-from PyFusion.Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D
+from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D
 import numpy as np
 import casadi as cs
 import time

@@ -22,4 +22,4 @@ requires = [
   "wheel",
 ]
 [tool.setuptools.packages.find]
-include = ["epcsaftpy"]
+include = ["diffusionpy"]
