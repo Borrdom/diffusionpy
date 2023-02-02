@@ -202,7 +202,7 @@ if __name__=="__main__":
     t=np.linspace(0,100,nt)*60
     nc=3
     nd=(nc-1)*nc//2 
-    Dvec=np.asarray([1E-13,1E-13,1E-13])
+    Dvec=np.asarray([1E-8,1E-11,1E-13])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
     L=1E-5
     DL=0.6
@@ -215,13 +215,13 @@ if __name__=="__main__":
     wi0=np.asarray([w10,w20,w30])
     wi8=np.asarray([w18,w28,w38])
     Mi=np.asarray([25700,18.015,357.787])
-    volatile=np.asarray([False,True,False])
+    volatile=np.asarray([False,True,True])
     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots()
-    ax.plot(t/60,wt[0,:])
-    ax.plot(t/60,wt[1,:])
-    ax.plot(t/60,wt[2,:])
+    ax.plot(t/60,wt[:,0])
+    ax.plot(t/60,wt[:,1])
+    ax.plot(t/60,wt[:,2])
     ax.set_xlabel("t/min")
     ax.set_ylabel("wi/-")
     ax.legend(["w1","w2","w3"])
