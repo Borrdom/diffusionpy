@@ -1,10 +1,11 @@
 import numpy as np
 import casadi as cs
 import time
+import copy
 
 def SolveODEs(x,f,x0,opts,Time):
     dae={"x":x,"t":Time,"ode":f}
-    fint=cs.integrator("integrator","cvodes",dae,opts)
+    fint=cs.integrator("integrator","idas",dae,opts)
     F=fint(x0=x0)
     return F["xf"] 
 
@@ -35,9 +36,12 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     #Mi=Mi.flatten()
     #t=t.flatten()
     #Dvec=Dvec.flatten()
+    #Dref=1E-14
+    #tau=(L**2)/Dref
     nc=len(w0)
     D=D_Matrix(Dvec,nc)
-    nz=200
+    nz=20
+    zvec=np.linspace(0,L,nz+1)
     nf=np.sum(volatile)
     nt=len(t)
     rho=1200
@@ -57,15 +61,20 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     #lngamma0i=lngammai[:,0]
     #lngamma8i=lngammai[:,-1]
     #lngammaiT=cs.MX.zeros(nc)
-    Gammai=Gammai.T if Gammai is not None else np.ones((nc,nt))
-    GammaiT=cs.MX.zeros(nc)
-    for i in range(nc):
-        GammaiT[i]=cs.interpolant("Gammai_fun","linear",[t],Gammai[i,:])(Time)
-        #GammaiT[i]=cs.gradient(lngammaiT[i],Time)
+    
+    GammaiT=cs.MX.ones(nc)
+    if Gammai is not None:
+        Gammai_2=copy.deepcopy(Gammai.T)
+        Gammai_2[Gammai_2<=0]=1.
+        if np.any(Gammai_2!=Gammai.T):
+           print("This is a warning")
+        for i in range(nc):
+            GammaiT[i]=cs.interpolant("Gammai_fun","linear",[t],Gammai_2[i,:])(Time)
+            
     rhoi=cs.MX.ones((nc,nz+1))
     rhoi[np.where(volatile)[0],:]=rhov
     rhoi[np.where(~volatile)[0],:]=rhoiinit[np.where(~volatile)[0],:]
-
+    rhoi=cs.fmax(rhoi,1E-8)
 
 
     
@@ -108,22 +117,23 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     #np.cond(A) 10**16 
     
 
-    opts = {"grid":t,"max_num_steps":10000,"regularity_check":True,"output_t0":True}
+    opts = {"grid":t,"max_num_steps":1000,"regularity_check":True,"output_t0":True,"verbose":True}
+    opts = {"grid":t,"regularity_check":True,"output_t0":True,"verbose":True}
     start=time.time_ns()
     x_sol=SolveODEs(x,ode,xinit,opts,Time)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     nt=len(t)
     wt=np.ones((nc,nt))
-    wik=np.ones((nc,nz+1))
+    wik=np.ones((nt,nc,nz+1))
     rhoik=rhoiinit
     for k in range(nt):
         rhovk=cs.reshape(x_sol[:,k],(nf,nz+1))
         rhoik[np.where(volatile)[0],:]=rhovk
         for i in range(nc): 
-            wik[i,:]=rhoik[i,:]/cs.sum1(rhoik)
-        wt[:,k]=cs.sum2(wik[:,:-1]/nz).full().flatten()
-    return wt.T if not full_output else (wt,x_sol.full())
+            wik[k,i,:]=rhoik[i,:]/cs.sum1(rhoik)
+        wt[:,k]=cs.sum2(wik[k,:,:-1]/nz).full().flatten()
+    return wt.T if not full_output else (wt.T,wik,zvec)
 
 
 def BIJ_Matrix(D,wi,volatile):
@@ -140,6 +150,8 @@ def BIJ_Matrix(D,wi,volatile):
         BII=Dii if not allflux else Dii+Din
         B[i,:]=BIJ
         B[i,i]=BII
+    #alpha=1/np.min(D)
+    #B+alpha*wi@wi.T
 
     return B[np.where(volatile)[0],np.where(volatile)[0]] if not allflux else B[:-1,:-1]  #8E-13
 
@@ -199,29 +211,28 @@ def Diffusion1D(t,L0,Ds,ws0,ws8):
 
 if __name__=="__main__":
     nt=100
-    t=np.linspace(0,100,nt)*60
+    t=np.linspace(0,400,nt)*60
     nc=3
     nd=(nc-1)*nc//2 
-    Dvec=np.asarray([1E-8,1E-11,1E-13])
+    Dvec=np.asarray([1E-13,2.3E-13,1.7E-13])
+    Dvec=np.asarray([1E-10,2.3E-10,3E-14])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
-    L=1E-5
-    DL=0.6
-    w20=0.2
-    w28=0.3
-    w10=(1-DL)*(1-w20)
-    w30=(DL)*(1-w20)
-    w18=(1-DL)*(1-w28)
-    w38=(DL)*(1-w28)
-    wi0=np.asarray([w10,w20,w30])
-    wi8=np.asarray([w18,w28,w38])
-    Mi=np.asarray([25700,18.015,357.787])
-    volatile=np.asarray([False,True,True])
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
+    L=0.001
+    wi0=np.asarray([0.01,0.495,0.495])
+    wi8=np.asarray([0.9,0.005,0.095])
+    Mi=np.asarray([18.015,357.57,65000])
+
+    volatile=np.asarray([True,True,False])
+    wt,wtz,zvec=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,True)
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots()
+    fig1,ax1=plt.subplots()
     ax.plot(t/60,wt[:,0])
     ax.plot(t/60,wt[:,1])
     ax.plot(t/60,wt[:,2])
+    #[ax1.plot(zvec,wtz[i*10,0,:]) for i,val in enumerate(t[::10])]
+    [ax1.plot(zvec,wtz[i*10,1,:]) for i,val in enumerate(t[::10])]
+    #[ax1.plot(zvec,wtz[i*10,2,:]) for i,val in enumerate(t[::10])]
     ax.set_xlabel("t/min")
     ax.set_ylabel("wi/-")
     ax.legend(["w1","w2","w3"])

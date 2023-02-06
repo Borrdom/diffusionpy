@@ -38,8 +38,7 @@ def interp1d(x,xp,fp):
 def BHX_xloil(t:xlo.Array(float,dims=1),kf:float,kr:float,ws0:float,ws8:float,mfinfty:float,mrinfty:float):
     Xs0=ws0/(1-ws0)
     Xs8=ws8/(1-ws8)
-    mt08=BHX(t,kf,np.asarray([kr]),1,Xs0,Xs8,mfinfty,np.asarray([mrinfty]))
-    Xs=mt08*(Xs8-Xs0)+Xs0
+    Xs=BHX(t,kf,np.asarray([kr]),1,Xs0,Xs8,mfinfty,np.asarray([mrinfty]))
     ws=Xs/(1+Xs)
     return ws
 
