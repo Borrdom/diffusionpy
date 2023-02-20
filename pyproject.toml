@@ -1,7 +1,7 @@
 
 [project]
 name = "diffusionpy"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     {name = "Dominik Borrmann", email = "dominik.borrmann@tu-dortmund.de"},
 ]
