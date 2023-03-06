@@ -19,7 +19,7 @@ def diff(a):
     #return cs.horzcat(a[1]-abar[0],c)
     return (a[1:]-a[:-1])
 
-def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
+def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -60,7 +60,11 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
     rhoiinit=cs.DM.zeros((nc,nz+1))
     for z in range(nz+1):
         rhoiinit[:,z]=w0*rho
-    rhoiinit[:,-1]=w8*rho
+    #phi=w8[1]/w0[1]
+    #rhoiinit[:,-1]=(1-phi)/phi*rho*w8
+    swelling=w0II is not None
+    omega8=(w0-w0II)/(w8-w0II) if not swelling else 1
+    rhoiinit[:,-1]=rho*omega8*w8
     rhovinit=rhoiinit[np.where(volatile)[0],:]
 
     #decision variable vector
@@ -103,7 +107,8 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
         dmui=(dlnwi[:,z])
         #di=rhoibar[:,z]*dmui/ri # in rhoibar steckt die transformierte riesige Dichte drin. Der Volumenexpansionsfaktor korriegiert diesen
         omega=rho/cs.sum1(rhoibar[:,z])
-        di=rho*wibar[:,z]*dmui/ri*omega
+        di=rho*wibar[:,z]*dmui/ri*omega if swelling else rhoibar[:,z]*dmui/ri
+        #di=rhoibar[:,z]*dmui/ri*omega**2
         
         if not allflux:
             ji[np.where(volatile)[0],z]=di[np.where(volatile)[0]].T@Binv
@@ -141,9 +146,11 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None):
         rhoik[k,np.where(volatile)[0],:]=rhovk
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/cs.sum1(rhoik[k,:,:]).full()
-        rhok[k]=cs.sum2(cs.sum1(rhoik[k,:,:-1])/nz).full()
+        rhok[k]=cs.sum1(cs.sum2(rhoik[k,:,:-1]/nz)).full()
         wt[:,k]=cs.sum2(wik[k,:,:-1]/nz).full().flatten()
     Lt=rhok/rho*L
+    #[plt.plot(zvec,rhoik[k,1,:]) for k,val in enumerate(rhoik[:,1,0])]
+    #plt.show()
     return wt.T if not full_output else (wt.T,wik,zvec,Lt)
 
 
@@ -222,7 +229,7 @@ def Diffusion1D(t,L0,Ds,ws0,ws8):
 
 if __name__=="__main__":
     nt=100
-    t=np.linspace(0,2450,nt)*60
+    t=np.linspace(0,500,nt)*60
     nc=3
     nd=(nc-1)*nc//2 
     Dvec=np.asarray([4E-11,9E-11,1.7E-11])
@@ -230,7 +237,7 @@ if __name__=="__main__":
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
     L=0.0002
     wi0=np.asarray([0.01,0.495,0.495])
-    wi8=np.asarray([0.9,0.095,0.005])
+    wi8=np.asarray([0.9,0.05,0.05])
     Mi=np.asarray([18.015,357.57,65000])
 
     volatile=np.asarray([True,True,True])
