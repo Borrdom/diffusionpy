@@ -64,6 +64,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=N
     #rhoiinit[:,-1]=(1-phi)/phi*rho*w8
     swelling=w0II is not None
     omega8=(w0-w0II)/(w8-w0II) if swelling else 1
+    omega8=1
     rhoiinit[:,-1]=rho*omega8*w8
     rhovinit=rhoiinit[np.where(volatile)[0],:]
 
