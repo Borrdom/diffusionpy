@@ -19,7 +19,7 @@ def diff(a):
     #return cs.horzcat(a[1]-abar[0],c)
     return (a[1:]-a[:-1])
 
-def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=None):
+def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelling=False,taui=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -49,7 +49,6 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=N
     nz=20
     dz=L/nz
     D=D_Matrix(Dvec/dz**2,nc)
-    
     zvec=np.linspace(0,L,nz+1)
     nf=np.sum(volatile)
     nt=len(t)
@@ -62,15 +61,19 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=N
         rhoiinit[:,z]=w0*rho
     #phi=w8[1]/w0[1]
     #rhoiinit[:,-1]=(1-phi)/phi*rho*w8
-    swelling=w0II is not None
-    omega8=(w0-w0II)/(w8-w0II) if swelling else 1
-    omega8=1
-    rhoiinit[:,-1]=rho*omega8*w8
+    #swelling=w0II is not None
+    #omega8=(w0-w0II)/(w8-w0II) if swelling else 1
+    #omega8=1
+    rhoiinit[:,-1]=rho*w8 if taui is None else rho*w0
+    rhoiinit[np.where(~volatile)[0],-1]=rho*w8[np.where(~volatile)[0]]
     rhovinit=rhoiinit[np.where(volatile)[0],:]
 
     #decision variable vector
     rhov=cs.MX.sym("rhov",(nf,nz+1))
     Time=cs.MX.sym("Time")
+    lambi=1 if taui is None else 1-cs.exp(-Time/taui)
+    dlambidt=0 if taui is None else 1/taui*cs.exp(-Time/taui)
+
     x=cs.reshape(rhov,(np.multiply(*rhov.shape),1))
     
     GammaiT=cs.MX.ones(nc)
@@ -120,6 +123,11 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,w0II=N
         dji=cs.diff(cs.horzcat(0,ji[i,:]))
         djib=cs.horzcat(dji,0) 
         drhoidt[i,:]=djib
+    
+    X0=w0[np.where(volatile)[0]]/(1-cs.sum1(w0[np.where(volatile)[0]])) if not allflux else w0
+    X8=w8[np.where(volatile)[0]]/(1-cs.sum1(w8[np.where(volatile)[0]])) if not allflux else w8
+    #drhoidt[np.where(volatile)[0],-1]=dlambidt*(X8-X0)*rho
+    drhoidt[np.where(volatile)[0],-1]=dlambidt*(w8[np.where(volatile)[0]]-w0[np.where(volatile)[0]])*rho
     # need for boundary when swelling
     # drhoidtmean=cs.sum2(drhoidt[:,:-1])/nz
     # drhoidt[:,-1]=cs.sum1(drhoidtmean)*w8
@@ -241,7 +249,7 @@ if __name__=="__main__":
     wi8=np.asarray([0.9,0.05,0.05])
     Mi=np.asarray([18.015,357.57,65000])
 
-    volatile=np.asarray([True,True,True])
+    volatile=np.asarray([True,False,False])
     wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,True)
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots()
