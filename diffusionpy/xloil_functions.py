@@ -9,7 +9,7 @@ import pandas as pd
 from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
 import xloil.pandas
-
+from epcsaftpy import pcsaft, component
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
