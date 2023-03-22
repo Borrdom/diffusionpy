@@ -5,9 +5,11 @@ from .DasDennisSpacing import DasDennis
 import numpy as np
 import casadi as cs
 import time
+import pandas as pd
 from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
 import xloil.pandas
+
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
@@ -129,3 +131,50 @@ _excelgui = xlo.ExcelGUI(ribbon=r'''
        'pressParameter': get_path,
        'pressHeader': create_header
        })
+
+@xlo.func
+def PC_SAFT_NpT2(pure,kij,header,inputs):
+    # pure=pd.DataFrame(pure[1:,:],columns=pure[0,:])
+    # kij=pd.DataFrame(kij[1:,:],columns=kij[0,:])
+    name=pure[1:,1].astype(str)
+    Mw=pure[1:,3].astype(float)
+    mi=pure[1:,4].astype(float)
+    mi_Mw=pure[1:,5].astype(float)
+    sigi=pure[1:,6].astype(float)
+    ui=pure[1:,7].astype(float)
+    eAiBi=pure[1:,8].astype(float)
+    kAiBi=pure[1:,9].astype(float)
+    Na=pure[1:,10].astype(int)
+    Nd=pure[1:,11].astype(int)
+    dipol1=pure[1:,12].astype(float)
+    dipol2=pure[1:,13].astype(float)
+    quadro1=pure[1:,14].astype(float)
+    quadro2=pure[1:,15].astype(float)
+    charge1=pure[1:,16].astype(float)
+    charge2=pure[1:,17].astype(float)
+    charge3=pure[1:,18].astype(float)
+    TSL=pure[1:,19].astype(float)
+    HSL=pure[1:,20].astype(float)
+    dcp=pure[1:,21].astype(float)
+    dcpT=pure[1:,22].astype(float)
+    Tg=pure[1:,23].astype(float)
+    free=pure[1:,24].astype(float)
+    nc=len(Mw)
+    #kij1=np.zeros((nc,nc))
+    #kij1[np.triu_indices(nc,k=1)]=
+    kij1=np.char.replace(kij[1:,2].astype(str),",",".").astype(float)
+    fractiontype=inputs[0,0]
+    xi=inputs[:,1:1+nc].astype(float).flatten()
+    T=float(inputs[0,nc+2])
+    p=float(inputs[0,nc+1])*1E5
+    state=inputs[0,nc+3]
+    a=[]
+    for i in range(nc):
+        a.append(component(name=name[i],ms=mi[i],Mw=Mw[i],sigma=sigi[i],eps=ui[i],eAB=eAiBi[i],kappaAB=kAiBi[i]))
+        if i>0: 
+            pars+=a[i]
+        else:
+            pars=a[i]
+    eos1 = pcsaft(pars)
+    #eos1.KIJ0saft=kij1
+    return eos1.logfugef(xi,T,p,state=state.upper())[0][:,None].T
