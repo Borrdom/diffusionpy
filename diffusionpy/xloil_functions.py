@@ -5,11 +5,15 @@ from .DasDennisSpacing import DasDennis
 import numpy as np
 import casadi as cs
 import time
-import pandas as pd
 from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
 import xloil.pandas
-from epcsaftpy import pcsaft, component
+import pandas as pd
+from epcsaftpy import pcsaft,component,mixture
+
+mix=component()+component()
+eos=pcsaft(mix)
+
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
@@ -112,25 +116,27 @@ def create_header(ctrl):
     xloil.Range("A2:G2").value=np.asarray(["x"]+list(x)+[1,298.15,"l"])[:,None].T
     xloil.Range("H2").formula="PC_SAFT_NpT(Parameters_PC_SAFT!$A$2:$Y$13;Parameters_PC_SAFT!$A$14:$F$59;A$1:H$1; A2:G2)"
 
-
-_excelgui = xlo.ExcelGUI(ribbon=r'''
-   <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
-       <ribbon>
-           <tabs>
-               <tab id="customTab" label="THexel">
-                   <group id="customGroup" label="MyButtons">
-                       <button id="Get_Parameter" imageMso="ImexRunImport" size="large" onAction="pressParameter" />
-                       <button id="Get_Header" imageMso="PivotPlusMinusFieldHeadersShowHide" size="large" onAction="pressHeader" />
-                   </group>
-               </tab>
-           </tabs>
-       </ribbon>
-   </customUI>
-   ''', 
-   funcmap={
-       'pressParameter': get_path,
-       'pressHeader': create_header
-       })
+try:
+    _excelgui = xlo.ExcelGUI(ribbon=r'''
+    <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+        <ribbon>
+            <tabs>
+                <tab id="customTab" label="THexel">
+                    <group id="customGroup" label="Starters">
+                        <button id="Get_Parameter" imageMso="ImexRunImport" size="large" onAction="pressParameter" />
+                        <button id="Get_Header" imageMso="PivotPlusMinusFieldHeadersShowHide" size="large" onAction="pressHeader" />
+                    </group>
+                </tab>
+            </tabs>
+        </ribbon>
+    </customUI>
+    ''', 
+    funcmap={
+        'pressParameter': get_path,
+        'pressHeader': create_header
+        })
+except:
+    pass
 
 @xlo.func
 def PC_SAFT_NpT2(pure,kij,header,inputs):
@@ -168,13 +174,89 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     T=float(inputs[0,nc+2])
     p=float(inputs[0,nc+1])*1E5
     state=inputs[0,nc+3]
-    a=[]
-    for i in range(nc):
-        a.append(component(name=name[i],ms=mi[i],Mw=Mw[i],sigma=sigi[i],eps=ui[i],eAB=eAiBi[i],kappaAB=kAiBi[i]))
-        if i>0: 
-            pars+=a[i]
-        else:
-            pars=a[i]
-    eos1 = pcsaft(pars)
+    
+    
+    if True:#nc!=eos.mixture.nc:
+        a=[]
+        for i in range(nc):
+                a.append(component(name=name[i],ms=mi[i],Mw=Mw[i],sigma=sigi[i],eps=ui[i],eAB=eAiBi[i],kappaAB=kAiBi[i],sites=[0,Na[i],Nd[i]]))
+                if i>0: 
+                    pars+=a[i]
+                else:
+                    pars=a[i]
+        eos = pcsaft(pars)
+
+
+
     #eos1.KIJ0saft=kij1
-    return eos1.logfugef(xi,T,p,state=state.upper())[0][:,None].T
+    results=np.asarray([])
+    rho0,Xass0=eos.density_aux(xi,eos.temperature_aux(T),p,state=state.upper())
+
+    def add_entry(results,new):
+        return np.hstack((results,new))
+    def generate(var):
+        return (val for val in var)
+
+
+    for entry in header[0]:
+        if "Density" in entry:
+            if fractiontype=="x":
+                results=add_entry(results,rho0*(xi*Mw).sum()/1000)
+            elif fractiontype=="w":
+                results=add_entry(results,rho0/(xi/Mw).sum()/1000)
+        elif "ln(phi)" in entry:
+            lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
+            results=add_entry(results,lnphi.send(None))
+        elif "Mass fraction" in entry:
+            if fractiontype=="x":
+                fracw=generate(xi/Mw/(xi/Mw).sum()) if 'fracw' not in vars() else fracw
+            elif fractiontype=="w":
+                fracw=generate(xi) if 'fracw' in vars() else fracw
+            results=add_entry(results,fracw.send(None))
+        elif "Mole fraction" in entry:
+            if fractiontype=="x":
+                fracx=generate(xi) if 'fracx' in vars() else fracx
+            elif fractiontype=="w":
+                fracx=generate(xi*Mw/(xi*Mw).sum()) if 'fracx' not in vars() else fracx
+            results=add_entry(results,fracx.send(None))
+        elif "di" in entry:
+            pass
+        elif "M [" in entry:
+            if fractiontype=="x":
+                results=add_entry(results,(xi*Mw).sum())
+            elif fractiontype=="w":
+                results=add_entry(results,1/(xi/Mw).sum())
+        elif "Z [" in entry:
+            results=add_entry(results,eos.Z(xi,T,p,state=state.upper()))
+        elif "gres [" in entry:
+            pass
+        elif "hres [" in entry:
+            pass
+        elif "cpres [" in entry:
+            pass
+        elif "Stability" in entry:
+            pass
+        elif "hE" in entry:
+            pass
+        elif "gE" in entry:
+            pass
+        elif "ln(f)" in entry:
+            pass
+        elif "ln(a)" in entry:
+            pass
+        elif "ln(Gamma)" in entry:
+            pass
+        elif "pmV" in entry:
+            pass
+        elif "pLV" in entry:
+            pass
+        elif "rhoLV" in entry:
+            pass
+        elif "Monomer frac." in entry:
+            pass
+        else :
+            pass #return string with error
+
+
+    return results[:,None].T
+
