@@ -9,10 +9,10 @@ from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
-from epcsaftpy import pcsaft,component,mixture
-
-mix=component()+component()
-eos=pcsaft(mix)
+#from epcsaftpy import pcsaft,component,mixture
+from PyCSAFT_nue import SAFTSAC
+# mix=component()+component()
+# eos=pcsaft(mix)
 
 
 @xlo.func
@@ -150,8 +150,8 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     ui=pure[1:,7].astype(float)
     eAiBi=pure[1:,8].astype(float)
     kAiBi=pure[1:,9].astype(float)
-    Na=pure[1:,10].astype(int)
-    Nd=pure[1:,11].astype(int)
+    Na=pure[1:,10].astype(float)
+    Nd=pure[1:,11].astype(float)
     dipol1=pure[1:,12].astype(float)
     dipol2=pure[1:,13].astype(float)
     quadro1=pure[1:,14].astype(float)
@@ -176,22 +176,24 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     state=inputs[0,nc+3]
     
     
-    if True:#nc!=eos.mixture.nc:
-        a=[]
-        for i in range(nc):
-                a.append(component(name=name[i],ms=mi[i],Mw=Mw[i],sigma=sigi[i],eps=ui[i],eAB=eAiBi[i],kappaAB=kAiBi[i],sites=[0,Na[i],Nd[i]]))
-                if i>0: 
-                    pars+=a[i]
-                else:
-                    pars=a[i]
-        eos = pcsaft(pars)
+    # if True:#nc!=eos.mixture.nc:
+    #     a=[]
+    #     for i in range(nc):
+    #             a.append(component(name=name[i],ms=mi[i],Mw=Mw[i],sigma=sigi[i],eps=ui[i],eAB=eAiBi[i],kappaAB=kAiBi[i],sites=[0,Na[i],Nd[i]]))
+    #             if i>0: 
+    #                 pars+=a[i]
+    #             else:
+    #                 pars=a[i]
+    #     eos = pcsaft(pars)
 
 
 
     #eos1.KIJ0saft=kij1
     results=np.asarray([])
-    rho0,Xass0=eos.density_aux(xi,eos.temperature_aux(T),p,state=state.upper())
+    #rho0,Xass0=eos.density_aux(xi,eos.temperature_aux(T),p,state=state.upper())
+    vpure=(free/Mw*1000.)**-1
 
+    rho0=(np.sum(vpure*xi))**-1
     def add_entry(results,new):
         return np.hstack((results,new))
     def generate(var):
@@ -204,9 +206,14 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
                 results=add_entry(results,rho0*(xi*Mw).sum()/1000)
             elif fractiontype=="w":
                 results=add_entry(results,rho0/(xi/Mw).sum()/1000)
-        elif "ln(phi)" in entry:
-            lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
-            results=add_entry(results,lnphi.send(None))
+        elif "gamma" in entry:
+            lngammai=generate(SAFTSAC(T,vpure,xi,mi,sigi,ui,eAiBi,kAiBi,Na).flatten()) if 'lngammai' not in vars() else lngammai
+            #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
+            results=add_entry(results,lngammai.send(None))
+        elif "activity" in entry:
+            lnactivity=generate(np.log(xi)+SAFTSAC(T,vpure,xi,mi,sigi,ui,eAiBi,kAiBi,Na).flatten()) if 'lnactivity' not in vars() else lnactivity
+            #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
+            results=add_entry(results,lnactivity.send(None))
         elif "Mass fraction" in entry:
             if fractiontype=="x":
                 fracw=generate(xi/Mw/(xi/Mw).sum()) if 'fracw' not in vars() else fracw
@@ -227,7 +234,8 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             elif fractiontype=="w":
                 results=add_entry(results,1/(xi/Mw).sum())
         elif "Z [" in entry:
-            results=add_entry(results,eos.Z(xi,T,p,state=state.upper()))
+            pass
+            #results=add_entry(results,eos.Z(xi,T,p,state=state.upper()))
         elif "gres [" in entry:
             pass
         elif "hres [" in entry:
