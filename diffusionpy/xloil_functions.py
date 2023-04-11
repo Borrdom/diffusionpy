@@ -1,5 +1,5 @@
 import xloil as xlo
-from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D
+from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D,D_Matrix
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
 import numpy as np
@@ -10,7 +10,7 @@ from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
 #from epcsaftpy import pcsaft,component,mixture
-from PyCSAFT_nue import SAFTSAC
+from PyCSAFT_nue import SAFTSAC,vpure
 # mix=component()+component()
 # eos=pcsaft(mix)
 
@@ -96,10 +96,21 @@ def get_par_xloil(subst_input,path):
     kij["kij T"]=pure["Molar Mass"].astype(float)*0
     kij=kij[header2] # this datfarme containes the information about the kij 
     cell1.value=pure.columns[:,None].T
-    pure=pure.reset_index(drop=True).reset_index()
-    cell2.value=pure.fillna(0).replace("none",0).values
+    pure=pure.reset_index(drop=True).reset_index().fillna(0).replace("none",0)
+    mi=pure["Segment Number"].values.astype(float)
+    sigi=pure["Segment Diameter"].values.astype(float)
+    ui=pure["Energy Parameter"].values.astype(float)
+    eAiBi=pure["Associating Energy"].values.astype(float)
+    kAiBi=pure["Associating Volume"].values.astype(float)
+    Na=pure["Associating Scheme"].T.drop_duplicates().T.values.astype(float).flatten()
+    Mw=pure["Molar Mass"].values.astype(float).flatten()
+    rho0=(vpure(1E5,298.15,mi,sigi,ui,eAiBi,kAiBi,Na)/Mw*1000.)**-1
+    pure["Free Param"]=rho0
+    cell2.value=pure.values
     cell3.value=kij.columns[:,None].T
     cell4.value=kij.fillna(0).replace("none",0)[header2].values
+    
+    
     #cell1.color=(118,224,280)
     #cell4.color=(118,224,280)
     return 
@@ -142,40 +153,45 @@ except:
 def PC_SAFT_NpT2(pure,kij,header,inputs):
     # pure=pd.DataFrame(pure[1:,:],columns=pure[0,:])
     # kij=pd.DataFrame(kij[1:,:],columns=kij[0,:])
-    name=pure[1:,1].astype(str)
+    # name=pure[1:,1].astype(str)
     Mw=pure[1:,3].astype(float)
     mi=pure[1:,4].astype(float)
-    mi_Mw=pure[1:,5].astype(float)
+    # mi_Mw=pure[1:,5].astype(float)
     sigi=pure[1:,6].astype(float)
     ui=pure[1:,7].astype(float)
     eAiBi=pure[1:,8].astype(float)
     kAiBi=pure[1:,9].astype(float)
     Na=pure[1:,10].astype(float)
-    Nd=pure[1:,11].astype(float)
-    dipol1=pure[1:,12].astype(float)
-    dipol2=pure[1:,13].astype(float)
-    quadro1=pure[1:,14].astype(float)
-    quadro2=pure[1:,15].astype(float)
-    charge1=pure[1:,16].astype(float)
-    charge2=pure[1:,17].astype(float)
-    charge3=pure[1:,18].astype(float)
-    TSL=pure[1:,19].astype(float)
-    HSL=pure[1:,20].astype(float)
-    dcp=pure[1:,21].astype(float)
-    dcpT=pure[1:,22].astype(float)
-    Tg=pure[1:,23].astype(float)
+    # Nd=pure[1:,11].astype(float)
+    # dipol1=pure[1:,12].astype(float)
+    # dipol2=pure[1:,13].astype(float)
+    # quadro1=pure[1:,14].astype(float)
+    # quadro2=pure[1:,15].astype(float)
+    # charge1=pure[1:,16].astype(float)
+    # charge2=pure[1:,17].astype(float)
+    # charge3=pure[1:,18].astype(float)
+    # TSL=pure[1:,19].astype(float)
+    # HSL=pure[1:,20].astype(float)
+    # dcp=pure[1:,21].astype(float)
+    # dcpT=pure[1:,22].astype(float)
+    # Tg=pure[1:,23].astype(float)
     free=pure[1:,24].astype(float)
+
     nc=len(Mw)
     #kij1=np.zeros((nc,nc))
     #kij1[np.triu_indices(nc,k=1)]=
     kij1=np.char.replace(kij[1:,2].astype(str),",",".").astype(float)
+    kijAB=None
     fractiontype=inputs[0,0]
     xi=inputs[:,1:1+nc].astype(float).flatten()
     T=float(inputs[0,nc+2])
     p=float(inputs[0,nc+1])*1E5
     state=inputs[0,nc+3]
-    
-    
+    kij=D_Matrix(kij1,nc)
+    # if np.any(free==0.):
+    #     vpures=vpure(p,T,mi,sigi,ui,eAiBi,kAiBi,Na)
+    # else:
+    vpures=(free/Mw*1000.)**-1
     # if True:#nc!=eos.mixture.nc:
     #     a=[]
     #     for i in range(nc):
@@ -191,9 +207,9 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     #eos1.KIJ0saft=kij1
     results=np.asarray([])
     #rho0,Xass0=eos.density_aux(xi,eos.temperature_aux(T),p,state=state.upper())
-    vpure=(free/Mw*1000.)**-1
 
-    rho0=(np.sum(vpure*xi))**-1
+
+    rho0=(np.sum(vpures*xi))**-1
     def add_entry(results,new):
         return np.hstack((results,new))
     def generate(var):
@@ -207,11 +223,11 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             elif fractiontype=="w":
                 results=add_entry(results,rho0/(xi/Mw).sum()/1000)
         elif "gamma" in entry:
-            lngammai=generate(SAFTSAC(T,vpure,xi,mi,sigi,ui,eAiBi,kAiBi,Na).flatten()) if 'lngammai' not in vars() else lngammai
+            lngammai=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,kij,kijAB).flatten()) if 'lngammai' not in vars() else lngammai
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lngammai.send(None))
         elif "activity" in entry:
-            lnactivity=generate(np.log(xi)+SAFTSAC(T,vpure,xi,mi,sigi,ui,eAiBi,kAiBi,Na).flatten()) if 'lnactivity' not in vars() else lnactivity
+            lnactivity=generate(np.log(xi)+SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,kij,kijAB).flatten()) if 'lnactivity' not in vars() else lnactivity
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lnactivity.send(None))
         elif "Mass fraction" in entry:
