@@ -1,46 +1,38 @@
 import numpy as np
-from numba import njit, config
-import matplotlib.pyplot as plt
-from scipy.optimize import fsolve
-h=1E-26
-kB = 1.380649e-23
-NA = 6.0221407e23
-R=kB*NA
-#config.DISABLE_JIT = True
-
-@njit(['float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
-        'complex128(float64,complex128,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
-        'complex128(float64,float64,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))'],
-cache=True)
+from numba import njit
+# @njit(['float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
+#         'complex128(float64,complex128,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
+#         'complex128(float64,float64,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))'],
+@njit(cache=True)
 def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-
-    def npaddouter(a): return a.reshape(len(a),1)+a
-
-    def broyden(fun,x,p1,p2,p3,tol=1E-8,iter=50):
+    def npaddouter(a): 
+        return a.reshape(len(a),1)+a
+    def wertheimiter(fun,x,p1,p2,p3,tol=1E-8,iter=50):
         n=len(x)
         f=fun(x,p1,p2,p3)#.reshape(n)
         h = tol
-        J=np.zeros((n,n))
-
+        J=np.zeros((n,n)).astype("complex128")
         for i in range(n):
             dx = x*0
             dx[i] = h
-            J[i,:] = (fun(x + dx,p1,p2,p3)-f)/h
-        lamb=f*0+1.
+            J[:,i] = (fun(x + dx,p1,p2,p3)-f)/h
         for i in range(iter):
-            if np.linalg.norm(f,n)<tol: return x 
-            s=np.linalg.solve(J+np.eye(n)*1E-6,-1.*f)
+            if np.linalg.norm(f,2)<tol:
+                return x 
+            s=np.linalg.solve(J+np.eye(n)*tol,-1.*f)
             ff=fun(x+s,p1,p2,p3)
-            for j in range(n):
-                if np.abs(ff[j])>np.abs(f[j]):
-                    lamb[j]*=1./2.
-                    s[j]*=lamb[j]    
+            lamb=1.
+            for j in range(iter):
+                if np.linalg.norm(ff,2)*(1.-lamb*1E-1)<np.linalg.norm(f,2): break 
+                lamb*=1./4.
+                s*=lamb 
+                ff=fun(x+s,p1,p2,p3) 
             x+=s
             df=fun(x,p1,p2,p3)-f
             J+=np.outer((df-np.dot(J,s)),s)/np.dot(s,s)
             f+=df
         return x
-
+    
     npolyI=7
     npolycoef=3
     a0=np.ones((npolycoef,npolyI))
@@ -66,131 +58,180 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     kij=np.zeros((ncomp,ncomp)) if kij is None else kij
     kijAB=np.zeros((ncomp,ncomp)) if kijAB is None else kijAB
 
-    # Hard Chain Contribution
+    #Mixing rules
     mibar=np.sum(xi*mi)
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
-    rho=6/np.pi*eta*(np.sum(mi*xi.real*di**3))**-1 #mi*xi=phi*mbar und dann mbar*rho=rhophi
-    
-    z3=np.pi/6*rho*np.sum(mi*xi*di**3)
-    z2=np.pi/6*rho*np.sum(mi*xi*di**2)
-    z1=np.pi/6*rho*np.sum(mi*xi*di**1)
-    z0=np.pi/6*rho*np.sum(mi*xi*di**0)
-    #Mixing rules
-
+    rho=6/np.pi*eta*(np.sum(mi*xi.real*di**3))**-1 
     dij=npaddouter(di)
-    sigij=npaddouter(sigi)/2
-    #uij=(ui@ui.T)**0.5*(1.-kij)
+    sigij=npaddouter(sigi)/2.
     uij=np.outer(ui,ui)**0.5*(1.-kij)
-    #kapij=(kapi@kapi.T)**0.5*((sigi@sigi.T)**0.5/sigij)**3
     kapij=np.outer(kapi,kapi)**0.5*(np.outer(sigi,sigi)**0.5/sigij)**3
     epsAiBj=npaddouter(epsAiBi)/2.*(1.-kijAB)
-    #gij=1/(1-z3)+(di@di.T/dij)*3*z2/(1-z3)**2+((di@di.T)/(dij))**2*2*z2**2/(1-z3)**3
-    gij=1/(1-z3)+(np.outer(di,di)/dij)*3*z2/(1-z3)**2+(np.outer(di,di)/(dij))**2*2*z2**2/(1-z3)**3
-    fhs=1/z0*(3*z1*z2/(1-z3)+z2**3/(z3*(1-z3)**2)+(z2**3/z3**2-z0)*np.log(1-z3))
-    #diaggij=np.diag(gij).reshape(ncomp,1)
-    diaggij=np.diag(gij)#.reshape(ncomp,1)
 
-    fhc=mibar*fhs-np.sum(xi*(mi-1)*np.log(diaggij))
+    # Hard-Chain Contribution
+    z3=np.pi/6.*rho*np.sum(mi*xi*di**3)
+    z2=np.pi/6.*rho*np.sum(mi*xi*di**2)
+    z1=np.pi/6.*rho*np.sum(mi*xi*di**1)
+    z0=np.pi/6.*rho*np.sum(mi*xi*di**0)   
+    dijmat=np.outer(di,di)/dij
+    diimat=np.diag(dijmat)
+    gij=1./(1.-z3)+(dijmat)*3.*z2/(1.-z3)**2+(dijmat)**2*2*z2**2/(1.-z3)**3
+    fhs=1./z0*(3.*z1*z2/(1-z3)+z2**3/(z3*(1.-z3)**2)+(z2**3/z3**2-z0)*np.log(1.-z3))
+    gii=np.diag(gij)
+    fhc=mibar*fhs-np.sum(xi*(mi-1)*np.log(gii))
 
     # Dispersion Contribution
     a=a0[0,:]+(mibar-1)/mibar*a0[1,:]+(mibar-1)/mibar*(mibar-2)/mibar*a0[2,:]
     b=b0[0,:]+(mibar-1)/mibar*b0[1,:]+(mibar-1)/mibar*(mibar-2)/mibar*b0[2,:]
-
     I1=a[0]+a[1]*z3+a[2]*z3**2+a[3]*z3**3+a[4]*z3**4+a[5]*z3**5+a[6]*z3**6
     I2=b[0]+b[1]*z3+b[2]*z3**2+b[3]*z3**3+b[4]*z3**4+b[5]*z3**5+b[6]*z3**6
-
-
-    C1=(1+mibar*(8*z3-2*z3**2)/(1-z3)**4+(1-mibar)*(20*z3-27*(z3**2)+12*(z3**3)-2*z3**4)/((1-z3)*(2-z3))**2)**-1
-
-    #m2es3mat=(xi@xi.T)*(mi@mi.T)*(uij/T)*sigij**3
+    C1=(1+mibar*(8.*z3-2.*z3**2)/(1.-z3)**4+(1-mibar)*(20.*z3-27.*(z3**2)+12.*(z3**3)-2.*z3**4)/((1-z3)*(2.-z3))**2)**-1
     m2es3mat=np.outer(xi,xi)*np.outer(mi,mi)*(uij/T)*sigij**3
-
     m2e2s3mat=m2es3mat*(uij/T)
     m2es3,m2e2s3=np.sum(m2es3mat),np.sum(m2e2s3mat)
-
     fdisp=-2*np.pi*rho*I1*m2es3-np.pi*rho*mibar*C1*I2*m2e2s3
     
-
     # Association Contribution
     deltAiBj=gij*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
-    rhoi=rho.real*xi.real
-    #def XAi_eq(XAi,rhoi,N,deltAiBj): return XAi-((1+np.sum(rhoi*XAi*N*deltAiBj.T,axis=0))**-1).reshape(ncomp,1)
+    rhoi=rho*xi
     def XAi_eq(XAi,rhoi,N,deltAiBj): return XAi-((1+np.sum(rhoi*XAi*N*deltAiBj.T,axis=1))**-1)
-    #XAiself=((-1+np.sqrt(1+4*rho.real*np.diag(deltAiBj.real)))/(2*rho.real*np.diag(deltAiBj.real))).reshape(ncomp,1)
-    XAiself=((-1.+np.sqrt(1.+4.*rho.real*np.diag(deltAiBj.real)))/(2.*rho.real*np.diag(deltAiBj.real)))
+    XAiself=((-1.+np.sqrt(1.+4.*rho*np.diag(deltAiBj)))/(2.*rho*np.diag(deltAiBj)))
     XAiself[np.isnan(XAiself)]=1.
+    XAi=wertheimiter(XAi_eq,XAiself.astype("complex128"),rhoi,N,deltAiBj)
+    fassoc=np.sum((np.log(XAi)-1./2.*XAi+1./2.)*N*ntype*xi)#q=np.sum((np.log(XAi)-XAi+1.)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBj*np.outer(N,N)*np.outer(xi,xi)*ntype)
+    fres=fhc+fdisp+fassoc
+    #_______________________dadx__________________________________
+    # Hard Chain
+    z3x=np.pi/6.*rho*mi*di**3
+    z2x=np.pi/6.*rho*mi*di**2
+    z1x=np.pi/6.*rho*mi*di**1
+    z0x=np.pi/6.*rho*mi*di**0
+    fhsx=(-z0x/z0*fhs+1./z0*(3.*(z1x*z2+z1*z2x)/(1.-z3)+3.*(z1*z2*z3x)/(1.-z3)**2+3.*(z2**2*z2x)/(z3*(1.-z3)**2)+(z2**3*z3x*(3.*z3-1.))/(z3**2*(1-z3)**3)+((3*z2**2*z2x*z3-2*z2**3*z3x)/z3**3-z0x)*np.log(1.-z3)+(z0-z2**3/z3**2)*z3x/(1.-z3)))
+    gijx=(z3x/(1.-z3)**2+np.outer((dijmat),(3.*z2x/(1.-z3)**2+6.*z2*z3x/(1.-z3)**3))+np.outer((dijmat)**2,(4.*z2*z2x/(1.-z3)**3+6.*z2**2*z3x/(1.-z3)**4))).T.reshape((ncomp,ncomp,ncomp))
+    giix=(z3x/(1.-z3)**2+np.outer((diimat),(3.*z2x/(1.-z3)**2+6.*z2*z3x/(1.-z3)**3))+np.outer((diimat)**2,(4.*z2*z2x/(1.-z3)**3+6.*z2**2*z3x/(1.-z3)**4)))
+    fhcx=mi*fhs+mibar*fhsx-np.sum(xi*(mi-1)*gii**-1*giix.T,axis=1)-(mi-1)*np.log(gii) 
     
-    #XAiself=((-1+np.sqrt(1+8*rhoi.flatten()*np.diag(deltAiBj.real)))/(4*rhoi.flatten()*np.diag(deltAiBj.real))).reshape(ncomp,1)
-    #XAiself=np.ones_like(xi.real)*0.5
-    XAi=broyden(XAi_eq,XAiself,rhoi,N,deltAiBj.real)#.reshape(ncomp,1)
-
-    tm4=np.sum((np.log(XAi)-XAi+1)*N*ntype*xi)
-    tmp4=np.sum(np.outer(XAi,XAi)*deltAiBj*np.outer(N,N)*np.outer(xi,xi)*ntype)
-    q=tm4-rho/2*tmp4
+    # Dispersion Contribution
+    m2es3x=2.*mi*np.sum(xi*mi*uij/T*sigij**3,axis=1)
+    m2e2s3x=2.*mi*np.sum(xi*mi*(uij/T)**2*sigij**3,axis=1)
+    C2=-C1**2*(mibar*(-4.*z3**2+20.*z3+8.)/(1.-z3)**5+(1-mibar)*(2.*z3**3+12.*z3**2-48.*z3+40.)/((1.-z3)*(2.-z3))**3)
+    C1x=C2*z3x-C1**2*(mi*(8.*z3-2.*z3**2)/(1.-z3)**4-mi*(20.*z3-27.*(z3**2)+12.*(z3**3)-2.*z3**4)/((1.-z3)*(2.-z3))**2)
+    ax=1./mibar**2*a0[1,:]+1./mibar**2*(3.-4./mibar)*a0[2,:]
+    bx=1./mibar**2*b0[1,:]+1./mibar**2*(3.-4./mibar)*b0[2,:]
+    I1x=(mi*(ax[0]+ax[1]*z3+ax[2]*z3**2+ax[3]*z3**3+ax[4]*z3**4+ax[5]*z3**5+ax[6]*z3**6)+a[1]*z3x+2.*a[2]*z3x*z3+3.*a[3]*z3x*z3**2+4.*a[4]*z3x*z3**3+5.*a[5]*z3x*z3**4+6.*a[6]*z3x*z3**5)
+    I2x=(mi*(bx[0]+bx[1]*z3+bx[2]*z3**2+bx[3]*z3**3+bx[4]*z3**4+bx[5]*z3**5+bx[6]*z3**6)+b[1]*z3x+2.*b[2]*z3x*z3+3.*b[3]*z3x*z3**2+4.*b[4]*z3x*z3**3+5.*b[5]*z3x*z3**4+6.*b[6]*z3x*z3**5)
+    fdispx=(-2.*np.pi*rho*(I1x*m2es3+I1*m2es3x)-np.pi*rho*((mi*C1*I2+mibar*C1x*I2+mibar*C1*I2x)*m2e2s3+mibar*C1*I2*m2e2s3x))
     
-    fassoc=np.sum((np.log(XAi)-1/2*XAi+1/2)*N*ntype*xi)
+    # Association Contribution
+    deltAiBjx=gijx*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
+    qx=np.log(XAi)*N*ntype-rho/2*np.sum(np.sum(np.outer(XAi,XAi)*deltAiBjx*np.outer(N,N)*np.outer(xi,xi)*ntype,axis=2),axis=1)
+    fresx=fhcx+fdispx+qx
+
+    #_______________________dadrho__________________________________
+    # Hard-Chain Contribution
+    Zhs=z3/(1-z3)+3*z1*z2/(z0*(1-z3)**2)+(3*z2**3-z3*z2**3)/(z0*(1-z3)**3)
+    gijz=z3/(1.-z3)**2+(dijmat)*(3.*z2/(1.-z3)**2+6.*z2*z3/(1.-z3)**3)+(dijmat)**2*(4.*z2*z2/(1.-z3)**3+6.*z2**2*z3/(1.-z3)**4)
+    giiz=np.diag(gijz)
+    Zhc=mibar*Zhs-np.sum(xi*(mi-1)*gii**-1*giiz)
+
+    # Dispersion Contribution
+    I1z=a[0]+2*a[1]*z3+3*a[2]*z3**2+4*a[3]*z3**3+5*a[4]*z3**4+6*a[5]*z3**5+7*a[6]*z3**6
+    I2z=b[0]+2*b[1]*z3+3*b[2]*z3**2+4*b[3]*z3**3+5*b[4]*z3**4+6*b[5]*z3**5+7*b[6]*z3**6
+    Zdisp=-2*np.pi*rho*(I1z*m2es3)-np.pi*rho*mibar*((C1*I2z+C2*z3*I2)*m2e2s3)
+
+    # Association Contribution
+    deltAiBjz=gijz*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
+    Zassoc=-1./2.*np.sum((1.-XAi)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBjz*np.outer(N,N)*np.outer(xi,xi)*ntype)
+    Z=1+Zhc+Zdisp+Zassoc
+    #_______________________mures__________________________________
+    mures = fres + (Z-1.) + fresx - np.dot(xi.astype("complex128"), fresx)
+    return fres,mures,Z
     
 
+#@njit('float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
+def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+    #approximation
+    def etalim(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+        _,_,Ztg=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        #Ztg=Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        c1=2*(Ztg-1)/eta
+        c2=-(Ztg-1)/eta**2
+        disc=(1./9.*(c1/c2)**2-1./c2/3.)**0.5
+        etamax=-1./3.*c1/c2+disc
+        etamin=-1./3.*c1/c2-disc
+        return etamin*0.9,etamax*1.1
+    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+        kB = 1.380649e-23
+        di=sigi*(1.-0.12*np.exp(-3*ui/T))
+        rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
+        rhobar=rho*(10.**10)**3
+        Zp=p/(rhobar*kB*T)
+        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        return (Zp-Z1.real)
     
-    return fhc+fdisp+q
-
-@njit('float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
-def Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    return 1.+eta*(ares(T,eta+h*1.j,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB).imag)/h
-
-@njit('float64[::1](float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
-def lnphii(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    ncomp=len(xi)
-    #dadx=np.ones((ncomp,1))
-    dadx=np.ones(ncomp)
-    a1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
-    Z1=Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
-    hvec=np.eye(ncomp)*h*1.j
-    for i in range(ncomp):
-        xi_=xi+hvec[i,:]#.reshape(ncomp,1)
-        dadx[i]=ares(T,eta,xi_,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB).imag/h
-    lnphi = a1 + (Z1-1) + dadx - np.dot(xi, dadx)#  -np.log(Z1)
-    return lnphi
-@njit('float64(float64,float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
-def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    di=sigi*(1.-0.12*np.exp(-3*ui/T))
-    rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
-    rhobar=rho*(10.**10)**3
-    Zp=p/(rhobar*kB*T)
-    return (Zp-Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB))
+    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,xlim,tol=1E-8,iter=50):
+        f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)#.reshape(n)
+        h = tol
+        dx = h
+        J= (fun(pp,p0,x+dx,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f)/h
+        for i in range(iter):
+            if np.abs(f)<tol:
+                return x 
+            s=-1.*f/J
+            #xmin,xmax=xlim(p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)
+            x+=s
+            df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f
+            J+=(df-J*s)/s
+            f+=df
+        return x
+    eta0=0.45
+    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,etalim)
 
 def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     etapures=[]
     for i in range(len(mi)):
-        Z0iobj=lambda eta: Z_obj(p,T,eta[0],np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None)
-        etapures.append(fsolve(func=Z0iobj,x0=0.45)[0])
+        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None)
+        etapures.append(x)
     etapures=np.asarray(etapures)
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
+    NA = 6.0221407e23
     vmol=np.pi/6/etapures*mi*di**3/(10.**10)**3*NA
     return vmol
 
-@njit('float64[::1](float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
+#@njit('float64[::1](float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
 def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+    NA = 6.0221407e23
+    #vpfracNET=(1-ksw*RH**2)/xi[0]
+    #vmol=v0pNE/vpfracNET
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
-    #rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
-    eta=np.pi/6*np.sum(mi*xi*di**3)/vmol/(10.**10)**3*NA
+    eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
     lngammaid=np.log(vpfrac)+1-vpfrac
-    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None) for i,val in enumerate(etapure)])
-    lngammares=lnphii(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)-arespures
-    p=Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)/vmol*(R*T)
-    lngammap=vpure/(R*T)*(p-(R*T/vmol))
+    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None)[0] for i,val in enumerate(etapure)])
+    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+    lngammares=mures-arespures
+    lngammap=vpure/vmol*(Z1-1)
     return lngammaid+lngammares-lngammap
 
+def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,idx=-1):
+    nc = len(xi)
+    h = 1E-26
+    df = np.zeros([nc, nc])
+    for i in range(nc):
+        dx = np.zeros(nc, dtype = 'complex128')
+        dx[i] = h * 1j
+        dx[idx] = - h * 1j  #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
+        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        df[i] = out.imag/h
+    return df.T   
 
 
-
-#Test call, so it compiles directly when it is imported
+#Test call, so all functions are compiled directly when it is imported
 T=298.15
 p=1E5
-npoint=1
+npoint=11
 #Water
 #XAiself =0.16 und 0.6
 mi=np.asarray([1.20469,2.38269789])
@@ -199,23 +240,9 @@ ui=np.asarray([353.95,198.24])
 epsAiBi=np.asarray([2425.67,2653.4])
 kapi=np.asarray([0.04509,0.032384])
 N=np.asarray([1.,1.])
-
-#
-# mi=np.asarray([3.057603049,2.53030029])
-# sigi=np.asarray([3.7983,3.8499])
-# ui=np.asarray([236.77,278.11])
-# epsAiBi=np.asarray([0.,0.])
-# kapi=np.asarray([0.,0.])
-# N=np.asarray([0.,0.])
-
-xi=np.asarray([0.5,0.5])
-x1=np.linspace(0,1,11)
+x1=np.linspace(0,1,npoint)
 x2=1-x1
 xi=np.vstack((x1,x2))
-vpures=np.asarray([(996.9651701/18.015*1000)**-1,(779.7859022/46.069*1000.)**-1])
-#vpure=np.asarray([(649.6531684/86.177*1000)**-1,(762.4382449/84.147*1000.)**-1])
-
-
-#lngammai=SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N).flatten()
+vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
 lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,None,None).flatten() for i,val in enumerate(xi[0,:])])
-print(lngammai)
+Gammai=np.asarray([THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,None,None).flatten() for i,val in enumerate(xi[0,:])])
