@@ -37,7 +37,9 @@ lnGammai=np.asarray([1+xi[:,i]*THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),m
 end=time.time_ns()
 print((end-start)/1E9)
 print("check")
-
+import matplotlib.pyplot as plt
+plt.plot(lnGammai[:,0,0])
+plt.show()
 
 
 # Water = component('Water', ms = 1.2047, sigma = 2.797 , eps = 353.94, 

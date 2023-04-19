@@ -8,7 +8,7 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
         n=len(x)
         f=fun(x,p1,p2,p3)
         h = tol
-        J=np.zeros((n,n)).astype("complex128")
+        J=np.ones((n,n)).astype(x.dtype)
         for i in range(n):
             dx = x*0
             dx[i] = h
@@ -93,7 +93,7 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     def XAi_eq(XAi,rhoi,N,deltAiBj): return XAi-((1+np.sum(rhoi*XAi*N*deltAiBj.T,axis=1))**-1)
     XAiself=((-1.+np.sqrt(1.+4.*rho*np.diag(deltAiBj)))/(2.*rho*np.diag(deltAiBj)))
     XAiself[np.isnan(XAiself)]=1.
-    XAi=wertheimiter(XAi_eq,XAiself.astype("complex128"),rhoi,N,deltAiBj)
+    XAi=wertheimiter(XAi_eq,XAiself.astype(xi.dtype),rhoi,N,deltAiBj)
     fassoc=np.sum((np.log(XAi)-1./2.*XAi+1./2.)*N*ntype*xi)#q=np.sum((np.log(XAi)-XAi+1.)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBj*np.outer(N,N)*np.outer(xi,xi)*ntype)
     fres=fhc+fdisp+fassoc
     #_______________________dadx__________________________________
@@ -140,7 +140,7 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     Zassoc=-1./2.*np.sum((1.-XAi)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBjz*np.outer(N,N)*np.outer(xi,xi)*ntype)
     Z=1+Zhc+Zdisp+Zassoc
     #_______________________mures__________________________________
-    mures = fres + (Z-1.) + fresx - np.dot(xi.astype("complex128"), fresx)
+    mures = fres + (Z-1.) + fresx - np.dot(xi, fresx)
     return fres,mures,Z
     
 
