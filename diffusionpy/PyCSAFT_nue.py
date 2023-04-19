@@ -199,6 +199,12 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     lngammap=vpure/vmol*(Z1-1)
     return lngammaid+lngammares-lngammap
 
+#@njit(cache=True)
+def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+    etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
+    lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)[1].flatten() for i,val in enumerate(etamix)])
+    return lnphi
+
 def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,idx=-1):
     nc = len(xi)
     h = 1E-26
@@ -209,7 +215,7 @@ def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,idx=-1):
         dx[idx] = - h * 1j  #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
         df[i] = out.imag/h
-    return df.T   
+    return df.T*xi+1   
 
 
 #Test call, so all functions are compiled directly when it is imported
