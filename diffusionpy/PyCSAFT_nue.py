@@ -1,15 +1,12 @@
 import numpy as np
 from numba import njit
-# @njit(['float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
-#         'complex128(float64,complex128,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',
-#         'complex128(float64,float64,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))'],
 @njit(cache=True)
 def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     def npaddouter(a): 
         return a.reshape(len(a),1)+a
     def wertheimiter(fun,x,p1,p2,p3,tol=1E-8,iter=50):
         n=len(x)
-        f=fun(x,p1,p2,p3)#.reshape(n)
+        f=fun(x,p1,p2,p3)
         h = tol
         J=np.zeros((n,n)).astype("complex128")
         for i in range(n):
@@ -32,7 +29,6 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
             J+=np.outer((df-np.dot(J,s)),s)/np.dot(s,s)
             f+=df
         return x
-    
     npolyI=7
     npolycoef=3
     a0=np.ones((npolycoef,npolyI))
@@ -148,18 +144,8 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     return fres,mures,Z
     
 
-#@njit('float64(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
+@njit(cache=True)
 def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    #approximation
-    def etalim(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-        _,_,Ztg=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
-        #Ztg=Z(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
-        c1=2*(Ztg-1)/eta
-        c2=-(Ztg-1)/eta**2
-        disc=(1./9.*(c1/c2)**2-1./c2/3.)**0.5
-        etamax=-1./3.*c1/c2+disc
-        etamin=-1./3.*c1/c2-disc
-        return etamin*0.9,etamax*1.1
     def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
         kB = 1.380649e-23
         di=sigi*(1.-0.12*np.exp(-3*ui/T))
@@ -168,8 +154,7 @@ def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
         Zp=p/(rhobar*kB*T)
         _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
         return (Zp-Z1.real)
-    
-    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,xlim,tol=1E-8,iter=50):
+    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,tol=1E-8,iter=50):
         f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)#.reshape(n)
         h = tol
         dx = h
@@ -178,14 +163,13 @@ def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
             if np.abs(f)<tol:
                 return x 
             s=-1.*f/J
-            #xmin,xmax=xlim(p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)
             x+=s
             df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f
             J+=(df-J*s)/s
             f+=df
         return x
     eta0=0.45
-    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,etalim)
+    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
 
 def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     etapures=[]
@@ -198,7 +182,7 @@ def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     vmol=np.pi/6/etapures*mi*di**3/(10.**10)**3*NA
     return vmol
 
-#@njit('float64[::1](float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],optional(float64[:,::1]),optional(float64[:,::1]))',cache=True)
+@njit(cache=True)
 def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     NA = 6.0221407e23
     #vpfracNET=(1-ksw*RH**2)/xi[0]

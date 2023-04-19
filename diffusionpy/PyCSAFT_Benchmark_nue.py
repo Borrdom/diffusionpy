@@ -1,14 +1,14 @@
 
 import numpy as np
 import time
-from epcsaftpy import component, pcsaft
+#from epcsaftpy import component, pcsaft
 from numba import njit, config
 #config.DISABLE_JIT = True
-from PyCSAFT_nue import SAFTSAC,vpure,etaiter,THFaktor
+from PyCSAFT_nue import SAFTSAC,vpure,etaiter,THFaktor,ares
 
 T=298.15
 p=1E5
-npoint=120
+npoint=12000
 mi=np.asarray([1.20469,4.2102])
 sigi=np.asarray([2.797059952,3.0741])
 ui=np.asarray([353.95,219.92])
@@ -25,15 +25,18 @@ kij=None
 kijAB=None
 start=time.time_ns()
 lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB).flatten() for i,val in enumerate(xi[0,:])])
-#etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB).flatten() for i,val in enumerate(xi[0,:])])
-#import matplotlib.pyplot as plt
-#lnGammai=np.asarray([1+xi[:,i]*THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
-# Gammai1=np.diff(lngammai[:,0])/np.diff(np.log(xi[0,:]))+1
-# plt.plot(lnGammai[:,0,0])
-# plt.plot(Gammai1)
-# plt.show()
 end=time.time_ns()
 print((end-start)/1E9)
+start=time.time_ns()
+etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
+results=[ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(etamix)]
+end=time.time_ns()
+print((end-start)/1E9)
+start=time.time_ns()
+lnGammai=np.asarray([1+xi[:,i]*THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
+end=time.time_ns()
+print((end-start)/1E9)
+print("check")
 
 
 
