@@ -197,7 +197,7 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
     lngammares=mures-arespures
     lngammap=vpure/vmol*(Z1-1)
-    return lngammaid+lngammares-lngammap
+    return lngammaid+lngammares-lngammap+np.log(xi)
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
@@ -205,17 +205,21 @@ def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,idx=-1):
+def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,Mw=None,idx=-1):
     nc = len(xi)
     h = 1E-26
     df = np.zeros([nc, nc])
+    Mw=np.ones_like(xi) if Mw is None else Mw
+    wi=xi*Mw/(xi*Mw).sum()
     for i in range(nc):
         dx = np.zeros(nc, dtype = 'complex128')
         dx[i] = h * 1j
         dx[idx] = - h * 1j  #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
-        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        wi_= wi+dx
+        xi_=wi_/Mw/(wi_/Mw).sum()
+        out =  SAFTSAC(T,vpure,xi_,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
         df[i] = out.imag/h
-    return df.T*xi+1   
+    return df.T*wi
 
 
 #Test call, so all functions are compiled directly when it is imported

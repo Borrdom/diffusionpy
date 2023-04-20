@@ -10,7 +10,7 @@ from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
 #from epcsaftpy import pcsaft,component,mixture
-from PyCSAFT_nue import SAFTSAC,vpure
+from .PyCSAFT_nue import SAFTSAC,vpure
 # mix=component()+component()
 # eos=pcsaft(mix)
 
