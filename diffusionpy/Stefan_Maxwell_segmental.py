@@ -272,7 +272,7 @@ if __name__=="__main__":
     wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,True)
 
 
-    from .PyCSAFT_nue import DlnaDlnx,vpure 
+    from PyCSAFT_nue import DlnaDlnx,vpure 
 
     T=298.15
     p=1E5
