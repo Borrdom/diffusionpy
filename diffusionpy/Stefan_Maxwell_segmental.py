@@ -3,6 +3,7 @@ import casadi as cs
 import time
 import copy
 import matplotlib.pyplot as plt
+
 def SolveODEs(x,f,x0,opts,Time):
     dae={"x":x,"t":Time,"ode":f}
     fint=cs.integrator("integrator","idas",dae,opts)
@@ -32,7 +33,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
     w0:    array_like   Mass fractions at t=0               /-
     w8:    array_like   Mass fraction at t=infinity         /-
     Mi:    array_like   Molar mass of components nc         /g/mol
-    Gammai: array_like estimate for the TH-factor at t      /-
+    Gammai: array_like estimate for DlnaiDlnx at t          /-
     Returns
     -------
     wt:    array_like   Matrix of mass fractions at t       /-
@@ -54,7 +55,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
     nt=len(t)
     rho=1200
     refsegment=np.argmin(Mi)
-
+    allflux=nc==nf  
     #initial conditions
     rhoiinit=cs.DM.zeros((nc,nz+1))
     for z in range(nz+1):
@@ -76,15 +77,28 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
 
     x=cs.reshape(rhov,(np.multiply(*rhov.shape),1))
     
-    GammaiT=cs.MX.ones(nc)
+    
+    GammaiT=cs.MX.eye(nc)
     if Gammai is not None:
-        Gammai_2=copy.deepcopy(Gammai.T)
-        Gammai_2[Gammai_2<=0]=1.
-        if np.any(Gammai_2!=Gammai.T):
-           print("This is a warning")
-        for i in range(nc):
-            GammaiT[i]=cs.interpolant("Gammai_fun","linear",[t],Gammai_2[i,:])(Time)
-            
+        nTH=nf if not allflux else nc-1
+        Gammai=Gammai.reshape((nc,nc,nt))
+        comp=np.arange(0,nc)
+        volatiles=comp[np.where(volatile)[0]] if not allflux else comp[np.where(volatile)[0]][:-1]
+        nonvolatiles=comp[np.where(~volatile)[0]] if not allflux else comp[-1,None]
+        w0_nonvolatiles=w0[nonvolatiles]/np.sum(w0[nonvolatiles])
+        THij = Gammai[volatiles,:,:][:,volatiles,:]
+        massbalancecorrection=np.stack([np.sum((Gammai[nonvolatiles,:,:][:,volatiles,:])*w0_nonvolatiles.reshape((nc-nTH,1,1)),axis=0)]*nTH)
+        THij -= massbalancecorrection
+        for i in range(nTH):
+            for j in range(nTH):
+                    GammaiT[volatiles[i],volatiles[j]]=cs.interpolant("Gammai_fun","linear",[t],THij[i,j,:])(Time)
+           
+    # if Gammai is not None:
+    #     Gammai_2=copy.deepcopy(Gammai.T)
+    #     Gammai_2[Gammai_2<=0]=1.
+    #     if np.any(Gammai_2!=Gammai.T):
+    #        print("This is a warning")
+
     rhoi=cs.MX.ones((nc,nz+1))
     rhoi[np.where(volatile)[0],:]=rhov
     rhoi[np.where(~volatile)[0],:]=rhoiinit[np.where(~volatile)[0],:]
@@ -101,12 +115,12 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
 
     for i in range(nc):
         wi[i,:]=rhoi[i,:]/cs.sum1(rhoi)
-        dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i]
+        #dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i] # here it would be for every component
+        dlnwi[i,:]=cs.sum1(cs.diff(cs.log(wi),1,1)*GammaiT[:,i])# here it would be for every component
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
     for z in range(nz):
         B=BIJ_Matrix(D,wibar[:,z],volatile) 
-        allflux=nc==nf
         Binv=cs.inv(B)
         dmui=(dlnwi[:,z])
         #di=rhoibar[:,z]*dmui/ri # in rhoibar steckt die transformierte riesige Dichte drin. Der Volumenexpansionsfaktor korriegiert diesen
@@ -240,7 +254,10 @@ if __name__=="__main__":
     nt=100
     t=np.linspace(0,500,nt)*60
     nc=3
-    nd=(nc-1)*nc//2 
+    nd=(nc-1)*nc//2
+
+
+
     Dvec=np.asarray([4E-11,9E-11,1.7E-11])
     #Dvec=np.asarray([1E-10,2.3E-10,3E-14])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
@@ -250,7 +267,28 @@ if __name__=="__main__":
     Mi=np.asarray([18.015,357.57,65000])
 
     volatile=np.asarray([True,False,False])
+
+
     wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,True)
+
+
+    from .PyCSAFT_nue import DlnaDlnx,vpure 
+
+    T=298.15
+    p=1E5
+    npoint=12000
+    mi=np.asarray([1.20469,1045.6])
+    sigi=np.asarray([2.797059952,2.71])
+    ui=np.asarray([353.95,205.599])
+    epsAiBi=np.asarray([2425.67,0.])
+    kapi=np.asarray([0.04509,0.02])
+    N=np.asarray([1.,231.])
+    vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
+
+    kij=D_Matrix(np.asarray([-0.146]),nc)
+    DlnaDlnx(T,vpures,wt,mi,sigi,ui,epsAiBi,kapi,N,Mi,kij,None)
+
+
     import matplotlib.pyplot as plt
     fig,ax=plt.subplots()
     fig1,ax1=plt.subplots()

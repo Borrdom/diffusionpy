@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 @njit(cache=True)
-def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     def npaddouter(a): 
         return a.reshape(len(a),1)+a
     def wertheimiter(fun,x,p1,p2,p3,tol=1E-8,iter=50):
@@ -49,6 +49,9 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     b0[:,6]=np.asarray([-355.60235612,-165.20769346,-29.666905585])
     ncomp=len(mi)
     ntype=2
+    # if Molar Mass is supplied, then weight fractions are used 
+    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
+
 
     #Initializekij
     kij=np.zeros((ncomp,ncomp)) if kij is None else kij
@@ -145,36 +148,36 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     
 
 @njit(cache=True)
-def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
         kB = 1.380649e-23
         di=sigi*(1.-0.12*np.exp(-3*ui/T))
         rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
         rhobar=rho*(10.**10)**3
         Zp=p/(rhobar*kB*T)
-        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
         return (Zp-Z1.real)
-    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,tol=1E-8,iter=50):
-        f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)#.reshape(n)
+    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,tol=1E-8,iter=50):
+        f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)#.reshape(n)
         h = tol
         dx = h
-        J= (fun(pp,p0,x+dx,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f)/h
+        J= (fun(pp,p0,x+dx,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)-f)/h
         for i in range(iter):
             if np.abs(f)<tol:
                 return x 
             s=-1.*f/J
             x+=s
-            df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f
+            df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)-f
             J+=(df-J*s)/s
             f+=df
         return x
     eta0=0.45
-    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
 
 def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     etapures=[]
     for i in range(len(mi)):
-        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None)
+        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]))
         etapures.append(x)
     etapures=np.asarray(etapures)
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
@@ -183,7 +186,7 @@ def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     return vmol
 
 @njit(cache=True)
-def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     NA = 6.0221407e23
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
@@ -193,33 +196,44 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
     lngammaid=np.log(vpfrac)+1-vpfrac
-    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),None,None)[0] for i,val in enumerate(etapure)])
-    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]))[0] for i,val in enumerate(etapure)])
+    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
     lngammares=mures-arespures
     lngammap=vpure/vmol*(Z1-1)
     return lngammaid+lngammares-lngammap+np.log(xi)
 
 #@njit(cache=True)
-def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
+def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB,Mw=None,idx=-1):
+def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None,idx=-1):
     nc = len(xi)
     h = 1E-26
     df = np.zeros([nc, nc])
-    Mw=np.ones_like(xi) if Mw is None else Mw
-    wi=xi*Mw/(xi*Mw).sum()
+    #Mw=np.ones_like(xi) if Mw is None else Mw
+    #wi=xi*Mw/(xi*Mw).sum()
     for i in range(nc):
         dx = np.zeros(nc, dtype = 'complex128')
         dx[i] = h * 1j
         dx[idx] = - h * 1j  #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
-        wi_= wi+dx
-        xi_=wi_/Mw/(wi_/Mw).sum()
-        out =  SAFTSAC(T,vpure,xi_,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        #wi_= wi+dx
+        #xi_=wi_/Mw/(wi_/Mw).sum()
+        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
         df[i] = out.imag/h
-    return df.T*wi
+    return df.T*xi
+
+def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+    nc = len(xi)
+    h = 1E-26
+    df = np.zeros([nc, nc])
+    for i in range(nc):
+        dx = np.zeros(nc, dtype = 'complex128')
+        dx[i] = h * 1j
+        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
+        df[i] = out.imag/h
+    return df.T*xi
 
 
 #Test call, so all functions are compiled directly when it is imported
@@ -238,5 +252,5 @@ x1=np.linspace(0,1,npoint)
 x2=1-x1
 xi=np.vstack((x1,x2))
 vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
-lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,None,None).flatten() for i,val in enumerate(xi[0,:])])
-Gammai=np.asarray([THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,None,None).flatten() for i,val in enumerate(xi[0,:])])
+lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
+Gammai=np.asarray([THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
