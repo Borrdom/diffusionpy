@@ -115,8 +115,10 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
 
     for i in range(nc):
         wi[i,:]=rhoi[i,:]/cs.sum1(rhoi)
-        #dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i] # here it would be for every component
-        dlnwi[i,:]=cs.sum1(cs.diff(cs.log(wi),1,1)*GammaiT[:,i])# here it would be for every component
+        
+    for i in range(nc):
+        #dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i,i] # here it would be for every component
+        dlnwi[i,:]=cs.sum1(cs.diff(cs.log(wi),1,1)*GammaiT[i,:].T)# here it would be for every component
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
     for z in range(nz):
@@ -296,14 +298,14 @@ if __name__=="__main__":
     nc=3
     nd=(nc-1)*nc//2
 
-    Dvec=np.asarray([1E-13,1E-13,1E-10])
+    Dvec=np.asarray([1E-13,1E-13,1E-14])
     #Dvec=np.asarray([1E-10,2.3E-10,3E-14])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
     L=0.0002
     wi0=np.asarray([0.01,0.485,0.485])
     wi8=np.asarray([0.1,0.45,0.45])
     Mi=np.asarray([18.015,25700,357.79])
-    volatile=np.asarray([True,False,True])
+    volatile=np.asarray([True,False,False])
     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
     from .PyCSAFT_nue import DlnaDlnx,vpure,SAFTSAC
     T=298.15
@@ -320,9 +322,10 @@ if __name__=="__main__":
     for i in range(10):
         plt.plot(wt[:,0])
         Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
+        #Gammai=np.stack([np.eye(nc)]*nt).T#*0.0001+Gammai*0.99999
         wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
     lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)])
-    THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))
+    THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))+1
     THFaktor1ave=np.average(THFaktor1)
     print(THFaktor1ave)
     wtid=Diffusion_MS(t,L,Dvec*THFaktor1ave,wi0,wi8,Mi,volatile)

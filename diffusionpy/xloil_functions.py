@@ -10,7 +10,7 @@ from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
 #from epcsaftpy import pcsaft,component,mixture
-from .PyCSAFT_nue import SAFTSAC,vpure
+from .PyCSAFT_nue import SAFTSAC,vpure,DlnaDlnx
 # mix=component()+component()
 # eos=pcsaft(mix)
 
@@ -97,6 +97,7 @@ def get_par_xloil(subst_input,path):
     kij=kij[header2] # this datfarme containes the information about the kij 
     cell1.value=pure.columns[:,None].T
     pure=pure.reset_index(drop=True).reset_index().fillna(0).replace("none",0)
+    
     mi=pure["Segment Number"].values.astype(float)
     sigi=pure["Segment Diameter"].values.astype(float)
     ui=pure["Energy Parameter"].values.astype(float)
@@ -104,7 +105,11 @@ def get_par_xloil(subst_input,path):
     kAiBi=pure["Associating Volume"].values.astype(float)
     Na=pure["Associating Scheme"].T.drop_duplicates().T.values.astype(float).flatten()
     Mw=pure["Molar Mass"].values.astype(float).flatten()
-    rho0=(vpure(1E5,298.15,mi,sigi,ui,eAiBi,kAiBi,Na)/Mw*1000.)**-1
+    mi[mi==0.]=(pure["Segment Number/Molar Mass"].values.astype(float).flatten()*Mw)[mi==0.]
+    pure["Segment Number"]=mi
+    pure["Segment Number/Molar Mass"]=mi/Mw
+    vpures=vpure(1E5,298.15,mi,sigi,ui,eAiBi,kAiBi,Na)
+    rho0=(vpures/Mw*1000.)**-1
     pure["Free Param"]=rho0
     cell2.value=pure.values
     cell3.value=kij.columns[:,None].T
@@ -125,7 +130,7 @@ def create_header(ctrl):
     x=x/x.shape[0]
     xloil.Range("A1:H1").value=np.asarray(["Fraction type"]+list(comps)+["Pressure [bar]","Temp. [K]","State (l/v) [-]","Density [kg/m³]"])[:,None].T
     xloil.Range("A2:G2").value=np.asarray(["x"]+list(x)+[1,298.15,"l"])[:,None].T
-    xloil.Range("H2").formula="PC_SAFT_NpT(Parameters_PC_SAFT!$A$2:$Y$13;Parameters_PC_SAFT!$A$14:$F$59;A$1:H$1; A2:G2)"
+    xloil.Range("H2").formula="PC_SAFT_NpT(Parameters_PC_SAFT!$A$2:$Y$13;Parameters_PC_SAFT!$A$14:$F$59;A$1:Z$1; A2:G2)"
 
 try:
     _excelgui = xlo.ExcelGUI(ribbon=r'''
@@ -181,7 +186,6 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     #kij1=np.zeros((nc,nc))
     #kij1[np.triu_indices(nc,k=1)]=
     kij1=np.char.replace(kij[1:,2].astype(str),",",".").astype(float)
-    kijAB=None
     fractiontype=inputs[0,0]
     xi=inputs[:,1:1+nc].astype(float).flatten()
     T=float(inputs[0,nc+2])
@@ -215,19 +219,22 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     def generate(var):
         return (val for val in var)
 
+    if fractiontype=="w": Mi=Mw
+    if fractiontype=="x": Mi=None
 
     for entry in header[0]:
         if "Density" in entry:
             if fractiontype=="x":
                 results=add_entry(results,rho0*(xi*Mw).sum()/1000)
             elif fractiontype=="w":
-                results=add_entry(results,rho0/(xi/Mw).sum()/1000)
+                results=add_entry(results,rho0)
         elif "gamma" in entry:
-            lngammai=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,kij,kijAB).flatten()) if 'lngammai' not in vars() else lngammai
+
+            lngammai=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()-np.log(xi)) if 'lngammai' not in vars() else lngammai
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lngammai.send(None))
         elif "activity" in entry:
-            lnactivity=generate(np.log(xi)+SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,kij,kijAB).flatten()) if 'lnactivity' not in vars() else lnactivity
+            lnactivity=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'lnactivity' not in vars() else lnactivity
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lnactivity.send(None))
         elif "Mass fraction" in entry:
@@ -243,7 +250,9 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
                 fracx=generate(xi*Mw/(xi*Mw).sum()) if 'fracx' not in vars() else fracx
             results=add_entry(results,fracx.send(None))
         elif "di" in entry:
-            pass
+            THFaktor=generate(DlnaDlnx(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'THFaktor' not in vars() else THFaktor
+            #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
+            results=add_entry(results,THFaktor.send(None))
         elif "M [" in entry:
             if fractiontype=="x":
                 results=add_entry(results,(xi*Mw).sum())

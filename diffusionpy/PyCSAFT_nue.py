@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 @njit(['Tuple((float64, float64[:], float64))(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])',
-        'Tuple((complex128, complex128[:], complex128))(float64,float64,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])'],cache=True)
+        'Tuple((complex128, complex128[:], complex128))(float64,complex128,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])'],cache=True)
 def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     def npaddouter(a): 
         return a.reshape(len(a),1)+a
@@ -195,14 +195,14 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
-    eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol.real/(10.**10)**3*NA
+    eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
     lngammaid=np.log(vpfrac)+1-vpfrac
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
     _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
     lngammares=mures-arespures
     lngammap=vpure/vmol*(Z1-1)
-    return lngammaid+lngammares-lngammap+np.log(xi)
+    return lngammaid+lngammares-lngammap
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
@@ -223,7 +223,7 @@ def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]
         #xi_=wi_/Mw/(wi_/Mw).sum()
         out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
         df[i] = out.imag/h
-    return df*xi
+    return df*xi+np.eye(nc)
 
 
 T=298.15
