@@ -87,7 +87,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
         nonvolatiles=comp[np.where(~volatile)[0]] if not allflux else comp[-1,None]
         w0_nonvolatiles=w0[nonvolatiles]/np.sum(w0[nonvolatiles])
         THij = Gammai[volatiles,:,:][:,volatiles,:]
-        massbalancecorrection=np.stack([np.sum((Gammai[nonvolatiles,:,:][:,volatiles,:])*w0_nonvolatiles.reshape((nc-nTH,1,1)),axis=0)]*nTH)
+        massbalancecorrection=np.stack([np.sum((Gammai[volatiles,:,:][:,nonvolatiles,:])*w0_nonvolatiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
         THij -= massbalancecorrection
         for i in range(nTH):
             for j in range(nTH):
@@ -253,63 +253,79 @@ def Diffusion1D(t,L0,Ds,ws0,ws8):
 if __name__=="__main__":
     nt=100
     t=np.linspace(0,500,nt)*60
+    # nc=2
+    # nd=(nc-1)*nc//2
+
+    # Dvec=np.asarray([1E-13])
+    # #Dvec=np.asarray([1E-10,2.3E-10,3E-14])
+    # #np.fill_diagonal(D,np.ones(nc)*1E-30)
+    # L=0.0002
+    # wi0=np.asarray([0.01,0.99])
+    # wi8=np.asarray([0.3,0.7])
+    # Mi=np.asarray([18.015,25700])
+    # volatile=np.asarray([True,False])
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
+    # from .PyCSAFT_nue import DlnaDlnx,vpure,SAFTSAC
+    # # from numba import config
+    # # config.DISABLE_JIT = True
+    # T=298.15
+    # p=1E5
+    # npoint=12000
+    # mi=np.asarray([1.20469,1045.6])
+    # sigi=np.asarray([2.797059952,2.71])
+    # ui=np.asarray([353.95,205.599])
+    # epsAiBi=np.asarray([2425.67,0.])
+    # kapi=np.asarray([0.04509,0.02])
+    # N=np.asarray([1.,231.])
+    # vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N,Mi)
+    # kij=D_Matrix(np.asarray([-0.148]),nc)
+    # for i in range(10):
+    #     plt.plot(wt[:,0])
+    #     Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
+    #     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
+    # lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)])
+    # Gammai2=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
+    # THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))
+    # THFaktor1ave=np.average(Gammai1[0,0,:])
+    # wtid=Diffusion_MS(t,L,Dvec*THFaktor1ave,wi0,wi8,Mi,volatile)
+    # plt.plot(wtid[:,0],'kx')
+
+    # plt.show()
+
+
     nc=3
     nd=(nc-1)*nc//2
 
-
-
-    Dvec=np.asarray([4E-11,9E-11,1.7E-11])
+    Dvec=np.asarray([1E-13,1E-13,1E-10])
     #Dvec=np.asarray([1E-10,2.3E-10,3E-14])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
     L=0.0002
-    wi0=np.asarray([0.01,0.495,0.495])
-    wi8=np.asarray([0.9,0.05,0.05])
-    Mi=np.asarray([18.015,357.57,65000])
-
-    volatile=np.asarray([True,False,False])
-
-
-    wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,True)
-
-
-    from PyCSAFT_nue import DlnaDlnx,vpure 
-
+    wi0=np.asarray([0.01,0.485,0.485])
+    wi8=np.asarray([0.1,0.45,0.45])
+    Mi=np.asarray([18.015,25700,357.79])
+    volatile=np.asarray([True,False,True])
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
+    from .PyCSAFT_nue import DlnaDlnx,vpure,SAFTSAC
     T=298.15
     p=1E5
     npoint=12000
-    mi=np.asarray([1.20469,1045.6])
-    sigi=np.asarray([2.797059952,2.71])
-    ui=np.asarray([353.95,205.599])
-    epsAiBi=np.asarray([2425.67,0.])
-    kapi=np.asarray([0.04509,0.02])
-    N=np.asarray([1.,231.])
+    mi=np.asarray([1.20469,1045.6,14.283])
+    sigi=np.asarray([2.797059952,2.71,3.535])
+    ui=np.asarray([353.95,205.599,262.791])
+    epsAiBi=np.asarray([2425.67,0.,886.4])
+    kapi=np.asarray([0.04509,0.02,0.02])
+    N=np.asarray([1.,231.,3.])
     vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
-
-    kij=D_Matrix(np.asarray([-0.146]),nc)
-    DlnaDlnx(T,vpures,wt,mi,sigi,ui,epsAiBi,kapi,N,Mi,kij,None)
-
-
-    import matplotlib.pyplot as plt
-    fig,ax=plt.subplots()
-    fig1,ax1=plt.subplots()
-    fig2,ax2=plt.subplots()
-    fig3,ax3=plt.subplots()
-    ax.plot(t/60,wt[:,0])
-    ax.plot(t/60,wt[:,1])
-    ax.plot(t/60,wt[:,2])
-    [ax1.plot(zvec*1E6,wtz[i*10,0,:]) for i,val in enumerate(t[::10])]
-    [ax2.plot(zvec*1E6,wtz[i*10,1,:]) for i,val in enumerate(t[::10])]
-    [ax3.plot(zvec*1E6,wtz[i*10,2,:]) for i,val in enumerate(t[::10])]
-    ax.set_xlabel("t/min")
-    ax.set_ylabel("wi/-")
-    ax.legend(["w1","w2","w3"])
-    ax1.set_xlabel("z/m")
-    ax1.set_ylabel("ww/-")
-    ax2.set_xlabel("z/m")
-    ax2.set_ylabel("wapi/-")
-    ax3.set_xlabel("z/m")
-    ax3.set_ylabel("wpol/-")
-    #ax1.legend(["w1","w2","w3"])
+    kij=D_Matrix(np.asarray([-0.148,0.,0.]),nc)
+    for i in range(10):
+        plt.plot(wt[:,0])
+        Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
+        wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
+    lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)])
+    THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))
+    THFaktor1ave=np.average(THFaktor1)
+    print(THFaktor1ave)
+    wtid=Diffusion_MS(t,L,Dvec*THFaktor1ave,wi0,wi8,Mi,volatile)
+    plt.plot(wt[:,0],'kx')
 
     plt.show()
-

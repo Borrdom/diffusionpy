@@ -1,31 +1,34 @@
 import numpy as np
 from numba import njit
-@njit(cache=True)
-def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+@njit(['Tuple((float64, float64[:], float64))(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])',
+        'Tuple((complex128, complex128[:], complex128))(float64,float64,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])'],cache=True)
+def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     def npaddouter(a): 
         return a.reshape(len(a),1)+a
-    def wertheimiter(fun,x,p1,p2,p3,tol=1E-8,iter=50):
+    def wertheimiter(fun,x,p1,p2,p3,p4):
+        tol=1E-8
+        iter=50
         n=len(x)
-        f=fun(x,p1,p2,p3)
+        f=fun(x,p1,p2,p3,p4)
         h = tol
-        J=np.ones((n,n)).astype(x.dtype)
+        J=np.ones((n,n)).astype(p1.dtype)
         for i in range(n):
             dx = x*0
             dx[i] = h
-            J[:,i] = (fun(x + dx,p1,p2,p3)-f)/h
+            J[:,i] = (fun(x + dx,p1,p2,p3,p4)-f)/h
         for i in range(iter):
             if np.linalg.norm(f,2)<tol:
                 return x 
             s=np.linalg.solve(J+np.eye(n)*tol,-1.*f)
-            ff=fun(x+s,p1,p2,p3)
+            ff=fun(x+s,p1,p2,p3,p4)
             lamb=1.
             for j in range(iter):
                 if np.linalg.norm(ff,2)*(1.-lamb*1E-1)<np.linalg.norm(f,2): break 
                 lamb*=1./4.
                 s*=lamb 
-                ff=fun(x+s,p1,p2,p3) 
+                ff=fun(x+s,p1,p2,p3,p4) 
             x+=s
-            df=fun(x,p1,p2,p3)-f
+            df=fun(x,p1,p2,p3,p4)-f
             J+=np.outer((df-np.dot(J,s)),s)/np.dot(s,s)
             f+=df
         return x
@@ -49,14 +52,11 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     b0[:,6]=np.asarray([-355.60235612,-165.20769346,-29.666905585])
     ncomp=len(mi)
     ntype=2
-    # if Molar Mass is supplied, then weight fractions are used 
-    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
 
 
-    #Initializekij
-    kij=np.zeros((ncomp,ncomp)) if kij is None else kij
-    kijAB=np.zeros((ncomp,ncomp)) if kijAB is None else kijAB
-
+    #Initializeki
+    # for i,j,k in zip(*np.triu_indices(ncomp,k=1),range(ncomp)): kijmat[i,j]=kij[k]
+    # kijABmat+=kijABmat.T-np.diag(kijABmat)
     #Mixing rules
     mibar=np.sum(xi*mi)
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
@@ -93,10 +93,11 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     # Association Contribution
     deltAiBj=gij*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
     rhoi=rho*xi
-    def XAi_eq(XAi,rhoi,N,deltAiBj): return XAi-((1+np.sum(rhoi*XAi*N*deltAiBj.T,axis=1))**-1)
-    XAiself=((-1.+np.sqrt(1.+4.*rho*np.diag(deltAiBj)))/(2.*rho*np.diag(deltAiBj)))
-    XAiself[np.isnan(XAiself)]=1.
-    XAi=wertheimiter(XAi_eq,XAiself.astype(xi.dtype),rhoi,N,deltAiBj)
+    def XAi_eq(XAi,xi,rho,N,deltAiBj): return XAi-((1+np.sum(xi*rho*XAi*N*deltAiBj.T,axis=1))**-1)
+    deltAiBi=np.fmax(np.diag(deltAiBj),1E-300)
+    XAiself=((-N+np.sqrt(N**2+4.*N*rho*deltAiBi))/(2.*rho*deltAiBi))
+   #XAiself[np.isnan(XAiself)]=1.
+    XAi=wertheimiter(XAi_eq,XAiself.astype(xi.dtype),xi,rho,N,deltAiBj)
     fassoc=np.sum((np.log(XAi)-1./2.*XAi+1./2.)*N*ntype*xi)#q=np.sum((np.log(XAi)-XAi+1.)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBj*np.outer(N,N)*np.outer(xi,xi)*ntype)
     fres=fhc+fdisp+fassoc
     #_______________________dadx__________________________________
@@ -147,37 +148,37 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
     return fres,mures,Z
     
 
-@njit(cache=True)
-def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
-    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+#@njit(cache=True)
+def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
+    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
         kB = 1.380649e-23
         di=sigi*(1.-0.12*np.exp(-3*ui/T))
         rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
         rhobar=rho*(10.**10)**3
         Zp=p/(rhobar*kB*T)
-        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
+        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
         return (Zp-Z1.real)
-    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,tol=1E-8,iter=50):
-        f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)#.reshape(n)
+    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,tol=1E-8,iter=50):
+        f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)#.reshape(n)
         h = tol
         dx = h
-        J= (fun(pp,p0,x+dx,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)-f)/h
+        J= (fun(pp,p0,x+dx,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f)/h
         for i in range(iter):
             if np.abs(f)<tol:
                 return x 
             s=-1.*f/J
             x+=s
-            df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10)-f
+            df=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)-f
             J+=(df-J*s)/s
             f+=df
         return x
     eta0=0.45
-    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
+    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
 
 def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     etapures=[]
     for i in range(len(mi)):
-        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]))
+        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),np.asarray([[0.]]),np.asarray([[0.]]))
         etapures.append(x)
     etapures=np.asarray(etapures)
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
@@ -185,61 +186,49 @@ def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
     vmol=np.pi/6/etapures*mi*di**3/(10.**10)**3*NA
     return vmol
 
-@njit(cache=True)
-def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+#@njit(cache=True)
+def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
     NA = 6.0221407e23
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
+    if Mw is not None: xi=xi/Mw/np.sum(xi.real/Mw)
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
-    eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
+    eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol.real/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
     lngammaid=np.log(vpfrac)+1-vpfrac
-    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]))[0] for i,val in enumerate(etapure)])
-    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
+    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
+    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
     lngammares=mures-arespures
     lngammap=vpure/vmol*(Z1-1)
     return lngammaid+lngammares-lngammap+np.log(xi)
 
 #@njit(cache=True)
-def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
+def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
+    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
     etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def THFaktor(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None,idx=-1):
+def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]]),idx=None):
     nc = len(xi)
     h = 1E-26
     df = np.zeros([nc, nc])
-    #Mw=np.ones_like(xi) if Mw is None else Mw
-    #wi=xi*Mw/(xi*Mw).sum()
     for i in range(nc):
         dx = np.zeros(nc, dtype = 'complex128')
         dx[i] = h * 1j
-        dx[idx] = - h * 1j  #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
+        if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx
         #xi_=wi_/Mw/(wi_/Mw).sum()
         out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
         df[i] = out.imag/h
-    return df.T*xi
-
-def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=None,kijAB=None):
-    nc = len(xi)
-    h = 1E-26
-    df = np.zeros([nc, nc])
-    for i in range(nc):
-        dx = np.zeros(nc, dtype = 'complex128')
-        dx[i] = h * 1j
-        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
-        df[i] = out.imag/h
-    return df.T*xi
+    return df*xi
 
 
-#Test call, so all functions are compiled directly when it is imported
 T=298.15
 p=1E5
-npoint=11
+npoint=2
 #Water
 #XAiself =0.16 und 0.6
 mi=np.asarray([1.20469,2.38269789])
@@ -253,4 +242,4 @@ x2=1-x1
 xi=np.vstack((x1,x2))
 vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
 lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
-Gammai=np.asarray([THFaktor(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
+Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
