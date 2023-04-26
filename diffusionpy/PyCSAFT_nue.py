@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+from numba import njit,config
 @njit(['Tuple((float64, float64[:], float64))(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])',
         'Tuple((complex128, complex128[:], complex128))(float64,complex128,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])'],cache=True)
 def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
@@ -191,7 +191,8 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),
     NA = 6.0221407e23
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
-    if Mw is not None: xi=xi/Mw/np.sum(xi.real/Mw)
+    wi=xi
+    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
     di=sigi*(1.-0.12*np.exp(-3*ui/T))
@@ -202,7 +203,7 @@ def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),
     _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
     lngammares=mures-arespures
     lngammap=vpure/vmol*(Z1-1)
-    return lngammaid+lngammares-lngammap
+    return lngammaid+lngammares-lngammap+np.log(xi/wi)
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):

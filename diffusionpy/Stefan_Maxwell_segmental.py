@@ -268,8 +268,8 @@ if __name__=="__main__":
     # volatile=np.asarray([True,False])
     # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
     # from .PyCSAFT_nue import DlnaDlnx,vpure,SAFTSAC
-    # # from numba import config
-    # # config.DISABLE_JIT = True
+    # from numba import config
+    # config.DISABLE_JIT = True
     # T=298.15
     # p=1E5
     # npoint=12000
@@ -279,18 +279,23 @@ if __name__=="__main__":
     # epsAiBi=np.asarray([2425.67,0.])
     # kapi=np.asarray([0.04509,0.02])
     # N=np.asarray([1.,231.])
-    # vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N,Mi)
+    # vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
     # kij=D_Matrix(np.asarray([-0.148]),nc)
-    # for i in range(10):
-    #     plt.plot(wt[:,0])
+    # for i in range(1):
+    #     #plt.plot(wt[:,0])
     #     Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
     #     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
-    # lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)])
-    # Gammai2=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
-    # THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))
-    # THFaktor1ave=np.average(Gammai1[0,0,:])
+    # ww=np.linspace(0,1,nt)
+    # wt=np.stack((ww,1-ww)).T
+
+
+    # Gammai2=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij,idx=-1) for i in range(nt)]).T
+    # lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij)[0] for i in range(nt)])
+    # plt.plot(ww,Gammai2[0,0,:])
+
+    # THFaktor1ave=np.average(Gammai2[0,0,:])
     # wtid=Diffusion_MS(t,L,Dvec*THFaktor1ave,wi0,wi8,Mi,volatile)
-    # plt.plot(wtid[:,0],'kx')
+    # #plt.plot(wtid[:,0],'kx')
 
     # plt.show()
 
@@ -298,7 +303,7 @@ if __name__=="__main__":
     nc=3
     nd=(nc-1)*nc//2
 
-    Dvec=np.asarray([1E-13,1E-13,1E-14])
+    Dvec=np.asarray([1E-13,1E-13,1E-16])
     #Dvec=np.asarray([1E-10,2.3E-10,3E-14])
     #np.fill_diagonal(D,np.ones(nc)*1E-30)
     L=0.0002
@@ -324,11 +329,10 @@ if __name__=="__main__":
         Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)]).T
         #Gammai=np.stack([np.eye(nc)]*nt).T#*0.0001+Gammai*0.99999
         wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
-    lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij) for i in range(nt)])
-    THFaktor1=np.gradient(lngammai[:,0],np.log(wt[:,0]))+1
-    THFaktor1ave=np.average(THFaktor1)
+    Gammai2=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij,idx=-1) for i in range(nt)]).T
+    THFaktor1ave=np.average(Gammai2[0,0,:])#np.asarray([np.average(Gammai2[0,0,:]),np.average(Gammai2[0,1,:]),np.average(Gammai2[1,1,:])])
     print(THFaktor1ave)
     wtid=Diffusion_MS(t,L,Dvec*THFaktor1ave,wi0,wi8,Mi,volatile)
-    plt.plot(wt[:,0],'kx')
+    plt.plot(wtid[:,0],'kx')
 
     plt.show()
