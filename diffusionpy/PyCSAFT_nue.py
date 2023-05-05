@@ -1,7 +1,25 @@
 import numpy as np
 from numba import njit,config
-@njit(['Tuple((float64, float64[:], float64))(float64,float64,float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])',
-        'Tuple((complex128, complex128[:], complex128))(float64,complex128,complex128[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[::1],float64[:,:],float64[:,:])'],cache=True)
+# config.DISABLE_JIT=True
+# import os
+# os.environ['NUMBA_DEBUG_CACHE'] = "1"
+
+# def logging_jit(func):
+    
+#     def inner(*args, **kwargs):
+#         origsigs = set(func.signatures)
+#         result = func(*args, **kwargs)
+#         newsigs = set(func.signatures)
+#         if newsigs != origsigs:
+#             new = (newsigs ^ origsigs).pop()
+#              # PUT YOUR LOGGER HERE!
+#             print("Numba compiled for signature: {}".format(new))
+#         return result
+#     return inner
+
+# @logging_jit
+@njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+        'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     def npaddouter(a): 
         return a.reshape(len(a),1)+a
@@ -217,7 +235,7 @@ def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]
     h = 1E-26
     df = np.zeros([nc, nc])
     for i in range(nc):
-        dx = np.zeros(nc, dtype = 'complex128')
+        dx = np.zeros(nc, dtype = 'c16')
         dx[i] = h * 1j
         if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx

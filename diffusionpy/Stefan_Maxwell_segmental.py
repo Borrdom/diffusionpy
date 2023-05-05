@@ -121,8 +121,8 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
         
     GammaiT=GammaiT.T
     for i in range(nc):
-        #dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i,i] # here it would be for every component
-        dlnwi[i,:]=cs.sum1(cs.diff(cs.log(wi),1,1)*GammaiT[i,:].T)# here it would be for every component
+        dlnwi[i,:]=cs.diff(cs.log(wi[i,:]))*GammaiT[i,i] # here it would be for every component
+        #dlnwi[i,:]=cs.sum1(cs.diff(cs.log(wi),1,1)*GammaiT[i,:].T)# here it would be for every component
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
     for z in range(nz):
@@ -155,7 +155,7 @@ def Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output=False,Gammai=None,swelli
 
     drhovdt=drhoidt[isvolatile,:]
     ode=cs.reshape(drhovdt,(np.multiply(*drhovdt.shape),1))
-    
+    dhrovdt_fun=cs.Function("drhovdt",[x],[ode])
     xinit=cs.reshape(rhovinit,(np.multiply(*rhovinit.shape),1))
 
 
@@ -373,13 +373,17 @@ if __name__=="__main__":
     t=np.linspace(0,texp[-1],nt)
     volatile=np.asarray([True,True,False])
     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile)
+    plt.plot(t,wt[:,0])
+    plt.plot(t,wt[:,1])
+    plt.plot(t,wt[:,2])
     kij=D_Matrix(np.asarray([0.029,-0.05855362,0.027776682]),nc)
 
-    for i in range(10):
-        plt.plot(wt[:,0])
+    for i in range(5):
         Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mw,kij) for i in range(nt)]).T
         Gammai2=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,idx=-1) for i in range(nt)]).T #leads to the same
         #Gammai=(Gammai*i/5+np.stack([np.eye(nc)]*nt).T*(5-i)/5)
         wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,volatile,Gammai=Gammai)
-
+    plt.plot(t,wt[:,0])
+    plt.plot(t,wt[:,1])
+    plt.plot(t,wt[:,2])
     plt.show()
