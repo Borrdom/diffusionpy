@@ -10,7 +10,7 @@ from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
 #from epcsaftpy import pcsaft,component,mixture
-from .PyCSAFT_nue import SAFTSAC,vpure,DlnaDlnx
+from .PyCSAFT_nue import lngi,vpure,dlnai_dlnxi
 # mix=component()+component()
 # eos=pcsaft(mix)
 
@@ -230,11 +230,11 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
                 results=add_entry(results,rho0)
         elif "gamma" in entry:
 
-            lngammai=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()-np.log(xi)) if 'lngammai' not in vars() else lngammai
+            lngammai=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()-np.log(xi)) if 'lngammai' not in vars() else lngammai
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lngammai.send(None))
         elif "activity" in entry:
-            lnactivity=generate(SAFTSAC(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'lnactivity' not in vars() else lnactivity
+            lnactivity=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'lnactivity' not in vars() else lnactivity
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lnactivity.send(None))
         elif "Mass fraction" in entry:
@@ -250,7 +250,7 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
                 fracx=generate(xi*Mw/(xi*Mw).sum()) if 'fracx' not in vars() else fracx
             results=add_entry(results,fracx.send(None))
         elif "di" in entry:
-            THFaktor=generate(DlnaDlnx(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'THFaktor' not in vars() else THFaktor
+            THFaktor=generate(dlnai_dlnxi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mw=Mi,kij=kij).flatten()) if 'THFaktor' not in vars() else THFaktor
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,THFaktor.send(None))
         elif "M [" in entry:

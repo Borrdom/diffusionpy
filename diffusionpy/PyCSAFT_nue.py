@@ -20,10 +20,10 @@ from numba import njit,config
 # @logging_jit
 @njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
         'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
-def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
-    def npaddouter(a): 
+def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
+    def np_add_outer(a): 
         return a.reshape(len(a),1)+a
-    def wertheimiter(fun,x,p1,p2,p3,p4):
+    def wertheim_iter(fun,x,p1,p2,p3,p4):
         tol=1E-8
         iter=50
         n=len(x)
@@ -50,10 +50,10 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
             J+=np.outer((df-np.dot(J,s)),s)/np.dot(s,s)
             f+=df
         return x
-    npolyI=7
-    npolycoef=3
-    a0=np.ones((npolycoef,npolyI))
-    b0=np.ones((npolycoef,npolyI))
+    npoly_B=7
+    npoly_A=3
+    a0=np.ones((npoly_A,npoly_B))
+    b0=np.ones((npoly_A,npoly_B))
     a0[:,0]=np.asarray([0.9105631445,-0.3084016918,-0.0906148351])
     a0[:,1]=np.asarray([0.6361281449,0.1860531159,0.4527842806])
     a0[:,2]=np.asarray([2.6861347891,-2.5030047259,0.5962700728])
@@ -74,16 +74,16 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
 
     #Initializeki
     # for i,j,k in zip(*np.triu_indices(ncomp,k=1),range(ncomp)): kijmat[i,j]=kij[k]
-    # kijABmat+=kijABmat.T-np.diag(kijABmat)
+    # kijAmat+=kijAmat.T-np.diag(kijAmat)
     #Mixing rules
     mibar=np.sum(xi*mi)
-    di=sigi*(1.-0.12*np.exp(-3*ui/T))
+    di=si*(1.-0.12*np.exp(-3*ui/T))
     rho=6/np.pi*eta*(np.sum(mi*xi.real*di**3))**-1 
-    dij=npaddouter(di)
-    sigij=npaddouter(sigi)/2.
+    dij=np_add_outer(di)
+    sij=np_add_outer(si)/2.
     uij=np.outer(ui,ui)**0.5*(1.-kij)
-    kapij=np.outer(kapi,kapi)**0.5*(np.outer(sigi,sigi)**0.5/sigij)**3
-    epsAiBj=npaddouter(epsAiBi)/2.*(1.-kijAB)
+    kAij=np.outer(kAi,kAi)**0.5*(np.outer(si,si)**0.5/sij)**3
+    eAij=np_add_outer(eAi)/2.*(1.-kijA)
 
     # Hard-Chain Contribution
     z3=np.pi/6.*rho*np.sum(mi*xi*di**3)
@@ -103,20 +103,20 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     I1=a[0]+a[1]*z3+a[2]*z3**2+a[3]*z3**3+a[4]*z3**4+a[5]*z3**5+a[6]*z3**6
     I2=b[0]+b[1]*z3+b[2]*z3**2+b[3]*z3**3+b[4]*z3**4+b[5]*z3**5+b[6]*z3**6
     C1=(1+mibar*(8.*z3-2.*z3**2)/(1.-z3)**4+(1-mibar)*(20.*z3-27.*(z3**2)+12.*(z3**3)-2.*z3**4)/((1-z3)*(2.-z3))**2)**-1
-    m2es3mat=np.outer(xi,xi)*np.outer(mi,mi)*(uij/T)*sigij**3
+    m2es3mat=np.outer(xi,xi)*np.outer(mi,mi)*(uij/T)*sij**3
     m2e2s3mat=m2es3mat*(uij/T)
     m2es3,m2e2s3=np.sum(m2es3mat),np.sum(m2e2s3mat)
     fdisp=-2*np.pi*rho*I1*m2es3-np.pi*rho*mibar*C1*I2*m2e2s3
     
     # Association Contribution
-    deltAiBj=gij*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
+    deltAij=gij*kAij*sij**3*(np.exp(eAij/T)-1.)
     rhoi=rho*xi
-    def XAi_eq(XAi,xi,rho,N,deltAiBj): return XAi-((1+np.sum(xi*rho*XAi*N*deltAiBj.T,axis=1))**-1)
-    deltAiBi=np.fmax(np.diag(deltAiBj),1E-300)
-    XAiself=((-N+np.sqrt(N**2+4.*N*rho*deltAiBi))/(2.*rho*deltAiBi))
-   #XAiself[np.isnan(XAiself)]=1.
-    XAi=wertheimiter(XAi_eq,XAiself.astype(xi.dtype),xi,rho,N,deltAiBj)
-    fassoc=np.sum((np.log(XAi)-1./2.*XAi+1./2.)*N*ntype*xi)#q=np.sum((np.log(XAi)-XAi+1.)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBj*np.outer(N,N)*np.outer(xi,xi)*ntype)
+    def XAi_eq(XAi,xi,rho,NAi,deltAij): return XAi-((1+np.sum(xi*rho*XAi*NAi*deltAij.T,axis=1))**-1)
+    deltAi=np.fmax(np.diag(deltAij),1E-300)
+    XAi0=((-NAi+np.sqrt(NAi**2+4.*NAi*rho*deltAi))/(2.*rho*deltAi))
+   #XAi0[np.isnan(XAi0)]=1.
+    XAi=wertheim_iter(XAi_eq,XAi0.astype(xi.dtype),xi,rho,NAi,deltAij)
+    fassoc=np.sum((np.log(XAi)-1./2.*XAi+1./2.)*NAi*ntype*xi)#q=np.sum((np.log(XAi)-XAi+1.)*NAi*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAij*np.outer(NAi,NAi)*np.outer(xi,xi)*ntype)
     fres=fhc+fdisp+fassoc
     #_______________________dadx__________________________________
     # Hard Chain
@@ -130,8 +130,8 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     fhcx=mi*fhs+mibar*fhsx-np.sum(xi*(mi-1)*gii**-1*giix.T,axis=1)-(mi-1)*np.log(gii) 
     
     # Dispersion Contribution
-    m2es3x=2.*mi*np.sum(xi*mi*uij/T*sigij**3,axis=1)
-    m2e2s3x=2.*mi*np.sum(xi*mi*(uij/T)**2*sigij**3,axis=1)
+    m2es3x=2.*mi*np.sum(xi*mi*uij/T*sij**3,axis=1)
+    m2e2s3x=2.*mi*np.sum(xi*mi*(uij/T)**2*sij**3,axis=1)
     C2=-C1**2*(mibar*(-4.*z3**2+20.*z3+8.)/(1.-z3)**5+(1-mibar)*(2.*z3**3+12.*z3**2-48.*z3+40.)/((1.-z3)*(2.-z3))**3)
     C1x=C2*z3x-C1**2*(mi*(8.*z3-2.*z3**2)/(1.-z3)**4-mi*(20.*z3-27.*(z3**2)+12.*(z3**3)-2.*z3**4)/((1.-z3)*(2.-z3))**2)
     ax=1./mibar**2*a0[1,:]+1./mibar**2*(3.-4./mibar)*a0[2,:]
@@ -141,8 +141,8 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     fdispx=(-2.*np.pi*rho*(I1x*m2es3+I1*m2es3x)-np.pi*rho*((mi*C1*I2+mibar*C1x*I2+mibar*C1*I2x)*m2e2s3+mibar*C1*I2*m2e2s3x))
     
     # Association Contribution
-    deltAiBjx=gijx*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
-    qx=np.log(XAi)*N*ntype-rho/2*np.sum(np.sum(np.outer(XAi,XAi)*deltAiBjx*np.outer(N,N)*np.outer(xi,xi)*ntype,axis=2),axis=1)
+    deltAijx=gijx*kAij*sij**3*(np.exp(eAij/T)-1.)
+    qx=np.log(XAi)*NAi*ntype-rho/2*np.sum(np.sum(np.outer(XAi,XAi)*deltAijx*np.outer(NAi,NAi)*np.outer(xi,xi)*ntype,axis=2),axis=1)
     fresx=fhcx+fdispx+qx
 
     #_______________________dadrho__________________________________
@@ -158,8 +158,8 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     Zdisp=-2*np.pi*rho*(I1z*m2es3)-np.pi*rho*mibar*((C1*I2z+C2*z3*I2)*m2e2s3)
 
     # Association Contribution
-    deltAiBjz=gijz*kapij*sigij**3*(np.exp(epsAiBj/T)-1.)
-    Zassoc=-1./2.*np.sum((1.-XAi)*N*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAiBjz*np.outer(N,N)*np.outer(xi,xi)*ntype)
+    deltAijz=gijz*kAij*sij**3*(np.exp(eAij/T)-1.)
+    Zassoc=-1./2.*np.sum((1.-XAi)*NAi*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAijz*np.outer(NAi,NAi)*np.outer(xi,xi)*ntype)
     Z=1+Zhc+Zdisp+Zassoc
     #_______________________mures__________________________________
     mures = fres + (Z-1.) + fresx - np.dot(xi, fresx)
@@ -167,16 +167,16 @@ def ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB):
     
 
 #@njit(cache=True)
-def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
-    def Z_obj(p,T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
+def eta_iter(p,T,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
+    def Z_obj(p,T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
         kB = 1.380649e-23
-        di=sigi*(1.-0.12*np.exp(-3*ui/T))
+        di=si*(1.-0.12*np.exp(-3*ui/T))
         rho=6/np.pi*eta*(np.sum(mi*xi*di**3))**-1
         rhobar=rho*(10.**10)**3
         Zp=p/(rhobar*kB*T)
-        _,_,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+        _,_,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
         return (Zp-Z1.real)
-    def etaroots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,tol=1E-8,iter=50):
+    def eta_roots(fun,pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9,tol=1E-8,iter=50):
         f=fun(pp,p0,x,p1,p2,p3,p4,p5,p6,p7,p8,p9)#.reshape(n)
         h = tol
         dx = h
@@ -191,46 +191,49 @@ def etaiter(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,kij=np.asarray([[0.]]),kijAB=np.asa
             f+=df
         return x
     eta0=0.45
-    return etaroots(Z_obj,p,T,eta0,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
+    return eta_roots(Z_obj,p,T,eta0,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
 
-def vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N):
+def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     etapures=[]
     for i in range(len(mi)):
-        x=etaiter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),np.asarray([[0.]]),np.asarray([[0.]]))
+        x=eta_iter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))
         etapures.append(x)
     etapures=np.asarray(etapures)
-    di=sigi*(1.-0.12*np.exp(-3*ui/T))
+    di=si*(1.-0.12*np.exp(-3*ui/T))
     NA = 6.0221407e23
     vmol=np.pi/6/etapures*mi*di**3/(10.**10)**3*NA
     return vmol
 
 #@njit(cache=True)
-def SAFTSAC(T,vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
+def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
     NA = 6.0221407e23
+    xi=np.ascontiguousarray(xi)
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
     wi=xi
     if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
-    di=sigi*(1.-0.12*np.exp(-3*ui/T))
+    di=si*(1.-0.12*np.exp(-3*ui/T))
     eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
-    lngammaid=np.log(vpfrac)+1-vpfrac
-    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([sigi[i]]),np.asarray([ui[i]]),np.asarray([epsAiBi[i]]),np.asarray([kapi[i]]),np.asarray([N[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
-    _,mures,Z1=ares(T,eta,xi,mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)
-    lngammares=mures-arespures
-    lngammap=vpure/vmol*(Z1-1)
-    return lngammaid+lngammares-lngammap+np.log(xi/wi)
+    lngi_id=np.log(vpfrac)+1-vpfrac
+    arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
+    _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
+    lngi_res=mures-arespures
+    lngi_p=vpure/vmol*(Z1-1)
+    return lngi_id+lngi_res-lngi_p+np.log(xi/wi)
 
 #@njit(cache=True)
-def lnphi_TP(p,T,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]])):
+def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+    xi=np.ascontiguousarray(xi)
     if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
-    etamix=np.asarray([etaiter(p,T,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB) for i,val in enumerate(xi[0,:])])
-    lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N,kij,kijAB)[1].flatten() for i,val in enumerate(etamix)])
+    etamix=np.asarray([eta_iter(p,T,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA) for i,val in enumerate(xi[0,:])])
+    lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]),kijAB=np.asarray([[0.]]),idx=None):
+def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
+    xi=np.ascontiguousarray(xi)
     nc = len(xi)
     h = 1E-26
     df = np.zeros([nc, nc])
@@ -240,7 +243,7 @@ def DlnaDlnx(T, vpure,xi,mi,sigi,ui,epsAiBi,kapi,N,Mw=None,kij=np.asarray([[0.]]
         if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx
         #xi_=wi_/Mw/(wi_/Mw).sum()
-        out =  SAFTSAC(T,vpure,xi+dx,mi,sigi,ui,epsAiBi,kapi,N,Mw,kij,kijAB)
+        out =  lngi(T,vpure,xi+dx,mi,si,ui,eAi,kAi,NAi,Mw,kij,kijA)
         df[i] = out.imag/h
     return df*xi+np.eye(nc)
 
@@ -249,16 +252,17 @@ T=298.15
 p=1E5
 npoint=2
 #Water
-#XAiself =0.16 und 0.6
-mi=np.asarray([1.20469,2.38269789])
-sigi=np.asarray([2.797059952,3.1771])
-ui=np.asarray([353.95,198.24])
-epsAiBi=np.asarray([2425.67,2653.4])
-kapi=np.asarray([0.04509,0.032384])
-N=np.asarray([1.,1.])
+#XAi0 =0.16 und 0.6
+
+par={"mi":np.asarray([1.20469,2.38269789]),
+ "si":np.asarray([2.797059952,3.1771]),
+ "ui":np.asarray([353.95,198.24]),
+ "eAi":np.asarray([2425.67,2653.4]),
+ "kAi":np.asarray([0.04509,0.032384]),
+ "NAi":np.asarray([1.,1.])}
 x1=np.linspace(0,1,npoint)
 x2=1-x1
 xi=np.vstack((x1,x2))
-vpures=vpure(p,T,mi,sigi,ui,epsAiBi,kapi,N)
-lngammai=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
-Gammai=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(xi[:,i]),mi,sigi,ui,epsAiBi,kapi,N).flatten() for i,val in enumerate(xi[0,:])])
+vpures=vpure(p,T,**par)
+lngiammai=np.asarray([lngi(T,vpures,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
+Gammai=np.asarray([dlnai_dlnxi(T,vpures,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
