@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
 from numba import njit,config
+import time
 
 @njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:,:], f8[:], f8[:])'],cache=True)
 def drhodt(t,rhov,tint,Gammai,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
@@ -157,7 +158,7 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,swelling=False,taui=None,par={}):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,swelling=False,taui=None,par={}):
     Gammaiave=np.stack([dlnai_dlnxi(T,vpures,wi8*0.5+wi0*0.5,**par)]*nt).T
     wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,Gammai=Gammaiave,swelling=swelling,taui=taui)
     def wt_obj(wt_old):
@@ -194,7 +195,7 @@ if __name__=="__main__":
     "Mw" : np.asarray([32.042,  92.142, 90000.]),
     "kij": kij}
     vpures=vpure(p,T,**par)
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,swelling=False,taui=None,par=par)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,par=par)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])

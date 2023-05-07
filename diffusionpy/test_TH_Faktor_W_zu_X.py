@@ -1,5 +1,5 @@
 import numpy as np
-from diffusionpy import DlnaDlnx,vpure,SAFTSAC,D_Matrix
+from diffusionpy import lngi,vpure,dlnai_dlnxi,D_Matrix
 import matplotlib.pyplot as plt
 nc=3
 Mi=np.asarray([18.015,25700,357.79])
@@ -25,14 +25,14 @@ xp=xt[:,1]
 xa=xt[:,2]
 
 
-Gammaiw=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij=kij) for i in range(npoint)]).T
-lngammaiw=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij=kij)[1] for i in range(npoint)])
+Gammaiw=np.asarray([dlnai_dlnxi(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij=kij) for i in range(npoint)]).T
+lngammaiw=np.asarray([lngi(T,vpures,np.ascontiguousarray(wt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,Mi,kij=kij)[1] for i in range(npoint)])
 Gammaiw_=np.gradient(lngammaiw+np.log(ww),np.log(ww))
 
 Gammaiwkorr=Gammaiw[0,0,:]-Gammaiw[0,1,:]*(1-DL)-Gammaiw[0,2,:]*DL
 
-Gammaix=np.asarray([DlnaDlnx(T,vpures,np.ascontiguousarray(xt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,kij=kij) for i in range(npoint)]).T
-lngammaix=np.asarray([SAFTSAC(T,vpures,np.ascontiguousarray(xt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,kij=kij)[1] for i in range(npoint)])
+Gammaix=np.asarray([dlnai_dlnxi(T,vpures,np.ascontiguousarray(xt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,kij=kij) for i in range(npoint)]).T
+lngammaix=np.asarray([lngi(T,vpures,np.ascontiguousarray(xt[i,:]),mi,sigi,ui,epsAiBi,kapi,N,kij=kij)[1] for i in range(npoint)])
 
 Gammaix_=np.gradient(lngammaix+np.log(xw),np.log(xw))
 

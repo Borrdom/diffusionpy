@@ -1,5 +1,5 @@
 import xloil as xlo
-from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion1D,D_Matrix
+from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
 import numpy as np
@@ -20,10 +20,6 @@ def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,di
 volatile:xlo.Array(bool,dims=1),full_output:bool,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None):   
     return Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output,Gammai,swelling,taui)
 
-@xlo.func
-def Diffusion1D_xloil(t:xlo.Array(float,dims=1),L0:float,Ds:float,ws0:float,ws8:float):
-    return Diffusion1D(t,L0,Ds,ws0,ws8)
-    
 @xlo.func
 def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
     return np.gradient(x,y)
