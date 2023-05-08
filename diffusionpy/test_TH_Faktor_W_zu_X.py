@@ -39,7 +39,32 @@ Gammaix_=np.gradient(lngammaix+np.log(xw),np.log(xw))
 #plt.plot(Gammaiwkorrr,,'kx')
 
 #np.eye(3)-wt[1,:]
-#plt.plot(Gammaiw*np.stack([np.eye(3)]*100)-xt),np.outer(Gammaix,(np.stack([np.eye(3)]*100)-wt)),'kx')
+A1vec=[]
+A2vec=[]
+
+for i in range(npoint):
+    A1=Gammaix[:,:,i]@(np.eye(nc)-xt[i,:]).T
+    A1=(np.eye(nc)-xt[i,:])@Gammaix[:,:,i].T
+    A2=Gammaiw[:,:,i]@(np.eye(nc)-wt[i,:]).T
+    A2=((np.eye(nc)-wt[i,:])@Gammaiw[:,:,i].T)*np.outer(Mi,Mi**-1)
+    A3=(np.eye(nc)-np.outer(xt[i,:]**-1,wt[i,:]))@Gammaiw[:,:,i].T*np.outer(Mi,Mi**-1)
+    #A3vec.append(np.sum(Gammaix[:,:,i].T-A3,0))
+    #A3=np.sum(Gammaix[:,:,i]@(np.zeros((nc,nc))-xt[i,:]).T)
+    #A4=np.sum(Gammaiw[:,:,i]@(np.zeros((nc,nc))-wt[i,:]).T)
+
+    #A1=(Gammaix[:,:,i]@np.eye(nc))@(np.eye(nc)-xt[i,:]).T
+    #A2=(Gammaiw[:,:,i]@np.eye(nc))@(np.eye(nc)-wt[i,:]).T
+
+    # A1=Gammaix[:,:,i]@(np.zeros((nc,nc))-xt[i,:]).T
+    # A2=Gammaiw[:,:,i]@(np.zeros((nc,nc))-wt[i,:]).T
+    # A1=Gammaix[:,:,i]@(np.ones((nc,nc))-xt[i,:]).T
+    # A2=Gammaiw[:,:,i]@(np.ones((nc,nc))-wt[i,:]).T
+    A1vec.append(A1)
+    A2vec.append(A2)
+    #plt.plot(wt[i,:],np.sum(Gammaix[:,:,i].T-A3,1),'kx')
+    plt.plot(A1,A2,'kx')
+
+
 
 #plt.plot(Gammaix_/Gammaiw_,(1-xw)/(1-ww)) #its true
 #plt.plot(Gammaix[0,0,:]/Gammaiw[0,0,:],(1-xw)/(1-ww)*)

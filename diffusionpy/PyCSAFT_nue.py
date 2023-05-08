@@ -205,13 +205,13 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     return vmol
 
 #@njit(cache=True)
-def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
     NA = 6.0221407e23
     xi=np.ascontiguousarray(xi)
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
     wi=xi
-    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
+    if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
     vmol=np.sum(vpure*xi)
     vpfrac=vpure/vmol
     di=si*(1.-0.12*np.exp(-3*ui/T))
@@ -225,14 +225,14 @@ def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.
     return lngi_id+lngi_res-lngi_p+np.log(xi/wi)
 
 #@njit(cache=True)
-def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
     xi=np.ascontiguousarray(xi)
-    if Mw is not None: xi=xi/Mw/np.sum(xi/Mw)
+    if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
     etamix=np.asarray([eta_iter(p,T,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA) for i,val in enumerate(xi[0,:])])
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
+def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
     xi=np.ascontiguousarray(xi)
     nc = len(xi)
     h = 1E-26
@@ -242,8 +242,8 @@ def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mw=None,kij=np.asarray([[0.]]),
         dx[i] = h * 1j
         if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx
-        #xi_=wi_/Mw/(wi_/Mw).sum()
-        out =  lngi(T,vpure,xi+dx,mi,si,ui,eAi,kAi,NAi,Mw,kij,kijA)
+        #xi_=wi_/Mi/(wi_/Mi).sum()
+        out =  lngi(T,vpure,xi+dx,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA)
         df[i] = out.imag/h
     return df*xi+np.eye(nc)
 

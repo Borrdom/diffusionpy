@@ -2,12 +2,13 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
 from numba import njit,config
+from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
 
 @njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:,:], f8[:], f8[:])'],cache=True)
-def drhodt(t,rhov,tint,Gammai,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
+def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
     def averaging(a): return (a[1:]+a[:-1])/2.
-    def BIJ_Matrix(D,wi,volatiles,allflux):
+    def BIJ_Matrix(D,wi,mobiles,allflux):
         nc=wi.shape[0]
         B=np.zeros((nc,nc))
         for i in range(nc):
@@ -21,12 +22,12 @@ def drhodt(t,rhov,tint,Gammai,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelli
                     Dii+=wi[j]/D[i,j]
             if allflux: Dii+=Din
             B[i,i]=Dii
-        return B[volatiles,:][:,volatiles] if not allflux else B[:-1,:-1]  #8E-13
+        return B[mobiles,:][:,mobiles] if not allflux else B[:-1,:-1]  #8E-13
     
     
     rhoi=np.zeros((nc,nz+1))
-    rhoi[volatiles,:]=rhov
-    rhoi[nonvolatiles,:]=rhoiinit[nonvolatiles,:]
+    rhoi[mobiles,:]=rhov
+    rhoi[immobiles,:]=rhoiinit[immobiles,:]
     ji=np.zeros((nc,nz))
     dlnwi=np.zeros((nc,nz))
     wibar=np.zeros((nc,nz))
@@ -44,12 +45,12 @@ def drhodt(t,rhov,tint,Gammai,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelli
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
     for z in range(nz):
-        B=BIJ_Matrix(D,wibar[:,z],volatiles,allflux) 
+        B=BIJ_Matrix(D,wibar[:,z],mobiles,allflux) 
         dmui=(dlnwi[:,z])
         omega=rho/np.sum(rhoibar[:,z])
         di=rho*wibar[:,z]*dmui/ri*omega if swelling else rhoibar[:,z]*dmui/ri
         if not allflux:
-            ji[volatiles,z]=np.linalg.solve(B,di[volatiles])
+            ji[mobiles,z]=np.linalg.solve(B,di[mobiles])
         else:
             ji[:-1,z]=np.linalg.solve(B,di[:-1])
 
@@ -57,11 +58,11 @@ def drhodt(t,rhov,tint,Gammai,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelli
         dji=np.diff(np.hstack((np.asarray([0.]),ji[i,:])))
         djib=np.hstack((dji,np.asarray([0.]))) 
         drhoidt[i,:]=djib
-    if taui[0]!=0.: drhoidt[volatiles,-1]=1./taui*np.exp(-t/taui)*(wi8[volatiles]-wi0[volatiles])*rho
-    drhovdt=drhoidt[volatiles,:]
+    if taui[0]!=0.: drhoidt[mobiles,-1]=1./taui*np.exp(-t/taui)*(wi8[mobiles]-wi0[mobiles])*rho
+    drhovdt=drhoidt[mobiles,:]
     return  drhovdt
 
-def Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,Gammai=None,swelling=False,taui=None):
+def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelling=False,taui=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -73,7 +74,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,Gammai=None,swel
     is the number of components                             /m^2/s
     wi0:    array_like   Mass fractions at t=0               /-
     wi8:    array_like   Mass fraction at t=infinity         /-
-    Mw:    array_like   Molar mass of components nc         /g/mol
+    Mi:    array_like   Molar mass of components nc         /g/mol
     Gammai: array_like estimate for DlnaiDlnx at t          /-
     Returns
     -------
@@ -89,44 +90,44 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,Gammai=None,swel
     dz=L/nz
     D=D_Matrix(Dvec/dz**2,nc)
     zvec=np.linspace(0,L,nz+1)
-    nf=np.sum(volatile)
+    nf=np.sum(mobile)
     nt=len(t)
     rho=1200.
-    refsegment=np.argmin(Mw)
-    ri= Mw/Mw[refsegment]
+    refsegment=np.argmin(Mi)
+    ri= Mi/Mi[refsegment]
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
-    volatiles=np.where(volatile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    nonvolatiles=np.where(~volatile)[0] if not allflux else np.asarray([-1],dtype=np.int64)
+    mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([-1],dtype=np.int64)
     
     #initial conditions
     rhoiinit=np.zeros((nc,nz+1))
     for z in range(nz+1):
         rhoiinit[:,z]=wi0*rho
     rhoiinit[:,-1]=rho*wi8 if taui is None else rho*wi0
-    if taui is None: taui=np.zeros_like(volatiles,dtype=float)
-    rhoiinit[nonvolatiles,-1]=rho*wi8[nonvolatiles]
-    rhovinit=rhoiinit[volatiles,:]
+    if taui is None: taui=np.zeros_like(mobiles,dtype=float)
+    rhoiinit[immobiles,-1]=rho*wi8[immobiles]
+    rhovinit=rhoiinit[mobiles,:]
     xinit=np.reshape(rhovinit,np.multiply(*rhovinit.shape))
     GammaiT=np.asarray([np.eye(nc)]*nt).T
     if Gammai is not None:
         
         Gammai=Gammai.reshape((nc,nc,nt))
-        wi0_nonvolatiles=wi0[nonvolatiles]/np.sum(wi0[nonvolatiles])
-        THij = Gammai[volatiles,:,:][:,volatiles,:]
-        massbalancecorrection=np.stack([np.sum((Gammai[volatiles,:,:][:,nonvolatiles,:])*wi0_nonvolatiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
+        wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
+        THij = Gammai[mobiles,:,:][:,mobiles,:]
+        massbalancecorrection=np.stack([np.sum((Gammai[mobiles,:,:][:,immobiles,:])*wi0_immobiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
         for i in range(nTH):
             for j in range(nTH):
-                    GammaiT[volatiles[i],volatiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
+                    GammaiT[mobiles[i],mobiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
 
-    def wrapdrhodt(t,rhov,tint,GammaiT,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
+    def wrapdrhodt(t,rhov,tint,GammaiT,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
-        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(GammaiT),taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(GammaiT),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
     
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,GammaiT,taui,volatiles,nonvolatiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8),method="Radau",t_eval=t)
+    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,GammaiT,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8),method="Radau",t_eval=t)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
@@ -139,7 +140,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,full_output=False,Gammai=None,swel
     for k in range(nt):
         rhovk=np.reshape(x_sol[:,k],(nTH,nz+1))
         rhoik[k,:,:]=rhoiinit
-        rhoik[k,volatiles,:]=rhovk
+        rhoik[k,mobiles,:]=rhovk
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
@@ -158,13 +159,15 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,swelling=False,taui=None,par={}):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=False,taui=None,T=298.15,vpures=[],par={}):
+    nt=len(t)
+    nc=len(wi0)
     Gammaiave=np.stack([dlnai_dlnxi(T,vpures,wi8*0.5+wi0*0.5,**par)]*nt).T
-    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,Gammai=Gammaiave,swelling=swelling,taui=taui)
+    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammaiave,swelling=swelling,taui=taui)
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
         Gammai=np.asarray([dlnai_dlnxi(T,vpures,wt[i,:],**par) for i in range(nt)]).T
-        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile,Gammai=Gammai,swelling=swelling,taui=taui)).flatten()
+        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammai,swelling=swelling,taui=taui)).flatten()
     return root(wt_obj,wt_old.flatten(),method="df-sane")["x"].reshape((nt,nc))
 
 if __name__=="__main__":
@@ -176,9 +179,9 @@ if __name__=="__main__":
     L=2E-5
     wi0=np.asarray([0.333333333,0.333333333,0.333333333])
     wi8=np.asarray([0.00001,0.127606346,0.872393654])
-    Mw=np.asarray([32.042,92.142,90000.])
-    volatile=np.asarray([True,True,False])
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mw,volatile)
+    Mi=np.asarray([32.042,92.142,90000.])
+    mobile=np.asarray([True,True,False])
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
@@ -192,10 +195,10 @@ if __name__=="__main__":
     "kAi": np.asarray([0.035176, 0., 0.]),
     "eAi": np.asarray([2899.5, 0., 0.]),
     "NAi": np.asarray([1., 0., 1047.]),
-    "Mw" : np.asarray([32.042,  92.142, 90000.]),
+    "Mi" : np.asarray([32.042,  92.142, 90000.]),
     "kij": kij}
     vpures=vpure(p,T,**par)
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mw,volatile,par=par)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,vpures=vpures,par=par)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
