@@ -168,7 +168,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=False,taui=None,T=298.
         wt=wt_old.reshape((nt,nc))
         Gammai=np.asarray([dlnai_dlnxi(T,vpures,wt[i,:],**par) for i in range(nt)]).T
         return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammai,swelling=swelling,taui=taui)).flatten()
-    return root(wt_obj,wt_old.flatten(),method="df-sane")["x"].reshape((nt,nc))
+    return root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-6)["x"].reshape((nt,nc))
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt

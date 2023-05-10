@@ -222,7 +222,9 @@ def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
     lngi_p=vpure/vmol*(Z1-1)
-    return lngi_id+lngi_res-lngi_p+np.log(xi/wi)
+    with np.errstate(divide='ignore',invalid='ignore'):
+        lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
+    return lngi_id+lngi_res-lngi_p+lngi_wx
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
