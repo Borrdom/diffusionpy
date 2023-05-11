@@ -168,6 +168,7 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
 
 #@njit(cache=True)
 def eta_iter(p,T,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
+    xi=np.ascontiguousarray(xi)
     def Z_obj(p,T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
         kB = 1.380649e-23
         di=si*(1.-0.12*np.exp(-3*ui/T))
@@ -205,7 +206,7 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     return vmol
 
 #@njit(cache=True)
-def lngi(T,vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
     NA = 6.0221407e23
     xi=np.ascontiguousarray(xi)
     #vpfracNET=(1-ksw*RH**2)/xi[0]
@@ -234,7 +235,7 @@ def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
+def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
     xi=np.ascontiguousarray(xi)
     nc = len(xi)
     h = 1E-26
@@ -245,7 +246,7 @@ def dlnai_dlnxi(T, vpure,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),
         if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx
         #xi_=wi_/Mi/(wi_/Mi).sum()
-        out =  lngi(T,vpure,xi+dx,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA)
+        out =  lngi(T,xi+dx,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
         df[i] = out.imag/h
     return df*xi+np.eye(nc)
 
@@ -266,5 +267,6 @@ x1=np.linspace(0,1,npoint)
 x2=1-x1
 xi=np.vstack((x1,x2))
 vpures=vpure(p,T,**par)
-lngiammai=np.asarray([lngi(T,vpures,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
-Gammai=np.asarray([dlnai_dlnxi(T,vpures,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
+par["vpure"]=vpures
+lngiammai=np.asarray([lngi(T,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
+Gammai=np.asarray([dlnai_dlnxi(T,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])

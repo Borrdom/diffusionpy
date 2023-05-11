@@ -111,7 +111,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     xinit=np.reshape(rhovinit,np.multiply(*rhovinit.shape))
     GammaiT=np.asarray([np.eye(nc)]*nt).T
     if Gammai is not None:
-        
+        if len(Gammai.shape)<3: Gammai=Gammai.T
         Gammai=Gammai.reshape((nc,nc,nt))
         wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
         THij = Gammai[mobiles,:,:][:,mobiles,:]
@@ -159,14 +159,14 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=False,taui=None,T=298.15,vpures=[],par={}):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=False,taui=None,T=298.15,par={}):
     nt=len(t)
     nc=len(wi0)
-    Gammaiave=np.stack([dlnai_dlnxi(T,vpures,wi8*0.5+wi0*0.5,**par)]*nt).T
+    Gammaiave=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt).T
     wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammaiave,swelling=swelling,taui=taui)
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
-        Gammai=np.asarray([dlnai_dlnxi(T,vpures,wt[i,:],**par) for i in range(nt)]).T
+        Gammai=np.asarray([dlnai_dlnxi(T,wt[i,:],**par) for i in range(nt)]).T
         return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammai,swelling=swelling,taui=taui)).flatten()
     return root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-6)["x"].reshape((nt,nc))
 
@@ -198,7 +198,9 @@ if __name__=="__main__":
     "Mi" : np.asarray([32.042,  92.142, 90000.]),
     "kij": kij}
     vpures=vpure(p,T,**par)
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,vpures=vpures,par=par)
+    par["vpure"]=vpures
+    
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])

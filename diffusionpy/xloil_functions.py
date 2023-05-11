@@ -1,5 +1,5 @@
 import xloil as xlo
-from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix
+from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix,Diffusion_MS_iter
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
 import numpy as np
@@ -11,14 +11,19 @@ import xloil.pandas
 import pandas as pd
 #from epcsaftpy import pcsaft,component,mixture
 from .PyCSAFT_nue import lngi,vpure,dlnai_dlnxi
+import fnmatch
 # mix=component()+component()
 # eos=pcsaft(mix)
 
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-volatile:xlo.Array(bool,dims=1),full_output:bool,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None):   
-    return Diffusion_MS(t,L,Dvec,w0,w8,Mi,volatile,full_output,Gammai,swelling,taui)
+volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None):   
+    return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,full_output,Gammai,swelling,taui)
+@xlo.func
+def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
+volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,T:float=298.15,par:dict={}):   
+    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,full_output,Gammai,swelling,taui,T,par)
 
 @xlo.func
 def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
@@ -188,10 +193,10 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     p=float(inputs[0,nc+1])*1E5
     state=inputs[0,nc+3]
     kij=D_Matrix(kij1,nc)
-    # if np.any(free==0.):
-    #     vpures=vpure(p,T,mi,sigi,ui,eAiBi,kAiBi,Na)
-    # else:
-    vpures=(free/Mw*1000.)**-1
+    if np.any(free==0.): 
+        vpures=vpure(p,T,mi,sigi,ui,eAiBi,kAiBi,Na)
+    else:
+        vpures=(free/Mw*1000.)**-1
     # if True:#nc!=eos.mixture.nc:
     #     a=[]
     #     for i in range(nc):
@@ -226,12 +231,12 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             elif fractiontype=="w":
                 rho0=(np.sum(free**-1*xi))**-1
                 results=add_entry(results,rho0)
-        elif "gamma" in entry:
+        elif "Gamma" in entry:
 
             lngammai=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mi=Mi,kij=kij).flatten()) if 'lngammai' not in vars() else lngammai
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lngammai.send(None))
-        elif "activity" in entry:
+        elif "ln(a)" in entry:#fnmatch.fnmatchcase(entry.replace(" ", "").replace("[-]",""),"ln(a)?"):
             lnactivity=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mi=Mi,kij=kij).flatten()+np.log(xi)) if 'lnactivity' not in vars() else lnactivity
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lnactivity.send(None))
@@ -273,6 +278,8 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             pass
         elif "ln(f)" in entry:
             pass
+        elif "ln(phi)" in entry:
+            results=add_entry(results,np.asarray([1.]))
         elif "ln(a)" in entry:
             pass
         elif "ln(Gamma)" in entry:
@@ -285,8 +292,8 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             pass
         elif "Monomer frac." in entry:
             pass
-        else :
-            pass #return string with error
+        else:
+            pass
 
 
     return results[:,None].T
