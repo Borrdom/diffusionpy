@@ -22,8 +22,30 @@ volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,di
     return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,full_output,Gammai,swelling,taui)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,T:float=298.15,par:dict={}):   
-    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,full_output,Gammai,swelling,taui,T,par)
+volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,
+pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.asarray([[]])):   
+    T=298.15
+    Mw=pure[1:,3].astype(float)
+    mi=pure[1:,4].astype(float)
+    sigi=pure[1:,6].astype(float)
+    ui=pure[1:,7].astype(float)
+    eAiBi=pure[1:,8].astype(float)
+    kAiBi=pure[1:,9].astype(float)
+    Na=pure[1:,10].astype(float)
+    nc=len(Mw)
+    kij1=np.char.replace(kij[1:,2].astype(str),",",".").astype(float)
+    kij=D_Matrix(kij1,nc)
+    vpures=vpure(1E5,T,mi,sigi,ui,eAiBi,kAiBi,Na)
+    par={"mi":mi,
+    "Mi":Mw,
+    "si":sigi,
+    "ui":ui,
+    "eAi":eAiBi,
+    "kAi":kAiBi,
+    "NAi":Na,
+    "kij":kij,
+    "vpure":vpures}
+    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,swelling,taui,T,par)
 
 @xlo.func
 def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
