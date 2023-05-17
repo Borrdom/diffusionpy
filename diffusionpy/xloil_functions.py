@@ -18,11 +18,11 @@ import fnmatch
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None):   
-    return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,full_output,Gammai,swelling,taui)
+mobile:xlo.Array(bool,dims=1),full_output:bool=False,dlnai_dlnwi:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,rho0i:xlo.Array(float,dims=1)=None):   
+    return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,dlnai_dlnwi,swelling,taui,rho0i)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-volatile:xlo.Array(bool,dims=1),full_output:bool=False,Gammai:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,
+mobile:xlo.Array(bool,dims=1),full_output:bool=False,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,rho0i:xlo.Array(float,dims=1)=None,
 pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.asarray([[]])):   
     T=298.15
     Mw=pure[1:,3].astype(float)
@@ -45,7 +45,7 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
     "NAi":Na,
     "kij":kij,
     "vpure":vpures}
-    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,volatile,swelling,taui,T,par)
+    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,swelling,taui,rho0i,T,par)
 
 @xlo.func
 def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):

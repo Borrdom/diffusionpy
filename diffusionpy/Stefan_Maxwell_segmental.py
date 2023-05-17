@@ -6,8 +6,8 @@ from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
 #config.DISABLE_JIT = True
 
-@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:,:], f8[:], f8[:])'],cache=True)
-def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
+@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:], f8[:])'],cache=True)
+def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
     def averaging(a): return (a[1:]+a[:-1])/2.
     def BIJ_Matrix(D,wi,mobiles,allflux):
         nc=wi.shape[0]
@@ -28,10 +28,10 @@ def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz
     
     rhoi=np.zeros((nc,nz+1))
     rhoi[mobiles,:]=rhov
-    rhoi[immobiles,:]=rhoiinit[immobiles,:]
+    rhoi[immobiles,:]=rho*wi0[immobiles]
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     if taui[0]!=0.: rhoi[mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t/taui))*rho
-    if taui[0]!=0.: rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles
+    rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles if taui[0]!=0. else rho*wi8[immobiles]
     ji=np.zeros((nc,nz))
     dlnwi=np.zeros((nc,nz))
     wibar=np.zeros((nc,nz))
@@ -43,8 +43,8 @@ def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz
     for i in range(nc):
         dlnwis=np.zeros(nz)
         for j in range(nc):
-            Gammacorr=np.interp(t,tint,Gammai[j,i,:])
-            dlnwis+=Gammacorr*np.diff(np.log(np.fmax(wi[j,:],1E-6)))
+            THcorr=np.interp(t,tint,THFaktor[j,i,:])
+            dlnwis+=THcorr*np.diff(np.log(np.fmax(wi[j,:],1E-8)))
         dlnwi[i,:]=dlnwis
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
@@ -62,13 +62,10 @@ def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz
         dji=np.diff(np.hstack((np.asarray([0.]),ji[i,:])))
         djib=np.hstack((dji,np.asarray([0.]))) 
         drhoidt[i,:]=djib
-    #wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
-    #if taui[0]!=0.: drhoidt[mobiles,-1]=1./taui*np.exp(-t/taui)*(wi8[mobiles]-wi0[mobiles])*rho
-    #if taui[0]!=0.: drhoidt[immobiles,-1]=-np.sum(drhoidt[mobiles,-1])*wi0_immobiles
     drhovdt=drhoidt[mobiles,:]
     return  drhovdt
 
-def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelling=False,taui=None):
+def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,taui=None,rho0i=None):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -81,7 +78,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     wi0:    array_like   Mass fractions at t=0               /-
     wi8:    array_like   Mass fraction at t=infinity         /-
     Mi:    array_like   Molar mass of components nc         /g/mol
-    Gammai: array_like estimate for DlnaiDlnx at t          /-
+    dlnai_dlnwi: array_like estimate for DlnaiDlnx at t          /-
     Returns
     -------
     wt:    array_like   Matrix of mass fractions at t       /-
@@ -98,7 +95,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     zvec=np.linspace(0,L,nz+1)
     nf=np.sum(mobile)
     nt=len(t)
-    rho=1200.
+    rho=1200. if rho0i is None else np.sum(rho0i*wi0)
     refsegment=np.argmin(Mi)
     ri= Mi/Mi[refsegment]
     allflux=nc==nf
@@ -114,24 +111,24 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     #rhoiinit[immobiles,-1]=rho*wi8[immobiles]
     rhovinit=rhoiinit[mobiles,:]
     xinit=np.reshape(rhovinit,np.multiply(*rhovinit.shape))
-    GammaiT=np.asarray([np.eye(nc)]*nt).T
-    if Gammai is not None:
-        if len(Gammai.shape)<3: Gammai=Gammai.T
-        Gammai=Gammai.reshape((nc,nc,nt))
-        THij = Gammai[mobiles,:,:][:,mobiles,:]
-        massbalancecorrection=np.stack([np.sum((Gammai[mobiles,:,:][:,immobiles,:])*wi0_immobiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
+    THFaktor=np.asarray([np.eye(nc)]*nt).T
+    if dlnai_dlnwi is not None:
+        if len(dlnai_dlnwi.shape)<3: dlnai_dlnwi=dlnai_dlnwi.T
+        dlnai_dlnwi=dlnai_dlnwi.reshape((nc,nc,nt))
+        THij = dlnai_dlnwi[mobiles,:,:][:,mobiles,:]
+        massbalancecorrection=np.stack([np.sum((dlnai_dlnwi[mobiles,:,:][:,immobiles,:])*wi0_immobiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
         for i in range(nTH):
             for j in range(nTH):
-                    GammaiT[mobiles[i],mobiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
+                    THFaktor[mobiles[i],mobiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
 
-    def wrapdrhodt(t,rhov,tint,GammaiT,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8):
+    def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
-        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(GammaiT),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
     
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,GammaiT,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,rhoiinit,wi0,wi8),method="Radau",t_eval=t)
+    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8),method="Radau",t_eval=t)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
@@ -165,22 +162,22 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,taui=None,T=298.15,par={}):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,taui=None,rho0i=None,T=298.15,par={}):
     nt=len(t)
     nc=len(wi0)
-    Gammaiave=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt).T
-    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammaiave,swelling=swelling,taui=taui)
+    dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt).T
+    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i)
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
-        Gammai=np.asarray([dlnai_dlnxi(T,wt[i,:],**par) for i in range(nt)]).T
-        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,Gammai=Gammai,swelling=swelling,taui=taui)).flatten()
+        dlnai_dlnwi=np.asarray([dlnai_dlnxi(T,wt[i,:],**par) for i in range(nt)]).T
+        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i)).flatten()
     wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-4)["x"].reshape((nt,nc))
 
     if not full_output:
         return wtopt
     else: 
-        Gammaiopt=np.asarray([dlnai_dlnxi(T,wtopt[i,:],**par) for i,val in enumerate(wtopt[:,0])]).T
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,Gammai=Gammaiopt,swelling=swelling,taui=taui)
+        dlnai_dlnwiopt=np.asarray([dlnai_dlnxi(T,wtopt[i,:],**par) for i,val in enumerate(wtopt[:,0])]).T
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,taui=taui,rho0i=rho0i)
     
 def convert(x,M,axis=0):
     y=np.empty(x.shape,M.dtype)
