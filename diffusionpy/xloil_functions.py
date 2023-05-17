@@ -244,38 +244,39 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
 
     if fractiontype=="w": Mi=Mw
     if fractiontype=="x": Mi=None
-
+    Mw/np.sum(xi*Mw)
     for entry in header[0]:
         if "Density" in entry:
             if fractiontype=="x":
                 rho0=(np.sum(vpures*xi))**-1
                 results=add_entry(results,rho0*(xi*Mw/1000).sum())
             elif fractiontype=="w":
-                rho0=(np.sum(free**-1*xi))**-1
+                v0i=vpures/Mw*1000
+                rho0=(np.sum(v0i*xi))**-1
                 results=add_entry(results,rho0)
         elif "Gamma" in entry:
-
-            lngammai=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mi=Mi,kij=kij).flatten()) if 'lngammai' not in vars() else lngammai
+            lnwx=np.log(Mi*np.sum(xi/Mi)) if fractiontype=="w" else 0.
+            lngammai=generate(lngi(T,xi,mi,sigi,ui,eAiBi,kAiBi,Na,vpures,Mi=Mi,kij=kij).flatten()+lnwx) if 'lngammai' not in vars() else lngammai
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lngammai.send(None))
         elif "ln(a)" in entry:#fnmatch.fnmatchcase(entry.replace(" ", "").replace("[-]",""),"ln(a)?"):
-            lnactivity=generate(lngi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mi=Mi,kij=kij).flatten()+np.log(xi)) if 'lnactivity' not in vars() else lnactivity
+            lnactivity=generate(lngi(T,xi,mi,sigi,ui,eAiBi,kAiBi,Na,vpures,Mi=Mi,kij=kij).flatten()+np.log(xi)) if 'lnactivity' not in vars() else lnactivity
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,lnactivity.send(None))
         elif "Mass fraction" in entry:
             if fractiontype=="x":
                 fracw=generate(xi/Mw/(xi/Mw).sum()) if 'fracw' not in vars() else fracw
             elif fractiontype=="w":
-                fracw=generate(xi) if 'fracw' in vars() else fracw
+                fracw=generate(xi) if 'fracw' not in vars() else fracw
             results=add_entry(results,fracw.send(None))
         elif "Mole fraction" in entry:
             if fractiontype=="x":
-                fracx=generate(xi) if 'fracx' in vars() else fracx
+                fracx=generate(xi) if 'fracx' not in vars() else fracx
             elif fractiontype=="w":
                 fracx=generate(xi*Mw/(xi*Mw).sum()) if 'fracx' not in vars() else fracx
             results=add_entry(results,fracx.send(None))
         elif "di" in entry:
-            THFaktor=generate(dlnai_dlnxi(T,vpures,xi,mi,sigi,ui,eAiBi,kAiBi,Na,Mi=Mi,kij=kij).flatten()) if 'THFaktor' not in vars() else THFaktor
+            THFaktor=generate(dlnai_dlnxi(T,xi,mi,sigi,ui,eAiBi,kAiBi,Na,vpures,Mi=Mi,kij=kij).flatten()) if 'THFaktor' not in vars() else THFaktor
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,THFaktor.send(None))
         elif "M [" in entry:

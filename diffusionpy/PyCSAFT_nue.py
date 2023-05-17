@@ -213,7 +213,7 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     #vmol=v0pNE/vpfracNET
     wi=xi
     if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
-    vmol=np.sum(vpure*xi)
+    vmol=np.sum(vpure*xi) if "vmol" not in kwargs else kwargs["vmol"]
     vpfrac=vpure/vmol
     di=si*(1.-0.12*np.exp(-3*ui/T))
     eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
@@ -222,7 +222,7 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
     _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
-    lngi_p=vpure/vmol*(Z1-1)
+    lngi_p=vpure/vmol*(Z1-1) if "NETGP" not in kwargs else 0
     with np.errstate(divide='ignore',invalid='ignore'):
         lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
     return lngi_id+lngi_res-lngi_p+lngi_wx
