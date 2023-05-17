@@ -31,7 +31,7 @@ def drhodt(t,rhov,tint,Gammai,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz
     rhoi[immobiles,:]=rhoiinit[immobiles,:]
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     if taui[0]!=0.: rhoi[mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t/taui))*rho
-    #if taui[0]!=0.: rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles
+    if taui[0]!=0.: rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles
     ji=np.zeros((nc,nz))
     dlnwi=np.zeros((nc,nz))
     wibar=np.zeros((nc,nz))
@@ -107,9 +107,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     immobiles=np.where(~mobile)[0] if not allflux else np.asarray([-1],dtype=np.int64)
     
     #initial conditions
-    rhoiinit=np.zeros((nc,nz+1))
-    for z in range(nz+1):
-        rhoiinit[:,z]=wi0*rho
+    rhoiinit=np.broadcast_to(rho*wi0,(nz+1,nc)).T.copy()
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit[:,-1]=rho*wi8 if taui is None else rho*wi0
     if taui is None: taui=np.zeros_like(mobiles,dtype=float)
@@ -120,7 +118,6 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     if Gammai is not None:
         if len(Gammai.shape)<3: Gammai=Gammai.T
         Gammai=Gammai.reshape((nc,nc,nt))
-
         THij = Gammai[mobiles,:,:][:,mobiles,:]
         massbalancecorrection=np.stack([np.sum((Gammai[mobiles,:,:][:,immobiles,:])*wi0_immobiles.reshape((1,nc-nTH,1)),axis=1)]*nTH)
         for i in range(nTH):
@@ -147,11 +144,11 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,Gammai=None,swelli
     for k in range(nt):
         rhovk=np.reshape(x_sol[:,k],(nTH,nz+1))
         rhoik[k,:,:]=rhoiinit
-        rhoik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui))*rho
-        rhoik[k,immobiles,-1]=(rho-np.sum(rhoik[k,mobiles,-1],axis=0))*wi0_immobiles
         rhoik[k,mobiles,:]=rhovk
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
+        wik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui))
+        wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
     Lt=rhok/rho*L
@@ -184,8 +181,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     else: 
         Gammaiopt=np.asarray([dlnai_dlnxi(T,wtopt[i,:],**par) for i,val in enumerate(wtopt[:,0])]).T
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,Gammai=Gammaiopt,swelling=swelling,taui=taui)
-        
-
+    
 def convert(x,M,axis=0):
     y=np.empty(x.shape,M.dtype)
     np.copyto(y.T,M)
