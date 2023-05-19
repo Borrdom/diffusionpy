@@ -124,6 +124,15 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
         drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
+        #drhovdt,dsigmadt=MEOS(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,drhovdt)
+        # sigmaJvec=np.reshape(sigmaJ,((nz+1)*nJ,1))
+        # dsigmaJdtvec=np.reshape(dsigmaJdt,((nz+1)*nJ,1))
+        # xvec=np.stack(rho2II,sigmaJvec)
+        # fvec=np.stack(drhodtNF,dsigmaJdtvec)
+    
+        #MUss aussen passiern
+        # x0sigma=np.stack(sigmaJ_his[:,0,:]/E0,((nz+1)*nJ,1))
+        # x0=np.stack(rho2II_his[:,0],x0sigma)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
     
     print("------------- Start diffusion modeling ----------------")
