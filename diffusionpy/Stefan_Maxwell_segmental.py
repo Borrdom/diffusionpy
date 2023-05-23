@@ -133,22 +133,21 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         nJ=len(EJ)
         def wrapdrhodt(t,xvec,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,EJ,tauJ,exponent):
             rhov=np.zeros((nTH,nz+1))
-            for i range(nTH):
+            for i in range(nTH):
                 rhovtemp=xvec[(nz+1)*(i):(nz+1)*(1+i)]
                 rhov[:,i]=rhovtemp
             sigmaJ=np.zeros((nz+1,nJ))
             for J in range(nJ):
-                sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(self.E0)[J]
+                sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(EJ)[J]
                 sigmaJ[:,J]=sigmaJtemp
             rhov=np.ascontiguousarray(rhov)
             drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
             from .relaxation import MEOS
-            drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L0,mobiles,rho0,drhovdt,Mi):
+            if rho0i is None: rho0i=rho*np.ones(nc)
+            drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L,mobiles,rho0i,drhovdt,Mi)
             dsigmaJdtvec=dsigmaJdt.flatten()
             #xvec=np.hstack(rhov.flatten(),sigmaJ.flatten())
-            fvec=np.hstack(drhodtNF.flatten(),dsigmaJdtvec.flatten())
-        
-
+            fvec=np.hstack(drhovdt.flatten(),dsigmaJdtvec.flatten())
             return fvec
 
     
