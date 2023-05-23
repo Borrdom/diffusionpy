@@ -2,16 +2,12 @@ import numpy as np
 from numba import njit
 from scipy import InterpolatedUnivariateSpline
 
-def Kris(self,jMS_fun,rho2II,rho2II_his,alpha,r,w2II,alphavec,rho2GGWvec,wwSIMraw,wAPISIMraw,rhoSIMraw,wPolyASD,solubility,deltamu_fun,alphasym):
+def Kris(rho2II,alpha,r,wwSIMraw,wAPISIMraw,rhoSIMraw,w0_imobiles,rho):
     # WasserFeed Information
-    rho2GGW_fun1=InterpolatedUnivariateSpline(alphavec[alphavec>=-0.05], rho2GGWvec[alphavec>=-0.05],k=1)
-    rho2II_his[-1,0]=rho2GGW_fun1(0)
-
-
     XwSIMraw=wwSIMraw/(1-wwSIMraw)
     rho2GGW_fun1=InterpolatedUnivariateSpline(wAPISIMraw[::-1], (rhoSIMraw*XwSIMraw)[::-1],k=1)
-    rho2II_his[-1,0]=rho2GGW_fun1(1-wPolyASD)
-    #vec=np.linspace(0,1-self.wPolyASD,100)
+    rho2II_his[-1,0]=rho2GGW_fun1(1-w0_imobiles)
+    #vec=np.linspace(0,1-self.w0_imobiles,100)
     # CNT DGL
     R=self.R
     NA=6.023E23
@@ -27,15 +23,15 @@ def Kris(self,jMS_fun,rho2II,rho2II_his,alpha,r,w2II,alphavec,rho2GGWvec,wwSIMra
     pre=rho*np.pi/(4*AR**2)
     scale_r=1E-6
     C0=rho/M*NA
-    X_la=(1-self.wPolyASD)-alpha
+    X_la=(1-self.w0_imobiles)-alpha
     
     Xn_la=X_la/M
-    dl_la = (1-self.wPolyASD-alpha)/(1-alpha)
+    dl_la = (1-self.w0_imobiles-alpha)/(1-alpha)
     
     c_la=dl_la*(1-w2II)
-    c_la_0=(1-self.wPolyASD)*(1-rho2II_his[0,0]/self.rho0ASD)
+    c_la_0=(1-self.w0_imobiles)*(1-rho2II_his[0,0]/rho)
     c_GGW=solubility if self.ideal else 0
-    dmu_sla0=np.log(c_la_0/c_GGW) if self.ideal else deltamu_fun(rho2II_his[0,0]/self.rho0ASD,0)
+    dmu_sla0=np.log(c_la_0/c_GGW) if self.ideal else deltamu_fun(rho2II_his[0,0]/rho,0)
     
 
     dmu_sla=cs.MX.ones(self.nz+1)

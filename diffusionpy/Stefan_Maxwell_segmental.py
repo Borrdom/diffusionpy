@@ -65,7 +65,7 @@ def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,
     drhovdt=drhoidt[mobiles,:]
     return  drhovdt
 
-def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,taui=None,rho0i=None):
+def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,taui=None,rho0i=None,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -124,16 +124,33 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
         drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
-        #drhovdt,dsigmadt=MEOS(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,drhovdt)
-        # sigmaJvec=np.reshape(sigmaJ,((nz+1)*nJ,1))
-        # dsigmaJdtvec=np.reshape(dsigmaJdt,((nz+1)*nJ,1))
-        # xvec=np.stack(rho2II,sigmaJvec)
-        # fvec=np.stack(drhodtNF,dsigmaJdtvec)
-    
-        #MUss aussen passiern
-        # x0sigma=np.stack(sigmaJ_his[:,0,:]/E0,((nz+1)*nJ,1))
-        # x0=np.stack(rho2II_his[:,0],x0sigma)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
+
+    if "EJ" or "tauJ" or "exponent" in kwargs: 
+        EJ=kwargs["EJ"]
+        exponent=kwargs["exponent"]
+        tauJ=kwargs["tauJ"]
+        nJ=len(EJ)
+        def wrapdrhodt(t,xvec,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,EJ,tauJ,exponent):
+            rhov=np.zeros((nTH,nz+1))
+            for i range(nTH):
+                rhovtemp=xvec[(nz+1)*(i):(nz+1)*(1+i)]
+                rhov[:,i]=rhovtemp
+            sigmaJ=np.zeros((nz+1,nJ))
+            for J in range(nJ):
+                sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(self.E0)[J]
+                sigmaJ[:,J]=sigmaJtemp
+            rhov=np.ascontiguousarray(rhov)
+            drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
+            from .relaxation import MEOS
+            drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L0,mobiles,rho0,drhovdt,Mi):
+            dsigmaJdtvec=dsigmaJdt.flatten()
+            #xvec=np.hstack(rhov.flatten(),sigmaJ.flatten())
+            fvec=np.hstack(drhodtNF.flatten(),dsigmaJdtvec.flatten())
+        
+
+            return fvec
+
     
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
