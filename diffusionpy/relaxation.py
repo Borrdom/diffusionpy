@@ -1,45 +1,63 @@
 import numpy as np
+from numba import njit
 
 
-def MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L0,mobiles,rho0,drhodtNF,Mi):
+def MEOS(drhodt,EJ, tauJ, exponent):
+    def wrapdrhodt(t,xvec,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
+        nTH=len(mobiles)
+        rhov=np.zeros((nTH,nz+1))
+        for i in range(nTH):
+            rhovtemp=xvec[(nz+1)*(i):(nz+1)*(1+i)]
+            rhov[:,i]=rhovtemp
+        sigmaJ=np.zeros((nz+1,nJ))
+        for J in range(nJ):
+            sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(EJ)[J]
+            sigmaJ[:,J]=sigmaJtemp
+        rhov=np.ascontiguousarray(rhov)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
+        from .relaxation import MEOS
+        if rho0i is None: rho0i=rho*np.ones(nc)
+        drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L,mobiles,rho0i,drhovdt,Mi)
+        dsigmaJdtvec=dsigmaJdt.flatten()
+        #xvec=np.hstack(rhov.flatten(),sigmaJ.flatten())
+        fvec=np.hstack(drhovdt.flatten(),dsigmaJdtvec.flatten())
+        return fvec
+    return wrapdrhodt
+
+
+#@njit
+def stress(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,mobiles,rho0,Mi):
     nJ=len(EJ)
     nc=len(Mi)
     rho=np.sum(rho0)
     etaJ=EJ*tauJ
-    deltaz=L0/nz
-    nz=20
     THcorr=np.ones((nc,nc))
     for i in range(nc):
         for j in range(nc):
             THcorr[i,j]=np.interp(t,tint,THFaktor[j,i,:])    
-    #sigmaJ=np.zeros((nz+1,nJ))
-    rhoi=np.zeros((nc,nz+1))
-    rhoi[mobiles,:]=rhov
- 
     sigma=np.sum(sigmaJ*EJ,axis=1)
     dsigma=np.diff(sigma)
     v2=1/rho0[mobiles]
-    rhov=rhoi[mobiles,:]
     X2II=rhov/rho
     w2II=X2II/(X2II+1)
     WL=np.exp(-np.outer(w2II,exponent))
-
     R=8.145
     T=298.15
     M2=Mi[mobiles]
     RV=R*T*1/M2*1/v2
-    MDF=np.hstack((0.,1/RV*dsigma/deltaz)) 
-    drhodtNF[:-1]=drhodtNF[:-1]+np.diff(MDF)/deltaz
+    dmuext=np.hstack((0.,1/RV*dsigma))
     etaWL=etaJ*WL
     b=np.sum(1/etaWL[-1,:].T*sigmaJ[-1,:].T*EJ**2/RV,axis=0)
     A=(THcorr[mobiles,mobiles]/rhov[:,-1]+np.sum(EJ)*v2/RV)
     drho2dt_hist=np.linalg.solve(A,b) if len(A)>1 else b/A
-    drhodtNF[-1]=drho2dt_hist
 
     dsigmaJdt=np.zeros((nz+1,nJ))
     for i in range(nJ):
         dsigmaJdt[:,i]=-1/etaWL[:,i]*sigmaJ[:,i]*EJ[i]+np.sum(drhodtNF,axis=0)/rho
-    return drhodtNF,dsigmaJdt
+    return dmuext,dsigmaJdt,drho2dt_hist
+
+
+
 if __name__=="__main__":
     nt=500
     nJ=2
@@ -58,7 +76,7 @@ if __name__=="__main__":
     rho0=np.asarray([997.,1200.,1190.])
     drhodtNF=np.zeros(nz+1)
     Mi=np.asarray([18.15,25700.,350.])
-    print(MEOS(t,rhoi,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L0,mobiles,rho0,drhodtNF,Mi))
+    print(drhodtMEOS(t,rhoi,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L0,mobiles,rho0,drhodtNF,Mi))
    
 
 

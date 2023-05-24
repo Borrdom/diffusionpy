@@ -6,8 +6,8 @@ from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
 #config.DISABLE_JIT = True
 
-@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:], f8[:])'],cache=True)
-def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
+@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:], f8[:],f8[:,:])'],cache=True)
+def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext):
     def averaging(a): return (a[1:]+a[:-1])/2.
     def BIJ_Matrix(D,wi,mobiles,allflux):
         nc=wi.shape[0]
@@ -33,7 +33,7 @@ def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,
     if taui[0]!=0.: rhoi[mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t/taui))*rho
     rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles if taui[0]!=0. else rho*wi8[immobiles]
     ji=np.zeros((nc,nz))
-    dlnwi=np.zeros((nc,nz))
+    dlnai=np.zeros((nc,nz))
     wibar=np.zeros((nc,nz))
     rhoibar=np.zeros((nc,nz))
     drhoidt=np.zeros((nc,nz+1))
@@ -41,16 +41,16 @@ def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,
     for i in range(nc):
         wi[i,:]=rhoi[i,:]/np.sum(rhoi,axis=0)
     for i in range(nc):
-        dlnwis=np.zeros(nz)
+        dlnais=np.zeros(nz)
         for j in range(nc):
             THcorr=np.interp(t,tint,THFaktor[j,i,:])
-            dlnwis+=THcorr*np.diff(np.log(np.fmax(wi[j,:],1E-8)))
-        dlnwi[i,:]=dlnwis
+            dlnais+=THcorr*np.diff(np.log(np.fmax(wi[j,:],1E-8)))
+        dlnai[i,:]=dlnais
         wibar[i,:]= averaging(wi[i,:])
         rhoibar[i,:]= averaging(rhoi[i,:])
     for z in range(nz):
         B=BIJ_Matrix(D,wibar[:,z],mobiles,allflux) 
-        dmui=(dlnwi[:,z])
+        dmui=(dlnai[:,z])+dmuext[:,z]
         omega=rho/np.sum(rhoibar[:,z])
         di=rho*wibar[:,z]*dmui/ri*omega if swelling else rhoibar[:,z]*dmui/ri
         if not allflux:
@@ -121,39 +121,24 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             for j in range(nTH):
                     THFaktor[mobiles[i],mobiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
 
-    def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8):
+    def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
-        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
-
-    if "EJ" or "tauJ" or "exponent" in kwargs: 
+    dmuext=np.zeros((nc,nz))
+    if "EJ" in kwargs or "tauJ" in kwargs or "exponent" in kwargs: 
         EJ=kwargs["EJ"]
         exponent=kwargs["exponent"]
         tauJ=kwargs["tauJ"]
         nJ=len(EJ)
-        def wrapdrhodt(t,xvec,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,EJ,tauJ,exponent):
-            rhov=np.zeros((nTH,nz+1))
-            for i in range(nTH):
-                rhovtemp=xvec[(nz+1)*(i):(nz+1)*(1+i)]
-                rhov[:,i]=rhovtemp
-            sigmaJ=np.zeros((nz+1,nJ))
-            for J in range(nJ):
-                sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(EJ)[J]
-                sigmaJ[:,J]=sigmaJtemp
-            rhov=np.ascontiguousarray(rhov)
-            drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
-            from .relaxation import MEOS
-            if rho0i is None: rho0i=rho*np.ones(nc)
-            drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L,mobiles,rho0i,drhovdt,Mi)
-            dsigmaJdtvec=dsigmaJdt.flatten()
-            #xvec=np.hstack(rhov.flatten(),sigmaJ.flatten())
-            fvec=np.hstack(drhovdt.flatten(),dsigmaJdtvec.flatten())
-            return fvec
+        from .relaxation import MEOS
+        wrapdrhodt=MEOS(drhodt)
+
 
     
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8),method="Radau",t_eval=t)
+    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext),method="Radau",t_eval=t)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
