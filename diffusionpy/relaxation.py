@@ -14,12 +14,11 @@ def MEOS(drhodt,EJ, tauJ, exponent):
             sigmaJtemp=xvec[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]*np.atleast_1d(EJ)[J]
             sigmaJ[:,J]=sigmaJtemp
         rhov=np.ascontiguousarray(rhov)
-        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8)
-        from .relaxation import MEOS
+        dmuext,dsigmaJdt,drho2dt_hist=stress(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,mobiles,rho0,Mi)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext)
+        drhovdt[-1]=drho2dt_hist
         if rho0i is None: rho0i=rho*np.ones(nc)
-        drhovdt,dsigmaJdt=MEOS(t,rhov,sigmaJ,tint,THFaktor,EJ,tauJ,exponent,nz,L,mobiles,rho0i,drhovdt,Mi)
         dsigmaJdtvec=dsigmaJdt.flatten()
-        #xvec=np.hstack(rhov.flatten(),sigmaJ.flatten())
         fvec=np.hstack(drhovdt.flatten(),dsigmaJdtvec.flatten())
         return fvec
     return wrapdrhodt

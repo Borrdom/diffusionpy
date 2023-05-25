@@ -6,63 +6,51 @@ from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
 #config.DISABLE_JIT = True
 
-@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], f8[::1], i8[::1], i8[::1], i8, f8[::1], f8[:,:], b1, b1, i8, f8, f8[:], f8[:],f8[:,:])'],cache=True)
-def drhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext):
-    def averaging(a): return (a[1:]+a[:-1])/2.
+@njit(['f8[:,:](f8, f8[:,:], f8[::1], f8[:,:,:], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1], f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
+def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,ri,D,allflux,swelling,rho,wi0,wi8,dmuext,rhoiB,drhovdtB):
+    def averaging(a): return (a[1:,:]+a[:-1,:])/2.
+    def np_linalg_solve(A,b):
+        ret = np.empty_like(b)
+        for i in range(b.shape[1]):
+            ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
+        return ret
     def BIJ_Matrix(D,wi,mobiles,allflux):
-        nc=wi.shape[0]
-        B=np.zeros((nc,nc))
+        nc,nz=wi.shape
+        B=np.zeros((nc,nc,nz))
         for i in range(nc):
-            Din=wi[-1]/D[i,-1] if (i+1)!=nc else 0
-            Dii=0
+            Din=wi[-1,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz)
+            Dii=np.zeros(nz)
             for j in range(nc):
                 if j!=i:
-                    Dij=-wi[i]/D[i,j] 
+                    Dij=-wi[i,:]/D[i,j] 
                     if allflux: Dij+=Din
-                    B[i,j]=Dij
-                    Dii+=wi[j]/D[i,j]
+                    B[i,j,:]=Dij
+                    Dii+=wi[j,:]/D[i,j]
             if allflux: Dii+=Din
-            B[i,i]=Dii
-        return B[mobiles,:][:,mobiles] if not allflux else B[:-1,:-1]  #8E-13
-    
-    
-    rhoi=np.zeros((nc,nz+1))
+            B[i,i,:]=Dii
+        return B[mobiles,:,:][:,mobiles,:] if not allflux else B[:-1,:-1,:]
+    nc=len(ri)
+    nTH,nz_1=rhov.shape
+    rhoi=np.zeros((nc,nz_1))
     rhoi[mobiles,:]=rhov
     rhoi[immobiles,:]=rho*wi0[immobiles]
-    wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
-    if taui[0]!=0.: rhoi[mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t/taui))*rho
-    rhoi[immobiles,-1]=(rho-np.sum(rhoi[mobiles,-1],axis=0))*wi0_immobiles if taui[0]!=0. else rho*wi8[immobiles]
-    ji=np.zeros((nc,nz))
-    dlnai=np.zeros((nc,nz))
-    wibar=np.zeros((nc,nz))
-    rhoibar=np.zeros((nc,nz))
-    drhoidt=np.zeros((nc,nz+1))
-    wi=np.zeros((nc,nz+1))
+    rhoi[:,-1]=rhoiB
+    
+    wi=rhoi/np.sum(rhoi,axis=0)
+    wibar = averaging(wi.T).T
+    rhoibar= averaging(rhoi.T).T
+    THcorr=np.zeros((nc,nc))
     for i in range(nc):
-        wi[i,:]=rhoi[i,:]/np.sum(rhoi,axis=0)
-    for i in range(nc):
-        dlnais=np.zeros(nz)
-        for j in range(nc):
-            THcorr=np.interp(t,tint,THFaktor[j,i,:])
-            dlnais+=THcorr*np.diff(np.log(np.fmax(wi[j,:],1E-8)))
-        dlnai[i,:]=dlnais
-        wibar[i,:]= averaging(wi[i,:])
-        rhoibar[i,:]= averaging(rhoi[i,:])
-    for z in range(nz):
-        B=BIJ_Matrix(D,wibar[:,z],mobiles,allflux) 
-        dmui=(dlnai[:,z])+dmuext[:,z]
-        omega=rho/np.sum(rhoibar[:,z])
-        di=rho*wibar[:,z]*dmui/ri*omega if swelling else rhoibar[:,z]*dmui/ri
-        if not allflux:
-            ji[mobiles,z]=np.linalg.solve(B,di[mobiles])
-        else:
-            ji[:-1,z]=np.linalg.solve(B,di[:-1])
-
-    for i in range(nc):
-        dji=np.diff(np.hstack((np.asarray([0.]),ji[i,:])))
-        djib=np.hstack((dji,np.asarray([0.]))) 
-        drhoidt[i,:]=djib
-    drhovdt=drhoidt[mobiles,:]
+        for j in range(nc): THcorr[i,j]=np.interp(t,tint,THFaktor[j,i,:])
+    dlnai=THcorr@np.diff(np.log(np.fmax(wi,1E-8)))
+    B=BIJ_Matrix(D,wibar,mobiles,allflux) 
+    dmui=dlnai+dmuext
+    omega=rho/np.sum(rhoibar,axis=0)
+    di=rho*wibar*dmui/np.atleast_2d(ri).T*omega if swelling else rhoibar*dmui/np.atleast_2d(ri).T
+    ji=np_linalg_solve(B,di[mobiles,:])
+    jiB=np.zeros((nTH,1))
+    dji=np.diff(np.hstack((jiB,ji)))
+    drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
     return  drhovdt
 
 def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,taui=None,rho0i=None,**kwargs):
@@ -107,7 +95,6 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     rhoiinit=np.broadcast_to(rho*wi0,(nz+1,nc)).T.copy()
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit[:,-1]=rho*wi8 if taui is None else rho*wi0
-    if taui is None: taui=np.zeros_like(mobiles,dtype=float)
     #rhoiinit[immobiles,-1]=rho*wi8[immobiles]
     rhovinit=rhoiinit[mobiles,:]
     xinit=np.reshape(rhovinit,np.multiply(*rhovinit.shape))
@@ -121,11 +108,14 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             for j in range(nTH):
                     THFaktor[mobiles[i],mobiles[j],:]= THij[i,j,:]-massbalancecorrection[j,i,:]
 
-    def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext):
+    def wrapdrhodt(t,rhov,tint,THFaktor,taui,mobiles,immobiles,ri,D,allflux,swelling,rho,wi0,wi8,dmuext,drhovdtB):
         rhov=np.ascontiguousarray(np.reshape(rhov,(nTH,nz+1)))
-        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext)
+        from .surface_activity import time_dep_surface
+        rhoiB=wi8*rho if taui is None else time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
+        drhovdt=drhodt(t,rhov,tint,np.ascontiguousarray(THFaktor),mobiles,immobiles,ri,D,allflux,swelling,rho,wi0,wi8,dmuext,rhoiB,drhovdtB)
         return np.reshape(drhovdt,np.multiply(*drhovdt.shape))
     dmuext=np.zeros((nc,nz))
+    drhovdtB=np.zeros(nTH)
     if "EJ" in kwargs or "tauJ" in kwargs or "exponent" in kwargs: 
         EJ=kwargs["EJ"]
         exponent=kwargs["exponent"]
@@ -138,7 +128,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,THFaktor,taui,mobiles,immobiles,nc,ri,D,allflux,swelling,nz,rho,wi0,wi8,dmuext),method="Radau",t_eval=t)
+    sol=solve_ivp(wrapdrhodt,(t[0],t[-1]),xinit,args=(t,THFaktor,taui,mobiles,immobiles,ri,D,allflux,swelling,rho,wi0,wi8,dmuext,drhovdtB),method="Radau",t_eval=t)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
@@ -154,7 +144,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         rhoik[k,mobiles,:]=rhovk
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
-        wik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui))
+        wik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui)) if taui is not None else wi8[mobiles]
         wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
