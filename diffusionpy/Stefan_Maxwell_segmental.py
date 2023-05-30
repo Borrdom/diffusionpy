@@ -136,7 +136,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         RV=R*T*1/M2*1/v2
         sigmaJ0=np.zeros((nz+1,nJ))
         xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
-        ode=MEOS_mode(ode,EJ,etaJ,exponent,RV,v2,mobiles)
+        ode=MEOS_mode(ode,EJ,etaJ,exponent,RV,v2)
     #_____________________________________
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
@@ -238,7 +238,7 @@ if __name__=="__main__":
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
 
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,EJ=np.asarray([1E9]),etaJ=np.asarray([1E9]),exponent=np.asarray([0.,0.]))
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,EJ=np.asarray([1E7]),etaJ=np.asarray([1E7]),exponent=np.asarray([0.,0.]))
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
