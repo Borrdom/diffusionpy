@@ -24,3 +24,25 @@ nz=20
 ji=np.zeros((nc,nz))
 dji=np.diff(np.hstack((np.zeros((nc,1)),ji)))
 print(dji.shape)
+
+
+import numpy as np
+from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
+
+x=np.linspace(0,1,11)
+
+y=np.vstack((np.sin(x),np.cos(x),np.log1p(x)))
+
+y=np.stack((y,y))
+
+xi=np.linspace(0,1,101)
+
+intf= interp1d(x,y,axis=2)
+
+yi=intf(xi)
+
+plt.ioff()
+plt.plot(x,y.T,'x',
+         xi,yi.T)
+plt.show()
