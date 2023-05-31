@@ -3,7 +3,7 @@ from numba import njit
 
 def MEOS_mode(ode,EJ, etaJ, exponent,RV,v2):
     def MEOS_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
-        nc,nz=dmuext.shape
+        _,nz=dmuext.shape
         nTH=drhovdtB.shape[0]
         nJ=len(EJ)
         rhov=np.zeros((nTH,nz+1))
@@ -30,7 +30,7 @@ def MDF(sigmaJ,EJ,RV):
     dmuext=1/np.expand_dims(RV,1)*np.expand_dims(dsigma,0)
     return dmuext
 
-
+#@njit
 def stress_and_boundary(rhov,drhodtNF,sigmaJ,THFaktor,EJ,etaJ,exponent,RV,v2):
     nJ=len(EJ)
     rho=1180
