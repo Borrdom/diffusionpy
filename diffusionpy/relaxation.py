@@ -33,18 +33,18 @@ def MDF(sigmaJ,EJ,RV):
 
 def stress_and_boundary(rhov,drhodtNF,sigmaJ,THFaktor,EJ,etaJ,exponent,RV,v2):
     nJ=len(EJ)
-    rho=1200
+    rho=1180
     nz_1,_=sigmaJ.shape
     X2II=rhov/rho
     w2II=X2II/(X2II+1)
     WL=np.prod(np.exp(-w2II*np.expand_dims(exponent,-1)),0)
     etaWL=np.expand_dims(WL,1)*np.expand_dims(etaJ,0)
-    b=np.sum(1/(etaWL[-1,:])*sigmaJ[-1,:]*EJ**2,axis=0)/RV
-    #b=1/etaWL[-1,:].T*sigmaJ[-1,:].T*EJ**2/RV
-    A=(THFaktor/rhov[:,-1]+np.sum(EJ)*v2/RV)
-    drhovdtB=np.linalg.solve(A,b) if len(A)>1 else b/A
-    dsigmaJdt=np.zeros((nz_1,nJ))
+    #b=np.sum(1/(etaWL[-1,:])*sigmaJ[-1,:]*EJ**2,axis=0)/RV
+    #A=(THFaktor/rhov[:,-1]+np.sum(EJ)*v2/RV)
+    #drhovdtB=np.linalg.solve(A,b) if len(A)>1 else b/A
+    drhovdtB=0.
     drhodtNF[:,-1]=drhovdtB
+    dsigmaJdt=np.zeros((nz_1,nJ))
     for i in range(nJ):
         dsigmaJdt[:,i]=-1/etaWL[:,i]*sigmaJ[:,i]*EJ[i]+np.sum(drhodtNF,axis=0)/rho
     return dsigmaJdt,drhovdtB

@@ -130,11 +130,13 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         from .relaxation import MEOS_mode
         if rho0i is None : rho0i=rho*np.ones(nc)
         v2=1/rho0i[mobiles]
-        R=8.145
+        R=8.31448
         T=298.15
         M2=Mi[mobiles]
-        RV=R*T*1/M2*1/v2
+        RV=R*T*1/(M2/1000.)*1/v2
         sigmaJ0=np.zeros((nz+1,nJ))
+        #sigmaJ0[-1,:]=RV/np.sum(EJ)
+        #rhoiB[mobiles]=wi0[mobiles]*rho
         xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
         ode=MEOS_mode(ode,EJ,etaJ,exponent,RV,v2)
     #_____________________________________
@@ -214,10 +216,10 @@ if __name__=="__main__":
     wi8=np.asarray([0.00001,0.127606346,0.872393654])
     Mi=np.asarray([32.042,92.142,90000.])
     mobile=np.asarray([True,True,False])
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile)
-    plt.plot(t,wt[:,0])
-    plt.plot(t,wt[:,1])
-    plt.plot(t,wt[:,2])
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile)
+    # plt.plot(t,wt[:,0])
+    # plt.plot(t,wt[:,1])
+    # plt.plot(t,wt[:,2])
     from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
     T=298.15
     p=1E5
@@ -233,14 +235,32 @@ if __name__=="__main__":
     vpures=vpure(p,T,**par)
     par["vpure"]=vpures
     
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
-    plt.plot(t,wt[:,0])
-    plt.plot(t,wt[:,1])
-    plt.plot(t,wt[:,2])
-
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,EJ=np.asarray([1E7]),etaJ=np.asarray([1E7]),exponent=np.asarray([0.,0.]))
-    plt.plot(t,wt[:,0])
-    plt.plot(t,wt[:,1])
-    plt.plot(t,wt[:,2])
+    # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
+    # plt.plot(t,wt[:,0])
+    # plt.plot(t,wt[:,1])
+    # plt.plot(t,wt[:,2])
+    t=np.linspace(0.,4000.*60.,nt)
+    Mi=np.asarray([18.015,65000])
+    EJ=np.asarray([1E10])
+    etaJ=np.asarray([1E9])
+    exponent=np.asarray([0.,0.])
+    mobile=np.asarray([True,False])
+    Dvec=np.asarray([5E-14])
+    wi0=np.asarray([1E-4,1-1E-4])
+    wi8=np.asarray([0.1,0.9])
+    #ai0=np.asarray([0.001,1])
+    #ai8=np.asarray([0.25,1])
+    a10=np.asarray([0.001])
+    a18=np.asarray([0.25])
+    L=1E-5
+    dlna1_dlnw1=(np.log(a10)-np.log(a18))/(np.log(wi0[0])-np.log(wi8[0]))
+    #dlnai_dlnwi=np.subtract.outer(np.log(ai0),np.log(ai8))/np.subtract.outer(np.log(wi0),np.log(wi8))
+    dlnai_dlnwi=np.asarray([[[dlna1_dlnw1,0.],[0.,1.]]]*len(t))
+    rho0i=np.asarray([997.,1180])
+    etavec=np.asarray([1E9,1E12,1E14,1E16])
+    for etaJ in etavec:
+        wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,EJ=EJ,etaJ=etaJ,exponent=exponent,rho0i=rho0i)
+        plt.plot((t/60)**(1/2),wt[:,0])
+    # plt.plot(t,wt[:,2])
     plt.show()
 
