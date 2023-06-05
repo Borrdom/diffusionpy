@@ -12,13 +12,13 @@ def MEOS_mode(ode,EJ, etaJ, exponent,RV,v2):
             rhov[i,:]=rhovtemp
         sigmaJ=np.zeros((nz+1,nJ))
         for J in range(nJ):
-            sigmaJtemp=x[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]#*np.atleast_1d(EJ)[J]
+            sigmaJtemp=x[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]
             sigmaJ[:,J]=sigmaJtemp
         X2II=rhov/np.sum(rhoiB)
         w2II=X2II/(X2II+1)
         WL=np.prod(np.exp(-w2II*np.expand_dims(exponent,-1)),0)
         etaWL=np.expand_dims(WL,1)*np.expand_dims(etaJ,0)
-        rhoiB[0]=rhov[:,-1]
+        #rhoiB[0]=rhov[:,-1]
         rhov=np.ascontiguousarray(rhov)
         dmuext=MDF(sigmaJ,EJ,RV)
         drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
@@ -41,7 +41,7 @@ def stress(etaWL,EJ,sigmaJ,drhodtNF,v2):
     nz_1,_=sigmaJ.shape
     dsigmaJdt=np.zeros((nz_1,nJ))
     for i in range(nJ):
-        dsigmaJdt[:,i]=-1/etaWL[:,i]*sigmaJ[:,i]*EJ[i]+np.sum(drhodtNF,axis=0)*v2
+        dsigmaJdt[:,i]=-1/etaWL[:,i]*sigmaJ[:,i]*EJ[i]+np.sum(drhodtNF*np.expand_dims(v2,1),axis=0)
     return dsigmaJdt
 
 def boundary(rhov,etaWL,EJ,sigmaJ,RV,THFaktor,v2):
