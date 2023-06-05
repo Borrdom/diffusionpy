@@ -84,7 +84,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     nf=np.sum(mobile)
     nt=len(t)
     rho=1200. if rho0i is None else np.sum(rho0i*wi0)
-
+    if rho0i is None : rho0i=rho*np.ones(nc)
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
@@ -123,23 +123,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #_____________________________________
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
-        EJ=kwargs["EJ"]
-        etaJ=kwargs["etaJ"]
-        exponent=kwargs["exponent"]
-        nJ=len(EJ)
         from .relaxation import MEOS_mode
-        if rho0i is None : rho0i=rho*np.ones(nc)
-        v2=1/rho0i[mobiles]
-        R=8.31448
-        T=298.15
-        M2=Mi[mobiles]
-        RV=R*T*1/(M2/1000.)*1/v2
-        sigmaJ0=np.zeros((nz+1,nJ))
-        sigmaJB=np.zeros((nJ))
-        sigmaJ0[-1,:]=sigmaJB
-        rhovinit[mobiles,-1]=rhoiB[mobiles]
-        xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
-        ode=MEOS_mode(ode,EJ,etaJ,exponent,RV,v2)
+        xinit,ode=MEOS_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     #_____________________________________
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
@@ -184,15 +169,15 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,taui=None,rho0i=None,T=298.15,par={}):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,taui=None,rho0i=None,T=298.15,par={},**kwargs):
     nt=len(t)
     nc=len(wi0)
     dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
-    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i)
+    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i,**kwargs)
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
         dlnai_dlnwi=np.asarray([dlnai_dlnxi(T,wt[i,:],**par) for i in range(nt)])
-        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i)).flatten()
+        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i,**kwargs)).flatten()
     wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-4)["x"].reshape((nt,nc))
 
     if not full_output:
@@ -246,6 +231,7 @@ if __name__=="__main__":
     exponent=np.asarray([0.,0.])
     dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
     wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,EJ=EJ,etaJ=etaJ,exponent=exponent)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,EJ=EJ,etaJ=etaJ,exponent=exponent)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])

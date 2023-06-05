@@ -1,7 +1,12 @@
 import numpy as np
 from numba import njit
 import matplotlib.pyplot as plt
-def MEOS_mode(ode,EJ, etaJ, exponent,RV,v2):
+def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
+    R=8.31448
+    T=298.15
+    RV=R*T*1/(M2/1000.)*1/v2
+    nJ=len(EJ)
+    _,nz_1=rhovinit.shape
     def MEOS_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         _,nz=dmuext.shape
         nTH=drhovdtB.shape[0]
@@ -26,7 +31,12 @@ def MEOS_mode(ode,EJ, etaJ, exponent,RV,v2):
         drhovdt[:,-1]=drhovdtB
         fvec=np.hstack((drhovdt.flatten(),dsigmaJdt.flatten()))
         return fvec
-    return MEOS_ode
+    
+    sigmaJ0=np.zeros((nz_1,nJ))
+    sigmaJB=np.zeros((nJ))
+    sigmaJ0[-1,:]=sigmaJB
+    xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
+    return xinit,MEOS_ode
 
 #@njit
 def MDF(sigmaJ,EJ,RV):
