@@ -3,7 +3,6 @@ from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix,Diffusion_MS_iter
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
 import numpy as np
-import casadi as cs
 import time
 from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
