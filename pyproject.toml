@@ -11,9 +11,10 @@ license = {text = "MIT"}
 
 dependencies = [
     "numpy",
+    "scipy",
     "pandas",
     "pywin32",
-    "casadi",
+    "textdistance",
     "matplotlib",
     "xloil"
 ]

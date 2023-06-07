@@ -108,7 +108,7 @@ def get_par_xloil(subst_input,path):
     header1=["Substance","CAS-Nr","Molar Mass",	"Segment Number","Segment Number/Molar Mass","Segment Diameter","Energy Parameter",
              	"Associating Energy", "Associating Volume",	 "Associating Scheme","Associating Scheme",	"Dipole Moment",
                   "Polarizability", "Quadrupole Moment" ,"Polarizability", "Charge", "z_alpha",	"B_alpha_alpha",
-                      	"T_melt",	"H_melt",	"Delta cp", "Delta cp slope","Tg","Free Param","Publication 1st"]
+                      	"T_melt",	"H_melt",	"Delta cp", "Delta cp slope","Delta cp slope","Free Param","Publication 1st"]
     header2=["Substance I", "Substance II","kij","kij T","kij T","kij T"]
     pure["Delta cp slope"]=pure["Molar Mass"].astype(float)*0
     pure["Free Param"]=pure["Molar Mass"].astype(float)*0
