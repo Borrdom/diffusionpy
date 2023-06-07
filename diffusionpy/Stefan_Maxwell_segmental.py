@@ -37,7 +37,8 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     rhoi=np.zeros((nc,nz_1))
     rhoi[mobiles,:]=rhov
     rhoi[immobiles,:]=rho*wi0[immobiles]
-    rhoi[:,-1]=rhoiB
+    rhoi[immobiles,-1]=rhoiB[immobiles]
+    if not np.any(drhovdtB): rhoi[mobiles,-1]=rhoiB[mobiles]
     wi=rhoi/np.sum(rhoi,axis=0)
     wibar = averaging(wi.T).T
     rhoibar= averaging(rhoi.T).T
@@ -118,8 +119,15 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #_____________________________________
     # Time-dependant surface concentration 
     if  taui is not None: 
-        from .surface_activity import time_dep_surface
-        rhoiB=lambda t: time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
+        from .surface_activity import time_dep_surface,gassided
+        #rhoiB=lambda t,rhov: time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
+        rhoiB[immobiles]=wi8[immobiles]*rho
+        rhoiB[mobiles]=wi0[mobiles]*rho
+        drhovdtB=lambda tvar,rhov: gassided(tvar,rhov,wi0[mobiles],wi8[mobiles],taui,THFaktor,t)
+        def rhoiB(tvar,rhov):
+            rhoiBtemp=wi0*rho
+            rhoiBtemp[immobiles]=(rho-np.sum(np.reshape(rhov,rhovinit.shape),axis=0))[-1]*wi0[immobiles]/np.sum(wi0[immobiles])
+            return rhoiBtemp
     #_____________________________________
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
@@ -129,8 +137,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor
-        rhoiB=rhoiB(t)          if callable(rhoiB)      else rhoiB
-        drhovdtB=drhovdtB(t)    if callable(drhovdtB)   else drhovdtB
+        rhoiB=rhoiB(t,x)          if callable(rhoiB)      else rhoiB
+        drhovdtB=drhovdtB(t,x)    if callable(drhovdtB)   else drhovdtB
         dxdt=ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB)
         return dxdt.flatten()
     print("------------- Start diffusion modeling ----------------")
@@ -156,6 +164,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
     Lt=rhok/rho*L
+    plt.plot(t,rhoik[:,1,-1])
     return wt.T if not full_output else (wt.T,wik,zvec,Lt)
 
 
@@ -206,9 +215,11 @@ if __name__=="__main__":
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
+
     from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
     T=298.15
     p=1E5
+    Dvec=np.asarray([1E-6,2.3E-10,1.7E-10])
     kij=D_Matrix(np.asarray([0.029,-0.05855362,0.027776682]),nc)
     par={"mi" :np.asarray([1.5255, 2.8149, 2889.9]),
     "ui" : np.asarray([188.9, 285.69, 204.65]),
@@ -220,22 +231,29 @@ if __name__=="__main__":
     "kij": kij}
     vpures=vpure(p,T,**par)
     par["vpure"]=vpures
-    
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
-    plt.plot(t,wt[:,0])
-    plt.plot(t,wt[:,1])
-    plt.plot(t,wt[:,2])
-
-    EJ=np.asarray([1E10])
-    etaJ=np.asarray([1E10])
-    exponent=np.asarray([0.,0.])
     dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,EJ=EJ,etaJ=etaJ,exponent=exponent)
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,EJ=EJ,etaJ=etaJ,exponent=exponent)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,taui=np.asarray([1,70]),T=T,par=par)
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),T=T,par=par)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
+    plt.savefig('filename.png', format='png',  transparent=True)
     plt.show()
+    # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
+    # plt.plot(t,wt[:,0])
+    # plt.plot(t,wt[:,1])
+    # plt.plot(t,wt[:,2])
+
+    # EJ=np.asarray([1E10])
+    # etaJ=np.asarray([1E10])
+    # exponent=np.asarray([0.,0.])
+    # dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,EJ=EJ,etaJ=etaJ,exponent=exponent)
+    # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,EJ=EJ,etaJ=etaJ,exponent=exponent)
+    # plt.plot(t,wt[:,0])
+    # plt.plot(t,wt[:,1])
+    # plt.plot(t,wt[:,2])
+    # plt.show()
     # t=np.linspace(0.,4000.*60.,nt)
     # Mi=np.asarray([18.015,65000])
     # EJ=np.asarray([1E10])
