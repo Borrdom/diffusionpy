@@ -37,7 +37,7 @@ sol=rhovec[np.argmin(np.abs(rhow_plus(rhovec)))]
 sigma_plus=RV*deltaa_fun(sol)
 sigma_plus=RV*(np.log(a18/a_fun(sol)))
 wsol=sol/(sol+rho0)
-wsol_lamW=B*lambertw(wi8/B)
+wsol_lamW=wi0+B*lambertw(wi8/B)
 print(wsol)
 print(wsol_lamW)
 print(wsol_lamW*rho0)
