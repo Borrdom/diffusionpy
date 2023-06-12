@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 from numba import njit,config
 from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
-#config.DISABLE_JIT = True
+# config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
@@ -54,7 +54,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     return  drhovdt
 
 
-def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,taui=None,rho0i=None,**kwargs):
+def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
     Inputs
@@ -84,8 +84,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     zvec=np.linspace(0,L,nz+1)
     nf=np.sum(mobile)
     nt=len(t)
-    rho=1200. if rho0i is None else np.sum(rho0i*wi0)
-    if rho0i is None : rho0i=rho*np.ones(nc)
+    rho=1200. if "rho0i" not in kwargs else np.sum(kwargs["rho0i"]*wi0)
+    if "rho0i" not in kwargs  : rho0i=rho*np.ones(nc)
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
@@ -93,7 +93,6 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit=(rho*wi0*np.ones((nz+1,nc))).T
     rhovinit=rhoiinit[mobiles,:]
-
     #Construct TH Factor
     THFaktor=np.eye(nTH)
     if dlnai_dlnwi is not None:
@@ -102,7 +101,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles,axis=1)
         #THFaktor[slc1]=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
-        THFaktor= interp1d(t,THFaktor,axis=0)
+        THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value="extrapolate")
     
     
     #Set up the PDEs boundary,initial conditions and additional driving forces.
@@ -118,26 +117,27 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #override these variables to alter the PDE
     #_____________________________________
     # Time-dependant surface concentration 
-    if  taui is not None: 
-        from .surface_activity import time_dep_surface,gassided
-        #rhoiB=lambda t,rhov: time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
-        rhoiB[immobiles]=wi8[immobiles]*rho
-        rhoiB[mobiles]=wi0[mobiles]*rho
-        drhovdtB=lambda tvar,rhov: gassided(tvar,rhov,wi0[mobiles],wi8[mobiles],taui,THFaktor,t)
-        def rhoiB(tvar,rhov):
-            rhoiBtemp=wi0*rho
-            rhoiBtemp[immobiles]=(rho-np.sum(np.reshape(rhov,rhovinit.shape),axis=0))[-1]*wi0[immobiles]/np.sum(wi0[immobiles])
-            return rhoiBtemp
+    # if  taui is not None: 
+    #     from .surface_activity import time_dep_surface,gassided
+    #     #rhoiB=lambda t: time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
+    #     drhovdtB=lambda tvar,rhov: gassided(tvar,rhov,wi0[mobiles],wi8[mobiles],taui,THFaktor,t)
+    #     def rhoiB(tvar,rhov):
+    #         rhoiBtemp=wi0*rho
+    #         rhoiBtemp[immobiles]=(rho-np.sum(np.reshape(rhov,rhovinit.shape),axis=0))[-1]*wi0[immobiles]/np.sum(wi0[immobiles])
+    #         return rhoiBtemp
     #_____________________________________
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import MEOS_mode
         xinit,ode=MEOS_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     #_____________________________________
+    # if "par" in kwargs:
+    if "witB" in kwargs: 
+        rhoiB=lambda tvar: kwargs['witB'](tvar)*rho
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor
-        rhoiB=rhoiB(t,x)          if callable(rhoiB)      else rhoiB
+        rhoiB=rhoiB(t)          if callable(rhoiB)      else rhoiB
         drhovdtB=drhovdtB(t,x)    if callable(drhovdtB)   else drhovdtB
         dxdt=ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB)
         return dxdt.flatten()
@@ -157,14 +157,16 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         rhovk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
         rhoik[k,:,:]=rhoiinit
         rhoik[k,mobiles,:]=rhovk
+        if callable(rhoiB): rhoik[k,:,-1]=rhoiB(t[k])
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
-        wik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui)) if taui is not None else wi8[mobiles]
+        # wik[k,mobiles,-1]=(wi8[mobiles]+(wi0[mobiles]-wi8[mobiles])*np.exp(-t[k]/taui)) if taui is not None else wi8[mobiles]
+        # wik[k,mobiles,-1]=wi8[mobiles]
         wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
     Lt=rhok/rho*L
-    plt.plot(t,rhoik[:,1,-1])
+    # plt.plot(t,rhoik[:,1,-1])
     return wt.T if not full_output else (wt.T,wik,zvec,Lt)
 
 
@@ -178,22 +180,22 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,taui=None,rho0i=None,T=298.15,par={},**kwargs):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,T=298.15,par={},**kwargs):
     nt=len(t)
     nc=len(wi0)
     dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
-    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i,**kwargs)
+    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
         dlnai_dlnwi=np.asarray([dlnai_dlnxi(T,wt[i,:],**par) for i in range(nt)])
-        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,taui=taui,rho0i=rho0i,**kwargs)).flatten()
-    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-4)["x"].reshape((nt,nc))
+        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()
+    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-3)["x"].reshape((nt,nc))
 
     if not full_output:
         return wtopt
     else: 
         dlnai_dlnwiopt=np.asarray([dlnai_dlnxi(T,wtopt[i,:],**par) for i,val in enumerate(wtopt[:,0])]).T
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,taui=taui,rho0i=rho0i)
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling)
     
 def convert(x,M,axis=0):
     y=np.empty(x.shape,M.dtype)
@@ -211,10 +213,7 @@ if __name__=="__main__":
     wi8=np.asarray([0.00001,0.127606346,0.872393654])
     Mi=np.asarray([32.042,92.142,90000.])
     mobile=np.asarray([True,True,False])
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile)
-    plt.plot(t,wt[:,0])
-    plt.plot(t,wt[:,1])
-    plt.plot(t,wt[:,2])
+
 
     from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
     T=298.15
@@ -232,8 +231,25 @@ if __name__=="__main__":
     vpures=vpure(p,T,**par)
     par["vpure"]=vpures
     dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
-    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,taui=np.asarray([1,70]),T=T,par=par)
-    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),T=T,par=par)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
+    plt.plot(t,wt[:,0])
+    plt.plot(t,wt[:,1])
+    plt.plot(t,wt[:,2])
+
+    taui=np.asarray([1,70])
+    from .surface_activity import time_dep_surface2
+    witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=None)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,witB=witB)
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]))
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),par=par)
+    plt.plot(t,wt[:,0])
+    plt.plot(t,wt[:,1])
+    plt.plot(t,wt[:,2])
+
+    witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=par)
+    wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,witB=witB)
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]))
+    # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),par=par)
     plt.plot(t,wt[:,0])
     plt.plot(t,wt[:,1])
     plt.plot(t,wt[:,2])
