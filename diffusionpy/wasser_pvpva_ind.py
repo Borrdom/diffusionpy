@@ -1,7 +1,6 @@
 import numpy as np
 from .Stefan_Maxwell_segmental import Diffusion_MS_iter,D_Matrix,Diffusion_MS
 from .PyCSAFT_nue import vpure
-from .surface_activity import time_dep_surface2
 import matplotlib.pyplot as plt
 
 nc=3

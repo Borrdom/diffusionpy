@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from .Stefan_Maxwell_segmental import Diffusion_MS_iter,D_Matrix,Diffusion_MS
-from .PyCSAFT_nue import vpure
-from .surface_activity import time_dep_surface2
+from .PyCSAFT_nue import vpure,lngi,dlnai_dlnxi
+from .surface_activity import time_dep_surface
 import matplotlib.pyplot as plt
 
 nt=500
@@ -31,24 +31,27 @@ par={"mi" :np.asarray([1.5255, 2.8149, 2889.9]),
 "kij": kij}
 vpures=vpure(p,T,**par)
 par["vpure"]=vpures
-dlnai_dlnwi=np.stack([dlnai_dlnxi(T,wi8*0.5+wi0*0.5,**par)]*nt)
-wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par)
+lngi_fun=lambda wi :lngi(T,wi,**par)
+dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
+
+
+wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 plt.plot(t,wt[:,0])
 plt.plot(t,wt[:,1])
 plt.plot(t,wt[:,2])
 
 taui=np.asarray([1,70])
-from .surface_activity import time_dep_surface2
-witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=None)
-wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,witB=witB)
+
+witB=time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None)
+wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi_fun=dlnai_dlnwi_fun,witB=witB)
 # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]))
 # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),par=par)
 plt.plot(t,wt[:,0])
 plt.plot(t,wt[:,1])
 plt.plot(t,wt[:,2])
 
-witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=par)
-wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,T=T,par=par,witB=witB)
+witB=time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=lngi_fun)
+wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi_fun=dlnai_dlnwi_fun,witB=witB)
 # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]))
 # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,taui=np.asarray([1,70]),par=par)
 plt.plot(t,wt[:,0])

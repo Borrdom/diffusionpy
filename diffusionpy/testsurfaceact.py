@@ -1,7 +1,7 @@
 import numpy as np
 from .Stefan_Maxwell_segmental import Diffusion_MS_iter,D_Matrix,Diffusion_MS
-from .PyCSAFT_nue import vpure
-from .surface_activity import time_dep_surface2
+from .PyCSAFT_nue import vpure,lngi,dlnai_dlnxi
+from .surface_activity import time_dep_surface
 import matplotlib.pyplot as plt
 
 nc=2
@@ -11,7 +11,7 @@ wi8=np.asarray([0.04,0.96])
 Mi=np.asarray([18.015,65000])
 
 mobile=np.asarray([True,False])
-T=298.15
+T=303.15
 p=1E5
 nt=300
 
@@ -34,14 +34,15 @@ par={"mi":np.asarray([1.20469,2420.99]),
 
 vpures=vpure(p,T,**par)
 par["vpure"]=vpures
-
+lngi_fun=lambda wi :lngi(T,wi,**par)
+dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 
 
 
 Dvec=np.asarray([5.6E-10])
 taui=np.asarray([21711.02587])
 
-witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=None)
+witB=time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None)
 wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB)
 plt.plot(t/60,wt[:,0],'g',label="Ideal and wiB(t)")
 plt.xlabel('t/min')
@@ -52,8 +53,9 @@ Dvec=np.asarray([5E-9])
 # taui=np.asarray([35711.02587])
 taui=np.asarray([21711.02587])
 
-witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=None)
-wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,T=T,par=par)
+witB=time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None)
+
+wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 plt.plot(t/60,witB[:,0],"bo")
 plt.plot(t/60,wt[:,0],'b',label="Non-ideal and wiB(t)")
 plt.legend("")
@@ -63,8 +65,8 @@ ARDwiB=np.sum(np.abs(1-np.interp(texp,t,wt[:,0])/ww_exp))
 
 # taui=np.asarray([85711.02587])
 taui=np.asarray([62711.02587])
-witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=par)
-wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,T=T,par=par)
+witB=time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=lngi_fun)
+wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 plt.plot(t/60,witB[:,0],"ro")
 plt.plot(t/60,wt[:,0],'r',label="Non-ideal and aiB(t)")
 
