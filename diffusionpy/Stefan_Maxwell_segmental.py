@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 from numba import njit,config
 from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
-config.DISABLE_JIT = True
+# config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
@@ -36,7 +36,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     nTH,nz_1=rhov.shape
     rhoi=np.zeros((nc,nz_1))
     rhoi[mobiles,:]=rhov
-    rhoi[immobiles,:]=rho*wi0[immobiles]
+    rhoi[immobiles,:]=rho*np.expand_dims(wi0[immobiles],1)
     rhoi[immobiles,-1]=rhoiB[immobiles]
     if not np.any(drhovdtB): rhoi[mobiles,-1]=rhoiB[mobiles]
     wi=rhoi/np.sum(rhoi,axis=0)
@@ -98,7 +98,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     if dlnai_dlnwi is not None:
         slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles)
         slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles)
-        massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles,axis=1)
+        massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1)
         #THFaktor[slc1]=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value="extrapolate")
