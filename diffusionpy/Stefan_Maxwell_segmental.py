@@ -114,26 +114,13 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         rhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
         return drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
-    #override these variables to alter the PDE
-    #_____________________________________
-    # Time-dependant surface concentration 
-    # if  taui is not None: 
-    #     from .surface_activity import time_dep_surface,gassided
-    #     #rhoiB=lambda t: time_dep_surface(t,wi0,wi8,mobiles,immobiles,taui,rho)
-    #     drhovdtB=lambda tvar,rhov: gassided(tvar,rhov,wi0[mobiles],wi8[mobiles],taui,THFaktor,t)
-    #     def rhoiB(tvar,rhov):
-    #         rhoiBtemp=wi0*rho
-    #         rhoiBtemp[immobiles]=(rho-np.sum(np.reshape(rhov,rhovinit.shape),axis=0))[-1]*wi0[immobiles]/np.sum(wi0[immobiles])
-    #         return rhoiBtemp
-    #_____________________________________
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import MEOS_mode
         xinit,ode=MEOS_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     #_____________________________________
     # if "par" in kwargs:
-    if "witB" in kwargs: 
-        rhoiB=lambda tvar: kwargs['witB'](tvar)*rho
+    if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value="extrapolate")
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor

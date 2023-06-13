@@ -58,4 +58,4 @@ def time_dep_surface2(t,wi0,wi8,mobile,taui,par=None):
     wit=np.zeros((nt,nc))
     wit[:,mobiles]=wvt
     wit[:,immobiles]=(1-np.sum(wvt,axis=1)[:,None])*wi0[None,immobiles]/np.sum(wi0[immobiles])
-    return interp1d(t,wit,axis=0,bounds_error=False,fill_value="extrapolate")
+    return wit

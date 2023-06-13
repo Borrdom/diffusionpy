@@ -54,7 +54,7 @@ taui=np.asarray([21711.02587])
 
 witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=None)
 wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,T=T,par=par)
-plt.plot(t/60,witB(t)[:,0],"bo")
+plt.plot(t/60,witB[:,0],"bo")
 plt.plot(t/60,wt[:,0],'b',label="Non-ideal and wiB(t)")
 plt.legend("")
 
@@ -65,7 +65,7 @@ ARDwiB=np.sum(np.abs(1-np.interp(texp,t,wt[:,0])/ww_exp))
 taui=np.asarray([62711.02587])
 witB=time_dep_surface2(t,wi0,wi8,mobile,taui,par=par)
 wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB,T=T,par=par)
-plt.plot(t/60,witB(t)[:,0],"ro")
+plt.plot(t/60,witB[:,0],"ro")
 plt.plot(t/60,wt[:,0],'r',label="Non-ideal and aiB(t)")
 
 ARDaiB=np.sum(np.abs(1-np.interp(texp,t,wt[:,0])/ww_exp))
