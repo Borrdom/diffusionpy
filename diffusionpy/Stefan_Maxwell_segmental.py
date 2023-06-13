@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 from numba import njit,config
 from .PyCSAFT_nue import dlnai_dlnxi,vpure,lngi
 import time
-# config.DISABLE_JIT = True
+config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
@@ -46,7 +46,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     B=BIJ_Matrix(D,wibar,mobiles,allflux) 
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)
-    di=rho*wi[mobiles,:]*dmui/np.atleast_2d(ri).T*omega if swelling else rhoibar[mobiles,:]*dmui/np.atleast_2d(ri).T
+    di=rho*wibar[mobiles,:]*dmui/np.atleast_2d(ri).T*omega if swelling else rhoibar[mobiles,:]*dmui/np.atleast_2d(ri).T
     ji=np_linalg_solve(B,di)
     jiB=np.zeros((nTH,1))
     dji=np.diff(np.hstack((jiB,ji)))
