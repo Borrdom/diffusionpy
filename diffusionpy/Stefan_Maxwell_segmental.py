@@ -85,6 +85,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     nt=len(t)
     rho=1200. if "rho0i" not in kwargs else np.sum(kwargs["rho0i"]*wi0)
     if "rho0i" not in kwargs  : rho0i=rho*np.ones(nc)
+    if "rho0i" in kwargs : rho0i=kwargs["rho0i"]
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
@@ -178,7 +179,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     if not full_output:
         return wtopt
     else: 
-        dlnai_dlnwiopt=np.asarray([dlnai_dlnwi_fun(wtopt[i,:]) for i,val in enumerate(wtopt[:,0])]).T
+        dlnai_dlnwiopt=np.asarray([dlnai_dlnwi_fun(wtopt[i,:]) for i,val in enumerate(wtopt[:,0])])
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
     
 def convert(x,M,axis=0):
