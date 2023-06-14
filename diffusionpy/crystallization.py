@@ -16,9 +16,9 @@ TSL=np.asarray([429.47])
 cpSL=np.asarray([87.44])
 ww=np.asarray([0.22302, 0.13792, 0.09208, 0.06118])
 dl=np.asarray([0.1 , 0.3 , 0.5 , 0.68])
-DAPI=np.asarray([0.59010330E-19])
+DAPI=np.asarray([0.59010330E-17])
 sigma=np.asarray([2.97730286E-02])
-kt=np.asarray([8.0778700E-13])
+kt=np.asarray([8.0778700E-12])
 g=np.asarray([3.92])
 Mi=np.asarray([18.015,65000.,230.26])
 rho0i=np.asarray([997.,1180.,1320.])
@@ -68,8 +68,8 @@ def Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,delta
     wiB=np.zeros((wi0.shape[0],t.shape[0]))
     wiB[mobiles,:]=wvB
     wiB[immobiles,:]=(1-np.sum(wiB[mobiles],axis=0))*np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),1)
-    rhoiB=interp1d(t,wiB*np.sum(wi0/rho0i)**-1)
-    return rhoiB
+    wiB=interp1d(t,wiB)
+    return wiB
 
 def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
     crystallizes=np.where(crystallize)
@@ -108,9 +108,11 @@ def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
     return dalphadt,dalphadr
 
-rhoiB=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
-print(rhoiB(t))
+wiB=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+import matplotlib.pyplot as plt
 
+plt.plot(t,wiB(t)[0])
+plt.show()
 
 def Krisnewerbut(wi,alpha,r,ww_fun,mobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None):
     crystallizes=np.where(crystallize)
