@@ -101,7 +101,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1)
         #THFaktor[slc1]=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
-        THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value="extrapolate")
+        THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value=(THFaktor[0,:,:],THFaktor[-1,:,:]))
     
     
     #Set up the PDEs boundary,initial conditions and additional driving forces.
@@ -119,7 +119,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         from .relaxation import MEOS_mode
         xinit,ode=MEOS_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     #_____________________________________
-    if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value="extrapolate")
+    if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor
@@ -173,8 +173,9 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     def wt_obj(wt_old):
         wt=wt_old.reshape((nt,nc))
         dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
-        return (wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()
-    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",tol=1E-3)["x"].reshape((nt,nc))
+        residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
+        return residual
+    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",options={"disp":True,"maxfev":10,"fatol":1E-6})["x"].reshape((nt,nc))
 
     if not full_output:
         return wtopt
