@@ -1,32 +1,75 @@
 import numpy as np
 from numba import njit
-from scipy import interp1d
-from.PyCSAFT_nue import lngi
+from scipy.interpolate import interp1d
+from.PyCSAFT_nue import lngi,vpure
+from.Stefan_Maxwell_segmental import D_Matrix
+from scipy.integrate import solve_ivp
+
 
 
 crystallize=np.asarray([False,False,True])
-deltaHSL=np.asarray([39300.])
-TSL=np.asarray([433.25])
-cpSL=np.asarray([116.95])
+mobile=np.asarray([True,False,False])
+mobiles=np.where(mobile)[0]
+immobiles=np.where(~mobile)[0]
+deltaHSL=np.asarray([31500.])
+TSL=np.asarray([429.47])
+cpSL=np.asarray([87.44])
 ww=np.asarray([0.22302, 0.13792, 0.09208, 0.06118])
 dl=np.asarray([0.1 , 0.3 , 0.5 , 0.68])
-DAPI=np.asarray([0.59010330e-19])
-sigma=np.asarray([2.97730286e-02])
-kt=np.asarray([8.0778700e-13])
+DAPI=np.asarray([0.59010330E-19])
+sigma=np.asarray([2.97730286E-02])
+kt=np.asarray([8.0778700E-13])
 g=np.asarray([3.92])
-Mi=np.asarray([18.015,25700.,300.])
+Mi=np.asarray([18.015,65000.,230.26])
 rho0i=np.asarray([997.,1180.,1320.])
 
-ww_fun=np.interp1(dl,ww)
+wv_fun=interp1d(dl,ww)
 
-def Bound(wv,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
+nc=3
+wi0=np.asarray([0.01,0.495,0.495])
+wi8=np.asarray([0.1,0.4,0.4])
+T=298.15
+p=1E5
+
+kij=D_Matrix(np.asarray([-0.156,-0.025,0]),nc)
+par={"mi":np.asarray([1.20469,2420.99, 8.105152]),
+"si": np.asarray([2.797059952,2.947, 2.939]),
+"ui" :np.asarray([353.95,205.27, 229.45]),
+"eAi" :np.asarray([2425.67,0., 934.2]),
+"kAi":np.asarray([0.04509,0.02, 0.02]),
+"NAi":np.asarray([1.,653., 2.]),
+"Mi": Mi,
+"kij":kij}
+
+vpures=vpure(p,T,**par)
+
+par["vpure"]=vpures
+nt=300
+t=np.linspace(0,300,nt)*60
+
+lngi_fun=lambda wi: lngi(T,wi,**par)
+
+
+
+
+def Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
     crystallizes=np.where(crystallize)
-    dalphadt,dalphadr=Kris(wv,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun)
-    def solve(): 1,2
-    alpha0=0
-    r0=0
-    alpha,r=solve(dalphadt,dalphadr,alpha0,r0)
-    return wv
+    alpha0=0.01
+    r0=0.01
+    def dxdt(t,x):
+        alpha,r=x[0],x[1]
+        dalphadt,dalphadr=Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+        return np.hstack((dalphadt,dalphadr))
+    x0=np.hstack((alpha0,r0))
+    xsol=solve_ivp(dxdt,(t[0],t[-1]),x0,method="Radau",t_eval=t)["y"]
+    alpha,r=xsol[0],xsol[1]
+    dl_la = (wi0[crystallizes]-alpha)/(1-alpha)
+    wvB=wv_fun(dl_la)
+    wiB=np.zeros((wi0.shape[0],t.shape[0]))
+    wiB[mobiles,:]=wvB
+    wiB[immobiles,:]=(1-np.sum(wiB[mobiles],axis=0))*np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),1)
+    rhoiB=interp1d(t,wiB*np.sum(wi0/rho0i)**-1)
+    return rhoiB
 
 def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
     crystallizes=np.where(crystallize)
@@ -49,8 +92,7 @@ def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,
     wi[immobiles]=(1-np.sum(wv))*wi0[immobiles]/np.sum(wi0[immobiles])
     lnaSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     lnai=lngi_fun(wi)-np.log(wi)
-    lnS_fun=lnai[crystallizes]-lnaSLE
-    dmu_sla=lnS_fun(wi)
+    dmu_sla=lnai[crystallizes]-lnaSLE
     rstar = ((2*sigma)/(C0*kB*temp*dmu_sla))
     deltaG=sigma**3*(16*np.pi)/(3*(C0*kB*temp*dmu_sla)**2)
     wv=wi[mobiles]
@@ -65,6 +107,10 @@ def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,
     dalphadN=pre*(r*scale_r)**3
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
     return dalphadt,dalphadr
+
+rhoiB=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+print(rhoiB(t))
+
 
 def Krisnewerbut(wi,alpha,r,ww_fun,mobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None):
     crystallizes=np.where(crystallize)
