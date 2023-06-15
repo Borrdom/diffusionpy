@@ -14,8 +14,8 @@ immobiles=np.where(~mobile)[0]
 deltaHSL=np.asarray([31500.])
 TSL=np.asarray([429.47])
 cpSL=np.asarray([87.44])
-ww=np.asarray([0.22302, 0.13792, 0.09208, 0.06118])
-dl=np.asarray([0.1 , 0.3 , 0.5 , 0.68])
+ww=np.asarray([0.27087,0.22302, 0.13792, 0.09208, 0.06118])
+dl=np.asarray([0,0.1 , 0.3 , 0.5 , 0.68])
 DAPI=np.asarray([0.59010330E-17])
 sigma=np.asarray([2.97730286E-02])
 kt=np.asarray([8.0778700E-12])
@@ -23,7 +23,7 @@ g=np.asarray([3.92])
 Mi=np.asarray([18.015,65000.,230.26])
 rho0i=np.asarray([997.,1180.,1320.])
 
-wv_fun=interp1d(dl,ww)
+wv_fun=interp1d(dl,ww,bounds_error=False,fill_value=(0.27087,0.06118))
 
 nc=3
 wi0=np.asarray([0.01,0.495,0.495])
@@ -45,7 +45,7 @@ vpures=vpure(p,T,**par)
 
 par["vpure"]=vpures
 nt=300
-t=np.linspace(0,300,nt)*60
+t=np.linspace(0,30000,nt)*60
 
 lngi_fun=lambda wi: lngi(T,wi,**par)
 
@@ -68,11 +68,10 @@ def Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,delta
     wiB=np.zeros((wi0.shape[0],t.shape[0]))
     wiB[mobiles,:]=wvB
     wiB[immobiles,:]=(1-np.sum(wiB[mobiles],axis=0))*np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),1)
-    wiB=interp1d(t,wiB)
-    return wiB
+    return wiB,alpha,r
 
 def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
-    crystallizes=np.where(crystallize)
+    crystallizes=np.where(crystallize)[0]
     R=8.31445
     NA=6.023E23
     kB=R/NA
@@ -83,16 +82,22 @@ def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,
     pre=rho*np.pi/(4*AR**2)
     scale_r=1E-6
     C0=rho/M*NA
-    X_la=wi0[crystallizes]-alpha
+    dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
+    X_la=dl0-alpha
     Xn_la=X_la/M
     wi=np.zeros_like(wi0)
-    dl_la = (wi0[crystallizes]-alpha)/(1-alpha)
+    dl_la = (dl0-alpha)/(1-alpha)
+
     wv=wv_fun(dl_la) if callable(wv_fun) else wv_fun
     wi[mobiles]=wv
-    wi[immobiles]=(1-np.sum(wv))*wi0[immobiles]/np.sum(wi0[immobiles])
-    lnaSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
-    lnai=lngi_fun(wi)-np.log(wi)
-    dmu_sla=lnai[crystallizes]-lnaSLE
+    wi[crystallizes]=(1-np.sum(wv,axis=0))*dl_la
+    wi[immobiles[crystallizes!=immobiles]]=(1-np.sum(wv,axis=0))*(1-np.sum(dl_la,axis=0))*wi0[immobiles[crystallizes!=immobiles]]/np.sum(wi0[immobiles])
+    lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
+    lnai=lngi_fun(wi)+np.log(wi)
+    dmu_sla=lnai[crystallizes]-lnaiSLE
+    print(dmu_sla)
+    # if alpha>0.5:
+    #     print(dl_la)
     rstar = ((2*sigma)/(C0*kB*temp*dmu_sla))
     deltaG=sigma**3*(16*np.pi)/(3*(C0*kB*temp*dmu_sla)**2)
     wv=wi[mobiles]
@@ -108,10 +113,12 @@ def Kris(alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
     return dalphadt,dalphadr
 
-wiB=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+wiB,alpha,r=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
 import matplotlib.pyplot as plt
 
-plt.plot(t,wiB(t)[0])
+
+# plt.plot(t/60,alpha)
+plt.plot(t/60,wiB[0,:])
 plt.show()
 
 def Krisnewerbut(wi,alpha,r,ww_fun,mobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None):
