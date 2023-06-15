@@ -70,10 +70,10 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             rho0iB (array_like): Hello \n
     Returns:
         ndarray:   
-        if `full_output=False `: \n
-        Matrix `wt` of mass fractions at t /- \n
+        if ``full_output=False ``: \n
+        Matrix ``wt`` of mass fractions at t /- \n
 
-        if `full_output=True `: \n 
+        if ``full_output=True ``: \n 
         Matrix of mass fractions at t       /- \n
         Matrix of mass fractions at t,z     /- \n
     See Also:
@@ -159,31 +159,31 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
 
 def D_Matrix(Dvec,nc):
     """
-    Creates a symmetric square Matrix `Dmat` of dimension `nc` 
-    using the elements in the vector `Dvec`.
-    It is assumed that the elements of `Dvec` fit precisly
-    in the upper and lower triangular entries of `Dmat`.
+    Creates a symmetric square Matrix ``Dmat`` of dimension ``nc`` 
+    using the elements in the vector ``Dvec``.
+    It is assumed that the elements of ``Dvec`` fit precisly
+    in the upper and lower triangular entries of ``Dmat``.
     
     Args:
-        Dvec (array_like): Must have the length of  `(nc-1)*nc/2` to fit in the diagionals of the result matrix
-        nc (int): Dimension of `Dmat`.
+        Dvec (array_like): Must have the length of  ``(nc-1)*nc/2`` to fit in the diagionals of the result matrix
+        nc (int): Dimension of ``Dmat``.
     Returns:
-        ndarray: square matrix `Dmat` of shape `(nc,nc)`
+        ndarray: square matrix ``Dmat`` of shape ``(nc,nc)``
     Raises:
         Exception
-            Wrong length of `Dvec`. Provide array with `(nc-1)*nc/2` entries
+            Wrong length of ``Dvec``. Provide array with ``(nc-1)*nc/2`` entries
     Examples:
         >>> Dvec=np.array([1E-13,2E-13,3E-13])
         >>> nc=3
         >>> Dmat=D_Matrix(Dvec,nc)
         >>> Dmat
         array([[0.e+00, 1.e-13, 2.e-13],
-            [1.e-13, 0.e+00, 3.e-13],
-            [2.e-13, 3.e-13, 0.e+00]])
+               [1.e-13, 0.e+00, 3.e-13],
+               [2.e-13, 3.e-13, 0.e+00]])
     """
     nd=(nc-1)*nc//2 
     if len(Dvec)!=nd: 
-        raise Exception("Wrong length of `Dvec`. Provide array with `(nc-1)*nc/2` entries")
+        raise Exception("Wrong length of ``Dvec``. Provide array with ``(nc-1)*nc/2`` entries")
     else:
         D=np.zeros((nc,nc))
         D[np.triu_indices_from(D,k=1)]=Dvec

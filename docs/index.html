@@ -38,25 +38,25 @@
 <span class="target" id="module-diffusionpy"></span><dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.D_Matrix">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">D_Matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.D_Matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a symmetric square Matrix <cite>Dmat</cite> of dimension <cite>nc</cite>
-using the elements in the vector <cite>Dvec</cite>.
-It is assumed that the elements of <cite>Dvec</cite> fit precisly
-in the upper and lower triangular entries of <cite>Dmat</cite>.</p>
+<dd><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code>
+using the elements in the vector <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>.
+It is assumed that the elements of <code class="docutils literal notranslate"><span class="pre">Dvec</span></code> fit precisly
+in the upper and lower triangular entries of <code class="docutils literal notranslate"><span class="pre">Dmat</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Dvec</strong> (<em>array_like</em>) – Must have the length of  <cite>(nc-1)*nc/2</cite> to fit in the diagionals of the result matrix</p></li>
-<li><p><strong>nc</strong> (<em>int</em>) – Dimension of <cite>Dmat</cite>.</p></li>
+<li><p><strong>Dvec</strong> (<em>array_like</em>) – Must have the length of  <code class="docutils literal notranslate"><span class="pre">(nc-1)*nc/2</span></code> to fit in the diagionals of the result matrix</p></li>
+<li><p><strong>nc</strong> (<em>int</em>) – Dimension of <code class="docutils literal notranslate"><span class="pre">Dmat</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>square matrix <cite>Dmat</cite> of shape <cite>(nc,nc)</cite></p>
+<dd class="field-even"><p>square matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(nc,nc)</span></code></p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>ndarray</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>Exception</strong> – Wrong length of <cite>Dvec</cite>. Provide array with <cite>(nc-1)*nc/2</cite> entries</p>
+<dd class="field-even"><p><strong>Exception</strong> – Wrong length of <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>. Provide array with <code class="docutils literal notranslate"><span class="pre">(nc-1)*nc/2</span></code> entries</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -65,8 +65,8 @@ in the upper and lower triangular entries of <cite>Dmat</cite>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Dmat</span><span class="o">=</span><span class="n">D_Matrix</span><span class="p">(</span><span class="n">Dvec</span><span class="p">,</span><span class="n">nc</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Dmat</span>
 <span class="go">array([[0.e+00, 1.e-13, 2.e-13],</span>
-<span class="go">    [1.e-13, 0.e+00, 3.e-13],</span>
-<span class="go">    [2.e-13, 3.e-13, 0.e+00]])</span>
+<span class="go">       [1.e-13, 0.e+00, 3.e-13],</span>
+<span class="go">       [2.e-13, 3.e-13, 0.e+00]])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -91,9 +91,9 @@ in the upper and lower triangular entries of <cite>Dmat</cite>.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>if <a href="#id1"><span class="problematic" id="id2">`</span></a>full_output=False <a href="#id3"><span class="problematic" id="id4">`</span></a>:</p>
-<p>Matrix <cite>wt</cite> of mass fractions at t /-</p>
-<p>if <a href="#id5"><span class="problematic" id="id6">`</span></a>full_output=True <a href="#id7"><span class="problematic" id="id8">`</span></a>:</p>
+<dd class="field-even"><p><p>if <a href="#id1"><span class="problematic" id="id2">``</span></a>full_output=False <a href="#id3"><span class="problematic" id="id4">``</span></a>:</p>
+<p>Matrix <code class="docutils literal notranslate"><span class="pre">wt</span></code> of mass fractions at t /-</p>
+<p>if <a href="#id5"><span class="problematic" id="id6">``</span></a>full_output=True <a href="#id7"><span class="problematic" id="id8">``</span></a>:</p>
 <p>Matrix of mass fractions at t       /-</p>
 <p>Matrix of mass fractions at t,z     /-</p>
 </p>
