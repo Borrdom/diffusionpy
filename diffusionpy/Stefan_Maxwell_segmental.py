@@ -70,10 +70,10 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             rho0iB (array_like): Hello \n
     Returns:
         ndarray:   
-        if ``full_output=False ``: \n
+        if ``full_output=False``: \n
         Matrix ``wt`` of mass fractions at t /- \n
 
-        if ``full_output=True ``: \n 
+        if ``full_output=True``: \n 
         Matrix of mass fractions at t       /- \n
         Matrix of mass fractions at t,z     /- \n
     See Also:
@@ -163,7 +163,6 @@ def D_Matrix(Dvec,nc):
     using the elements in the vector ``Dvec``.
     It is assumed that the elements of ``Dvec`` fit precisly
     in the upper and lower triangular entries of ``Dmat``.
-    
     Args:
         Dvec (array_like): Must have the length of  ``(nc-1)*nc/2`` to fit in the diagionals of the result matrix
         nc (int): Dimension of ``Dmat``.
