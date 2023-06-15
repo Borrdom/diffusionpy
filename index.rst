@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to diffusionpy's documentation!
+Welcome to diffusionpy!
 =======================================
 
 .. toctree::
@@ -11,7 +11,7 @@ Welcome to diffusionpy's documentation!
    :caption: Contents:
 
 .. automodule:: diffusionpy
-   :members: Diffusion_MS
+   :members: Diffusion_MS,D_Matrix
 
 
 Indices and tables

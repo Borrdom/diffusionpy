@@ -56,25 +56,28 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
 def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
-    Inputs
-    ----------
-    t  :    array_like  time                                /s
-    L  :    float       dry thickness                       /m
-    Dvec:   array_like  Vector of diffusion coefficients. 
-    The length of this vector is nd=(nc-1)*n/2, where nc 
-    is the number of components                             /m^2/s
-    wi0:    array_like   Mass fractions at t=0               /-
-    wi8:    array_like   Mass fraction at t=infinity         /-
-    Mi:    array_like   Molar mass of components nc         /g/mol
-    dlnai_dlnwi: array_like estimate for DlnaiDlnx at t          /-
-    Returns
-    -------
-    wt:    array_like   Matrix of mass fractions at t       /-
+    
+    Args:
+        t (array_like): time
+        L (float) : dry thickness /m
+        Dvec (array_like): Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s
+        wi0 (array_like): Mass fractions at t=0               /-
+        wi8 (array_like): Mass fraction at t=infinity         /-
+        Mi (array_like):   Molar mass of components nc         /g/mol
+        dlnai_dlnwi (array_like): estimate for DlnaiDlnx at t          /-
+        Keyword Arguments:
+            wiB (array_like): Hello \n
+            rho0iB (array_like): Hello \n
+    Returns:
+        ndarray:   
+        if `full_output=False `: \n
+        Matrix `wt` of mass fractions at t /- \n
 
-    Full output
-    -------
-    wt:    array_like   Matrix of mass fractions at t       /-
-    wtz:    array_like  Matrix of mass fractions at t,z     /-
+        if `full_output=True `: \n 
+        Matrix of mass fractions at t       /- \n
+        Matrix of mass fractions at t,z     /- \n
+    See Also:
+        diffusionpy.D_Matrix
     """
     nc=len(wi0)
     nz=20
@@ -155,9 +158,32 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
 
 
 def D_Matrix(Dvec,nc):
+    """
+    Creates a symmetric square Matrix `Dmat` of dimension `nc` 
+    using the elements in the vector `Dvec`.
+    It is assumed that the elements of `Dvec` fit precisly
+    in the upper and lower triangular entries of `Dmat`.
+    
+    Args:
+        Dvec (array_like): Must have the length of  `(nc-1)*nc/2` to fit in the diagionals of the result matrix
+        nc (int): Dimension of `Dmat`.
+    Returns:
+        ndarray: square matrix `Dmat` of shape `(nc,nc)`
+    Raises:
+        Exception
+            Wrong length of `Dvec`. Provide array with `(nc-1)*nc/2` entries
+    Examples:
+        >>> Dvec=np.array([1E-13,2E-13,3E-13])
+        >>> nc=3
+        >>> Dmat=D_Matrix(Dvec,nc)
+        >>> Dmat
+        array([[0.e+00, 1.e-13, 2.e-13],
+            [1.e-13, 0.e+00, 3.e-13],
+            [2.e-13, 3.e-13, 0.e+00]])
+    """
     nd=(nc-1)*nc//2 
     if len(Dvec)!=nd: 
-        raise Exception("Wrong number of diffusion coefficients. Provide array with "+str(nd)+" entries")
+        raise Exception("Wrong length of `Dvec`. Provide array with `(nc-1)*nc/2` entries")
     else:
         D=np.zeros((nc,nc))
         D[np.triu_indices_from(D,k=1)]=Dvec
