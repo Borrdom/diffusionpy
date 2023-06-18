@@ -190,6 +190,30 @@ def D_Matrix(Dvec,nc):
     return D
 
 def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,dlnai_dlnwi_fun=None,**kwargs):
+    """iterates dlnai_dlnwi as a function of the concentration wi
+
+    Args:
+        t (array_like): time
+        L (float) : dry thickness /m
+        Dvec (array_like): Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s
+        wi0 (array_like): Mass fractions at t=0               /-
+        wi8 (array_like): Mass fraction at t=infinity         /-
+        Mi (array_like):   Molar mass of components nc         /g/mol
+        dlnai_dlnwi (array_like): estimate for DlnaiDlnx at t          /-
+
+    Returns:
+        ndarray:   
+        if ``full_output=False``: \n
+        Matrix ``wt`` of mass fractions at t /- \n
+
+        if ``full_output=True``: \n 
+        Matrix of mass fractions at t       /- \n
+        Matrix of mass fractions at t,z     /- \n
+
+    See also:
+        diffusionpy.Diffusion_MS
+    
+    """
     nt=len(t)
     nc=len(wi0)
     if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
