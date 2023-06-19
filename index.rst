@@ -12,11 +12,6 @@ Welcome to diffusionpy!
 
 
 
-.. autosummary:: 
-   :recursive:
-   :toctree: _autosummary
-   diffusionpy.diffusionpy
-
 Indices and tables
 ==================
 

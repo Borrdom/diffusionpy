@@ -1,0 +1,38 @@
+:py:mod:`diffusionpy.relaxation`
+================================
+
+.. py:module:: diffusionpy.relaxation
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.relaxation.MEOS_mode
+   diffusionpy.relaxation.MDF
+   diffusionpy.relaxation.stress
+   diffusionpy.relaxation.boundary
+   diffusionpy.relaxation.initialboundary
+
+
+
+.. py:function:: MEOS_mode(rhovinit, ode, EJ, etaJ, exponent, M2, v2)
+
+
+.. py:function:: MDF(sigmaJ, EJ, RV)
+
+
+.. py:function:: stress(etaWL, EJ, sigmaJ, drhodtNF, v2)
+
+
+.. py:function:: boundary(rhov, etaWL, EJ, sigmaJ, RV, THFaktor, v2)
+
+
+.. py:function:: initialboundary(RV, EJ, v2, THFaktors, rho, mobiles, wi0, wi8)
+
+

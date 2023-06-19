@@ -1,0 +1,102 @@
+:py:mod:`diffusionpy.PyCSAFT_nue`
+=================================
+
+.. py:module:: diffusionpy.PyCSAFT_nue
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.PyCSAFT_nue.ares
+   diffusionpy.PyCSAFT_nue.eta_iter
+   diffusionpy.PyCSAFT_nue.vpure
+   diffusionpy.PyCSAFT_nue.lngi
+   diffusionpy.PyCSAFT_nue.lnphi_TP
+   diffusionpy.PyCSAFT_nue.dlnai_dlnxi
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.PyCSAFT_nue.T
+   diffusionpy.PyCSAFT_nue.p
+   diffusionpy.PyCSAFT_nue.npoint
+   diffusionpy.PyCSAFT_nue.par
+   diffusionpy.PyCSAFT_nue.x1
+   diffusionpy.PyCSAFT_nue.x2
+   diffusionpy.PyCSAFT_nue.xi
+   diffusionpy.PyCSAFT_nue.vpures
+   diffusionpy.PyCSAFT_nue.lngiammai
+   diffusionpy.PyCSAFT_nue.Gammai
+
+
+.. py:function:: ares(T, eta, xi, mi, si, ui, eAi, kAi, NAi, kij, kijA)
+
+
+.. py:function:: eta_iter(p, T, xi, mi, si, ui, eAi, kAi, NAi, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]))
+
+
+.. py:function:: vpure(p, T, mi, si, ui, eAi, kAi, NAi, **kwargs)
+
+
+.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi=None, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]), **kwargs)
+
+
+.. py:function:: lnphi_TP(p, T, xi, mi, si, ui, eAi, kAi, NAi, Mi=None, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]), **kwargs)
+
+
+.. py:function:: dlnai_dlnxi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi=None, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]), idx=None, **kwargs)
+
+
+.. py:data:: T
+   :value: 298.15
+
+   
+
+.. py:data:: p
+   :value: 100000.0
+
+   
+
+.. py:data:: npoint
+   :value: 2
+
+   
+
+.. py:data:: par
+
+   
+
+.. py:data:: x1
+
+   
+
+.. py:data:: x2
+
+   
+
+.. py:data:: xi
+
+   
+
+.. py:data:: vpures
+
+   
+
+.. py:data:: lngiammai
+
+   
+
+.. py:data:: Gammai
+
+   
+

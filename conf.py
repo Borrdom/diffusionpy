@@ -42,6 +42,10 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon','sphinx.ext.autosummary']
 autosummary_generate = True
+extensions.append('autoapi.extension')
+
+autoapi_type = 'python'
+autoapi_dirs = ['diffusionpy']
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

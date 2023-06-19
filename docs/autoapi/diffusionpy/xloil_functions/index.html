@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>diffusionpy.xloil_functions &#8212; diffusionpy 2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="diffusionpy.surface_activity" href="../surface_activity/index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-diffusionpy.xloil_functions">
+<span id="diffusionpy-xloil-functions"></span><h1><a class="reference internal" href="#module-diffusionpy.xloil_functions" title="diffusionpy.xloil_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.xloil_functions</span></code></a><a class="headerlink" href="#module-diffusionpy.xloil_functions" title="Permalink to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading">¶</a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.Diffusion_MS_xloil" title="diffusionpy.xloil_functions.Diffusion_MS_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_xloil</span></code></a>(t, L, Dvec, w0, w8, Mi, mobile[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.Diffusion_MS_iter_xloil" title="diffusionpy.xloil_functions.Diffusion_MS_iter_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter_xloil</span></code></a>(t, L, Dvec, w0, w8, Mi, mobile)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.gradient" title="diffusionpy.xloil_functions.gradient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradient</span></code></a>(x, y)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.reduce_points" title="diffusionpy.xloil_functions.reduce_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_points</span></code></a>(x, n)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.crank_xl" title="diffusionpy.xloil_functions.crank_xl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crank_xl</span></code></a>(t, L0, Ds, ws0, ws8)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.interp1d" title="diffusionpy.xloil_functions.interp1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp1d</span></code></a>(x, xp, fp)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.BHX_xloil" title="diffusionpy.xloil_functions.BHX_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BHX_xloil</span></code></a>(t, kf, kr, ws0, ws8, mfinfty, mrinfty)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.DasDennis_xloil" title="diffusionpy.xloil_functions.DasDennis_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DasDennis_xloil</span></code></a>(p, dim)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.add_custom" title="diffusionpy.xloil_functions.add_custom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_custom</span></code></a>(a, b)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.get_path" title="diffusionpy.xloil_functions.get_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_path</span></code></a>(ctrl)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.get_par_xloil" title="diffusionpy.xloil_functions.get_par_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_par_xloil</span></code></a>(subst_input, path)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.create_header" title="diffusionpy.xloil_functions.create_header"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_header</span></code></a>(ctrl)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2" title="diffusionpy.xloil_functions.PC_SAFT_NpT2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PC_SAFT_NpT2</span></code></a>(pure, kij, header, inputs)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions._excelgui" title="diffusionpy.xloil_functions._excelgui"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_excelgui</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.Diffusion_MS_xloil">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.Diffusion_MS_xloil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.Diffusion_MS_iter_xloil">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.Diffusion_MS_iter_xloil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.gradient">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.gradient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.reduce_points">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">reduce_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.reduce_points" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.crank_xl">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">crank_xl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.crank_xl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.interp1d">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">interp1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.interp1d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.BHX_xloil">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">BHX_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mfinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mrinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.BHX_xloil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.DasDennis_xloil">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">DasDennis_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.DasDennis_xloil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.add_custom">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">add_custom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.add_custom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.get_path">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctrl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.get_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.get_par_xloil">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">get_par_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subst_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.get_par_xloil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.create_header">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">create_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctrl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.create_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions._excelgui">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">_excelgui</span></span><a class="headerlink" href="#diffusionpy.xloil_functions._excelgui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.xloil_functions.PC_SAFT_NpT2">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">PC_SAFT_NpT2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">diffusionpy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">API Reference</a><ul>
+  <li><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><ul>
+      <li>Previous: <a href="../surface_activity/index.html" title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Borrdom.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/autoapi/diffusionpy/xloil_functions/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

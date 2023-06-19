@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>diffusionpy.Stefan_Maxwell_segmental &#8212; diffusionpy 2023 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="diffusionpy.crank_and_other" href="../crank_and_other/index.html" />
+    <link rel="prev" title="diffusionpy.PyCSAFT_nue" href="../PyCSAFT_nue/index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-diffusionpy.Stefan_Maxwell_segmental">
+<span id="diffusionpy-stefan-maxwell-segmental"></span><h1><a class="reference internal" href="#module-diffusionpy.Stefan_Maxwell_segmental" title="diffusionpy.Stefan_Maxwell_segmental"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a><a class="headerlink" href="#module-diffusionpy.Stefan_Maxwell_segmental" title="Permalink to this heading">¶</a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading">¶</a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.drhodt" title="diffusionpy.Stefan_Maxwell_segmental.drhodt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drhodt</span></code></a>(t, rhov, THFaktor, mobiles, immobiles, Mi, D, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
+<td><p>Method that computes the multi-component diffusion kinetics</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.D_Matrix" title="diffusionpy.Stefan_Maxwell_segmental.D_Matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">D_Matrix</span></code></a>(Dvec, nc)</p></td>
+<td><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
+<td><p>iterates dlnai_dlnwi as a function of the concentration wi</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.convert" title="diffusionpy.Stefan_Maxwell_segmental.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a>(x, M[, axis])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.drhodt">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">drhodt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THFaktor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allflux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmuext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhoiB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drhovdtB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.drhodt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that computes the multi-component diffusion kinetics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array_like</em>) – time</p></li>
+<li><p><strong>L</strong> (<em>float</em>) – dry thickness /m</p></li>
+<li><p><strong>Dvec</strong> (<em>array_like</em>) – Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s</p></li>
+<li><p><strong>wi0</strong> (<em>array_like</em>) – Mass fractions at t=0               /-</p></li>
+<li><p><strong>wi8</strong> (<em>array_like</em>) – Mass fraction at t=infinity         /-</p></li>
+<li><p><strong>Mi</strong> (<em>array_like</em>) – Molar mass of components nc         /g/mol</p></li>
+<li><p><strong>dlnai_dlnwi</strong> (<em>array_like</em>) – estimate for DlnaiDlnx at t          /-</p></li>
+<li><p><strong>Arguments</strong> (<em>Keyword</em>) – <p>wiB (array_like): Hello</p>
+<p>rho0iB (array_like): Hello</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>if <code class="docutils literal notranslate"><span class="pre">full_output=False</span></code>:</p>
+<p>Matrix <code class="docutils literal notranslate"><span class="pre">wt</span></code> of mass fractions at t /-</p>
+<p>if <code class="docutils literal notranslate"><span class="pre">full_output=True</span></code>:</p>
+<p>Matrix of mass fractions at t       /-</p>
+<p>Matrix of mass fractions at t,z     /-</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>diffusionpy.D_Matrix</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.D_Matrix">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">D_Matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.D_Matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code>
+using the elements in the vector <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>.
+It is assumed that the elements of <code class="docutils literal notranslate"><span class="pre">Dvec</span></code> fit precisly
+in the upper and lower triangular entries of <code class="docutils literal notranslate"><span class="pre">Dmat</span></code>.
+:param Dvec: Must have the length of  <code class="docutils literal notranslate"><span class="pre">(nc-1)*nc/2</span></code> to fit in the diagionals of the result matrix
+:type Dvec: array_like
+:param nc: Dimension of <code class="docutils literal notranslate"><span class="pre">Dmat</span></code>.
+:type nc: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>square matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(nc,nc)</span></code></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – Wrong length of <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>. Provide array with <code class="docutils literal notranslate"><span class="pre">(nc-1)*nc/2</span></code> entries</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Dvec</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1E-13</span><span class="p">,</span><span class="mf">2E-13</span><span class="p">,</span><span class="mf">3E-13</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nc</span><span class="o">=</span><span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Dmat</span><span class="o">=</span><span class="n">D_Matrix</span><span class="p">(</span><span class="n">Dvec</span><span class="p">,</span><span class="n">nc</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Dmat</span>
+<span class="go">array([[0.e+00, 1.e-13, 2.e-13],</span>
+<span class="go">       [1.e-13, 0.e+00, 3.e-13],</span>
+<span class="go">       [2.e-13, 3.e-13, 0.e+00]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter" title="Permalink to this definition">¶</a></dt>
+<dd><p>iterates dlnai_dlnwi as a function of the concentration wi</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array_like</em>) – time</p></li>
+<li><p><strong>L</strong> (<em>float</em>) – dry thickness /m</p></li>
+<li><p><strong>Dvec</strong> (<em>array_like</em>) – Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s</p></li>
+<li><p><strong>wi0</strong> (<em>array_like</em>) – Mass fractions at t=0               /-</p></li>
+<li><p><strong>wi8</strong> (<em>array_like</em>) – Mass fraction at t=infinity         /-</p></li>
+<li><p><strong>Mi</strong> (<em>array_like</em>) – Molar mass of components nc         /g/mol</p></li>
+<li><p><strong>dlnai_dlnwi</strong> (<em>array_like</em>) – estimate for DlnaiDlnx at t          /-</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>if <code class="docutils literal notranslate"><span class="pre">full_output=False</span></code>:</p>
+<p>Matrix <code class="docutils literal notranslate"><span class="pre">wt</span></code> of mass fractions at t /-</p>
+<p>if <code class="docutils literal notranslate"><span class="pre">full_output=True</span></code>:</p>
+<p>Matrix of mass fractions at t       /-</p>
+<p>Matrix of mass fractions at t,z     /-</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>diffusionpy.Diffusion_MS</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.convert">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">diffusionpy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">API Reference</a><ul>
+  <li><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><ul>
+      <li>Previous: <a href="../PyCSAFT_nue/index.html" title="previous chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
+      <li>Next: <a href="../crank_and_other/index.html" title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Borrdom.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../../_sources/autoapi/diffusionpy/Stefan_Maxwell_segmental/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

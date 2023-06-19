@@ -1,0 +1,34 @@
+:py:mod:`diffusionpy.crank_and_other`
+=====================================
+
+.. py:module:: diffusionpy.crank_and_other
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.crank_and_other.crank
+   diffusionpy.crank_and_other.Relaxation
+   diffusionpy.crank_and_other.BHModel
+   diffusionpy.crank_and_other.BHX
+
+
+
+.. py:function:: crank(t, kf, mfinfty)
+
+
+.. py:function:: Relaxation(t, kr, nr, mrinfty)
+
+
+.. py:function:: BHModel(t, kf, kr, nr, mfinfty, mrinfty)
+
+
+.. py:function:: BHX(t, kf, kr, nr, X0, Xinfty, mfinfty, mrinfty)
+
+

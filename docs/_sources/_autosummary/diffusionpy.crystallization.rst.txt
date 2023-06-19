@@ -15,8 +15,6 @@ diffusionpy.crystallization
    
       Bound
       Kris
-      dlnai_dlnwi_fun
-      lngi_fun
    
    
 

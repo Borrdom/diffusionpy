@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>diffusionpy.Stefan_Maxwell_segmental &#8212; diffusionpy 2023 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
    
@@ -32,27 +31,23 @@
           <div class="body" role="main">
             
   <section id="module-diffusionpy.Stefan_Maxwell_segmental">
-<span id="diffusionpy-stefan-maxwell-segmental"></span><h1>diffusionpy.Stefan_Maxwell_segmental<a class="headerlink" href="#module-diffusionpy.Stefan_Maxwell_segmental" title="Permalink to this headline">¶</a></h1>
+<span id="diffusionpy-stefan-maxwell-segmental"></span><h1>diffusionpy.Stefan_Maxwell_segmental<a class="headerlink" href="#module-diffusionpy.Stefan_Maxwell_segmental" title="Permalink to this heading">¶</a></h1>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">D_Matrix</span></code>(Dvec, nc)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../autoapi/diffusionpy/Stefan_Maxwell_segmental/index.html#diffusionpy.Stefan_Maxwell_segmental.D_Matrix" title="diffusionpy.Stefan_Maxwell_segmental.D_Matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">D_Matrix</span></code></a>(Dvec, nc)</p></td>
 <td><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code> using the elements in the vector <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS</span></code>(t, L, Dvec, wi0, wi8, Mi, mobile)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../autoapi/diffusionpy/Stefan_Maxwell_segmental/index.html#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile)</p></td>
 <td><p>Method that computes the multi-component diffusion kinetics</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code>(t, L, Dvec, wi0, wi8, Mi, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../autoapi/diffusionpy/Stefan_Maxwell_segmental/index.html#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code></a>(t, L, Dvec, wi0, wi8, Mi, ...)</p></td>
 <td><p>iterates dlnai_dlnwi as a function of the concentration wi</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code>(x, M[, axis])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../autoapi/diffusionpy/Stefan_Maxwell_segmental/index.html#diffusionpy.Stefan_Maxwell_segmental.convert" title="diffusionpy.Stefan_Maxwell_segmental.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a>(x, M[, axis])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">drhodt</span></code>(t, rhov, THFaktor, mobiles, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../autoapi/diffusionpy/Stefan_Maxwell_segmental/index.html#diffusionpy.Stefan_Maxwell_segmental.drhodt" title="diffusionpy.Stefan_Maxwell_segmental.drhodt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drhodt</span></code></a>(t, rhov, THFaktor, mobiles, ...)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -76,6 +71,10 @@
 
 
 <h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
@@ -93,7 +92,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -110,7 +109,7 @@
       &copy;2023, Borrdom.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

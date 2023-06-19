@@ -1,0 +1,38 @@
+:py:mod:`diffusionpy.crystallization`
+=====================================
+
+.. py:module:: diffusionpy.crystallization
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.crystallization.Bound
+   diffusionpy.crystallization.Kris
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.crystallization.crystallize
+
+
+.. py:function:: Bound(t, mobiles, immobiles, crystallize, wi0, wi8, rho0i, Mi, DAPI, sigma, kt, g, deltaHSL, TSL, cpSL, lngi_fun=None, wv_fun=None)
+
+
+.. py:function:: Kris(t, alpha, r, mobiles, immobiles, crystallize, wi0, wi8, rho0i, Mi, DAPI, sigma, kt, g, deltaHSL, TSL, cpSL, lngi_fun=None, wv_fun=None)
+
+
+.. py:data:: crystallize
+
+   
+

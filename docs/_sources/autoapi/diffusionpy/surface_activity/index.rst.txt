@@ -1,0 +1,22 @@
+:py:mod:`diffusionpy.surface_activity`
+======================================
+
+.. py:module:: diffusionpy.surface_activity
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   diffusionpy.surface_activity.time_dep_surface
+
+
+
+.. py:function:: time_dep_surface(t, wi0, wi8, mobile, taui, lngi_fun=None)
+
+
