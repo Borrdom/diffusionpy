@@ -81,74 +81,74 @@ def Kris(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
 
 
 
+if __name__=="main":
+    crystallize=np.asarray([False,False,True])
+    mobile=np.asarray([True,False,False])
+    mobiles=np.where(mobile)[0]
+    immobiles=np.where(~mobile)[0]
+    deltaHSL=np.asarray([31500.])
+    TSL=np.asarray([429.47])
+    cpSL=np.asarray([87.44])
+    ww=np.asarray([0.27087,0.22302, 0.13792, 0.09208, 0.06118])
+    dl=np.asarray([0,0.1 , 0.3 , 0.5 , 0.68])
+    DAPI=np.asarray([6.6E-17])
+    sigma=np.asarray([1.98E-02])
+    kt=np.asarray([5.1E-12])
+    g=np.asarray([3.2])
+    Mi=np.asarray([18.015,65000.,230.26])
+    rho0i=np.asarray([997.,1180.,1320.])
 
-crystallize=np.asarray([False,False,True])
-mobile=np.asarray([True,False,False])
-mobiles=np.where(mobile)[0]
-immobiles=np.where(~mobile)[0]
-deltaHSL=np.asarray([31500.])
-TSL=np.asarray([429.47])
-cpSL=np.asarray([87.44])
-ww=np.asarray([0.27087,0.22302, 0.13792, 0.09208, 0.06118])
-dl=np.asarray([0,0.1 , 0.3 , 0.5 , 0.68])
-DAPI=np.asarray([6.6E-17])
-sigma=np.asarray([1.98E-02])
-kt=np.asarray([5.1E-12])
-g=np.asarray([3.2])
-Mi=np.asarray([18.015,65000.,230.26])
-rho0i=np.asarray([997.,1180.,1320.])
+    wv_fun=interp1d(dl,ww,bounds_error=False,fill_value=(0.27087,0.06118))
 
-wv_fun=interp1d(dl,ww,bounds_error=False,fill_value=(0.27087,0.06118))
+    nc=3
+    wv0=0.0001
+    dl0=0.68
+    wi0=np.asarray([wv0,(1-wv0)*(1-dl0),(1-wv0)*dl0])
+    wv8=wv_fun(dl0)
+    wi8=np.asarray([wv8,(1-wv8)*(1-dl0),(1-wv8)*dl0])
+    T=298.15
+    p=1E5
 
-nc=3
-wv0=0.0001
-dl0=0.68
-wi0=np.asarray([wv0,(1-wv0)*(1-dl0),(1-wv0)*dl0])
-wv8=wv_fun(dl0)
-wi8=np.asarray([wv8,(1-wv8)*(1-dl0),(1-wv8)*dl0])
-T=298.15
-p=1E5
+    kij=D_Matrix(np.asarray([-0.128,0.00648,-0.0574]),nc)
+    par={"mi":np.asarray([1.20469,2420.99, 8.105152]),
+    "si": np.asarray([2.797059952,2.947, 2.939]),
+    "ui" :np.asarray([353.95,205.27, 229.45]),
+    "eAi" :np.asarray([2425.67,0., 934.2]),
+    "kAi":np.asarray([0.04509,0.02, 0.02]),
+    "NAi":np.asarray([1.,653., 2.]),
+    "Mi": Mi,
+    "kij":kij}
 
-kij=D_Matrix(np.asarray([-0.128,0.00648,-0.0574]),nc)
-par={"mi":np.asarray([1.20469,2420.99, 8.105152]),
-"si": np.asarray([2.797059952,2.947, 2.939]),
-"ui" :np.asarray([353.95,205.27, 229.45]),
-"eAi" :np.asarray([2425.67,0., 934.2]),
-"kAi":np.asarray([0.04509,0.02, 0.02]),
-"NAi":np.asarray([1.,653., 2.]),
-"Mi": Mi,
-"kij":kij}
+    vpures=vpure(p,T,**par)
 
-vpures=vpure(p,T,**par)
-
-par["vpure"]=vpures
-lngi_fun=lambda wi: lngi(T,wi,**par)
+    par["vpure"]=vpures
+    lngi_fun=lambda wi: lngi(T,wi,**par)
 
 
-nt=300
-t=np.linspace(0,1000,nt)*60
-witB,alpha,r=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
-tmin=t/60
-# fig1,ax1=plt.subplots()
-# fig2,ax2=plt.subplots()
-# ax1.plot(tmin,alpha)
-# rmu=r/1E-6
-# ax2.plot(tmin,rmu)
-# import pandas as pd
-# pd.DataFrame((tmin,alpha,rmu)).to_clipboard()
-# plt.plot(t/60,witB[0,:])
-# plt.plot(t/60,witB[1,:])
-# plt.plot(t/60,witB[2,:])
-Dvec=np.asarray([2E-13,2E-13,2E-13])
-L=2.5E-5
-dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
-wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T)
-# wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
-XwL=wt[:,0]/(1-wt[:,0])
-Xw=XwL*(1-alpha)
-# plt.plot(t/60,witB.T[:,0],"bo")
-plt.plot(t/60,Xw,'b',label="Non-ideal and wiB(t)")
-plt.legend("")
-plt.show()
-import pandas as pd
-pd.DataFrame((tmin,Xw)).T.to_clipboard()
+    nt=300
+    t=np.linspace(0,1000,nt)*60
+    witB,alpha,r=Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+    tmin=t/60
+    # fig1,ax1=plt.subplots()
+    # fig2,ax2=plt.subplots()
+    # ax1.plot(tmin,alpha)
+    # rmu=r/1E-6
+    # ax2.plot(tmin,rmu)
+    # import pandas as pd
+    # pd.DataFrame((tmin,alpha,rmu)).to_clipboard()
+    # plt.plot(t/60,witB[0,:])
+    # plt.plot(t/60,witB[1,:])
+    # plt.plot(t/60,witB[2,:])
+    Dvec=np.asarray([2E-13,2E-13,2E-13])
+    L=2.5E-5
+    dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
+    wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T)
+    # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
+    XwL=wt[:,0]/(1-wt[:,0])
+    Xw=XwL*(1-alpha)
+    # plt.plot(t/60,witB.T[:,0],"bo")
+    plt.plot(t/60,Xw,'b',label="Non-ideal and wiB(t)")
+    plt.legend("")
+    plt.show()
+    import pandas as pd
+    pd.DataFrame((tmin,Xw)).T.to_clipboard()

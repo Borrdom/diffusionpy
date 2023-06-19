@@ -10,9 +10,12 @@ Welcome to diffusionpy!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: diffusionpy
-   :members: Diffusion_MS,D_Matrix
 
+
+.. autosummary:: 
+   :recursive:
+   :toctree: _autosummary
+   diffusionpy.diffusionpy
 
 Indices and tables
 ==================
