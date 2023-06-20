@@ -19,24 +19,8 @@ Functions
    diffusionpy.PyCSAFT_nue.lngi
    diffusionpy.PyCSAFT_nue.lnphi_TP
    diffusionpy.PyCSAFT_nue.dlnai_dlnxi
+   diffusionpy.PyCSAFT_nue.initialize
 
-
-
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   diffusionpy.PyCSAFT_nue.T
-   diffusionpy.PyCSAFT_nue.p
-   diffusionpy.PyCSAFT_nue.npoint
-   diffusionpy.PyCSAFT_nue.par
-   diffusionpy.PyCSAFT_nue.x1
-   diffusionpy.PyCSAFT_nue.x2
-   diffusionpy.PyCSAFT_nue.xi
-   diffusionpy.PyCSAFT_nue.vpures
-   diffusionpy.PyCSAFT_nue.lngiammai
-   diffusionpy.PyCSAFT_nue.Gammai
 
 
 .. py:function:: ares(T, eta, xi, mi, si, ui, eAi, kAi, NAi, kij, kijA)
@@ -153,46 +137,6 @@ Attributes
    :rtype: array_like
 
 
-.. py:data:: T
-   :value: 298.15
+.. py:function:: initialize()
 
-   
-
-.. py:data:: p
-   :value: 100000.0
-
-   
-
-.. py:data:: npoint
-   :value: 2
-
-   
-
-.. py:data:: par
-
-   
-
-.. py:data:: x1
-
-   
-
-.. py:data:: x2
-
-   
-
-.. py:data:: xi
-
-   
-
-.. py:data:: vpures
-
-   
-
-.. py:data:: lngiammai
-
-   
-
-.. py:data:: Gammai
-
-   
 
