@@ -56,7 +56,7 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi" title="diffusionpy.PyCSAFT_nue.dlnai_dlnxi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure[, ...])</p></td>
-<td><p></p></td>
+<td><p>Generate the derivatives of the mole fraction with concentration</p></td>
 </tr>
 </tbody>
 </table>
@@ -125,7 +125,33 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.dlnai_dlnxi">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.PyCSAFT_nue.</span></span><span class="sig-name descname"><span class="pre">dlnai_dlnxi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generate the derivatives of the mole fraction with concentration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>float</em>) – temperature</p></li>
+<li><p><strong>xi</strong> (<em>array_like</em>) – mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None</p></li>
+<li><p><strong>mi</strong> (<em>array_like</em>) – segment number</p></li>
+<li><p><strong>si</strong> (<em>array_like</em>) – segment diameter</p></li>
+<li><p><strong>ui</strong> (<em>array_like</em>) – dispersion energy</p></li>
+<li><p><strong>eAi</strong> (<em>array_like</em>) – association energy</p></li>
+<li><p><strong>kAi</strong> (<em>array_like</em>) – association volume</p></li>
+<li><p><strong>NAi</strong> (<em>array_like</em>) – association sites (only symmetric)</p></li>
+<li><p><strong>vpure</strong> (<em>array_like</em>) – pure component molar volumes</p></li>
+<li><p><strong>Mi</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Molar mass. Calculates properties on a mass basis when given. Defaults to None.</p></li>
+<li><p><strong>kij</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).</p></li>
+<li><p><strong>kijA</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).</p></li>
+<li><p><strong>idx</strong> (<em>int</em><em>, </em><em>optional</em>) – index which components mass balance is considered. If None mass balance is ignored. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>martrix of derivatives of the mole fraction with concentration</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.T">

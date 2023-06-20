@@ -21,6 +21,20 @@ from numba import njit,config
 @njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
         'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
+    """_summary_
+
+    Args:
+        T (float): temperature
+        xi (array_like): mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
+        mi (array_like): segment number
+        si (array_like): segment diameter
+        ui (array_like): dispersion energy
+        eAi (array_like): association energy
+        kAi (array_like): association volume
+        NAi (array_like): association sites (only symmetric)
+        kij (array_like): Matrix of binary interaction parameters for dispersion.
+        kijA (array_like): Matrix of binary interaction parameters for association.
+    """
     def np_add_outer(a): 
         return a.reshape(len(a),1)+a
     def wertheim_iter(fun,x,p1,p2,p3,p4):
@@ -236,6 +250,25 @@ def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     return lnphi
 
 def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
+    """Generate the derivatives of the mole fraction with concentration
+
+    Args:
+        T (float): temperature
+        xi (array_like): mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
+        mi (array_like): segment number
+        si (array_like): segment diameter
+        ui (array_like): dispersion energy
+        eAi (array_like): association energy
+        kAi (array_like): association volume
+        NAi (array_like): association sites (only symmetric)
+        vpure (array_like): pure component molar volumes
+        Mi (array_like, optional): Molar mass. Calculates properties on a mass basis when given. Defaults to None.
+        kij (array_like, optional): Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).
+        kijA (array_like, optional): Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).
+        idx (int, optional): index which components mass balance is considered. If None mass balance is ignored. Defaults to None.
+    Returns:
+        array_like: martrix of derivatives of the mole fraction with concentration
+    """
     xi=np.ascontiguousarray(xi)
     nc = len(xi)
     h = 1E-26
