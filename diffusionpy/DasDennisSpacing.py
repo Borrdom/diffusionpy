@@ -5,7 +5,14 @@ import pandas as pd
 
 
 def DasDennis(p,dim):
-    """create a equidistance n dimensional spacing which satisfies the mass balance constraint"""
+    """create a equidistance n dimensional spacing which satisfies the mass balance constraint
+    
+    Examples:
+        >>> p=30
+        >>> dim=3
+        >>> spacevec=DasDennis(p, dim)
+        >>> pd.DataFrame(spacevec.T).to_excel("test.xlsx")
+    """
     co=(p+dim-2)/p
     nco=int(round(co*p,0))
     covec=np.linspace(0,co,nco+1)
@@ -22,9 +29,3 @@ def DasDennis(p,dim):
     spacevec[dim-1,:]=1-combinations[dim-2,:]    
     spacevec[spacevec<=1E-8]=0
     return spacevec
-
-if __name__=="__main__":
-    p=30
-    dim=3
-    spacevec=DasDennis(p, dim)
-    pd.DataFrame(spacevec.T).to_excel("test.xlsx")

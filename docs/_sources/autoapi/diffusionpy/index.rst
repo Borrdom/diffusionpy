@@ -51,23 +51,6 @@ Functions
 
 
 
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   diffusionpy.T
-   diffusionpy.p
-   diffusionpy.npoint
-   diffusionpy.par
-   diffusionpy.x1
-   diffusionpy.x2
-   diffusionpy.xi
-   diffusionpy.vpures
-   diffusionpy.lngiammai
-   diffusionpy.Gammai
-
-
 .. py:function:: Diffusion_MS(t, L, Dvec, wi0, wi8, Mi, mobile, full_output=False, dlnai_dlnwi=None, swelling=False, **kwargs)
 
    Method that computes the multi-component diffusion kinetics
@@ -300,47 +283,4 @@ Attributes
    :returns: martrix of derivatives of the mole fraction with concentration
    :rtype: array_like
 
-
-.. py:data:: T
-   :value: 298.15
-
-   
-
-.. py:data:: p
-   :value: 100000.0
-
-   
-
-.. py:data:: npoint
-   :value: 2
-
-   
-
-.. py:data:: par
-
-   
-
-.. py:data:: x1
-
-   
-
-.. py:data:: x2
-
-   
-
-.. py:data:: xi
-
-   
-
-.. py:data:: vpures
-
-   
-
-.. py:data:: lngiammai
-
-   
-
-.. py:data:: Gammai
-
-   
 

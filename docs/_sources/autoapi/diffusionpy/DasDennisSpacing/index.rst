@@ -17,21 +17,15 @@ Functions
 
 
 
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   diffusionpy.DasDennisSpacing.p
-
-
 .. py:function:: DasDennis(p, dim)
 
    create a equidistance n dimensional spacing which satisfies the mass balance constraint
 
+   .. rubric:: Examples
 
-.. py:data:: p
-   :value: 30
+   >>> p=30
+   >>> dim=3
+   >>> spacevec=DasDennis(p, dim)
+   >>> pd.DataFrame(spacevec.T).to_excel("test.xlsx")
 
-   
 

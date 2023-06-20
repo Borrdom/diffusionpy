@@ -286,10 +286,8 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennisSpacing.DasDennis"><code class="docutils literal notranslate"><span class="pre">DasDennis()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennisSpacing.p"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -318,26 +316,18 @@ document.write(`
 </tr>
 </tbody>
 </table>
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">#</a></h3>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.DasDennisSpacing.p" title="diffusionpy.DasDennisSpacing.p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">p</span></code></a></p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.DasDennisSpacing.DasDennis">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.DasDennisSpacing.</span></span><span class="sig-name descname"><span class="pre">DasDennis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.DasDennisSpacing.DasDennis" title="Permalink to this definition">#</a></dt>
 <dd><p>create a equidistance n dimensional spacing which satisfies the mass balance constraint</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">=</span><span class="mi">30</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spacevec</span><span class="o">=</span><span class="n">DasDennis</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">spacevec</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s2">&quot;test.xlsx&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="diffusionpy.DasDennisSpacing.p">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.DasDennisSpacing.</span></span><span class="sig-name descname"><span class="pre">p</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">30</span></em><a class="headerlink" href="#diffusionpy.DasDennisSpacing.p" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
 
 </section>
 </section>
@@ -392,10 +382,8 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennisSpacing.DasDennis"><code class="docutils literal notranslate"><span class="pre">DasDennis()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennisSpacing.p"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
 </ul>
 </li>
 </ul>
