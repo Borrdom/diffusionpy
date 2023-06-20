@@ -8,13 +8,18 @@ import time
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
-    def averaging(a): return (a[1:,:]+a[:-1,:])/2.
+    """change in the partial density with time"""
+    def averaging(a):
+        """make rolling average over a 2D array"""
+        return (a[1:,:]+a[:-1,:])/2.
     def np_linalg_solve(A,b):
+        """solve a Batch of linear system of equations"""
         ret = np.empty_like(b)
         for i in range(b.shape[1]):
             ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
         return ret
     def BIJ_Matrix(D,wi,mobiles,allflux):
+        """create the friction matrix which needs to be invertable"""
         nc,nz=wi.shape
         B=np.zeros((nc,nc,nz))
         for i in range(nc):
@@ -64,6 +69,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         wi0 (array_like): Mass fractions at t=0               /-
         wi8 (array_like): Mass fraction at t=infinity         /-
         Mi (array_like):   Molar mass of components nc         /g/mol
+        mobile(array_like): boolean vector indicating the mobility of a component
         dlnai_dlnwi (array_like): estimate for DlnaiDlnx at t          /-
         Keyword Arguments:
             wiB (array_like): Hello \n
@@ -115,6 +121,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     rhoiB=wi8*rho
     drhovdtB=np.zeros(nTH)
     def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
+        """create generic ode fucnction for drhodt"""
         rhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
         return drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
     # Mechanical equation of state (MEOS)      
@@ -125,6 +132,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
+        """evaluate time dependent functions and insert into the generic odes"""
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor
         rhoiB=rhoiB(t)          if callable(rhoiB)      else rhoiB
         drhovdtB=drhovdtB(t,x)  if callable(drhovdtB)   else drhovdtB
@@ -191,25 +199,6 @@ def D_Matrix(Dvec,nc):
 
 def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,dlnai_dlnwi_fun=None,**kwargs):
     """iterates dlnai_dlnwi as a function of the concentration wi
-
-    Args:
-        t (array_like): time
-        L (float) : dry thickness /m
-        Dvec (array_like): Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s
-        wi0 (array_like): Mass fractions at t=0               /-
-        wi8 (array_like): Mass fraction at t=infinity         /-
-        Mi (array_like):   Molar mass of components nc         /g/mol
-        dlnai_dlnwi (array_like): estimate for DlnaiDlnx at t          /-
-
-    Returns:
-        ndarray:   
-        if ``full_output=False``: \n
-        Matrix ``wt`` of mass fractions at t /- \n
-
-        if ``full_output=True``: \n 
-        Matrix of mass fractions at t       /- \n
-        Matrix of mass fractions at t,z     /- \n
-
     See also:
         diffusionpy.Diffusion_MS
     
@@ -233,6 +222,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
     
 def convert(x,M,axis=0):
+    """convert fractions. e.g mass fractions into mole fractions"""
     y=np.empty(x.shape,M.dtype)
     np.copyto(y.T,M)
     return x*y/np.sum(x*y,axis=axis)

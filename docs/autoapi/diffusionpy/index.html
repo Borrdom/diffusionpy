@@ -93,22 +93,59 @@
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.lngi" title="diffusionpy.lngi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lngi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure[, Mi, ...])</p></td>
-<td><p></p></td>
+<td><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.eta_iter" title="diffusionpy.eta_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta_iter</span></code></a>(p, T, xi, mi, si, ui, eAi, kAi, NAi[, kij, kijA])</p></td>
-<td><p></p></td>
+<td><p>solve the density mich yiels a given pressure p</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.ares" title="diffusionpy.ares"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ares</span></code></a>(T, eta, xi, mi, si, ui, eAi, kAi, NAi, kij, kijA)</p></td>
-<td><p></p></td>
+<td><p>calculate the reduced residual helmholtz energy, the chemical potential and the real gas factor</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.lnphi_TP" title="diffusionpy.lnphi_TP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lnphi_TP</span></code></a>(p, T, xi, mi, si, ui, eAi, kAi, NAi[, Mi, ...])</p></td>
-<td><p></p></td>
+<td><p>calculate the log of the fugacity coeffficients</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.vpure" title="diffusionpy.vpure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vpure</span></code></a>(p, T, mi, si, ui, eAi, kAi, NAi, **kwargs)</p></td>
-<td><p></p></td>
+<td><p>solve the density mich yiels a given pressure p</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.dlnai_dlnxi" title="diffusionpy.dlnai_dlnxi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure[, ...])</p></td>
 <td><p>Generate the derivatives of the mole fraction with concentration</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">¶</a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.T" title="diffusionpy.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.p" title="diffusionpy.p"><code class="xref py py-obj docutils literal notranslate"><span class="pre">p</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.npoint" title="diffusionpy.npoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">npoint</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.par" title="diffusionpy.par"><code class="xref py py-obj docutils literal notranslate"><span class="pre">par</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.x1" title="diffusionpy.x1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">x1</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.x2" title="diffusionpy.x2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">x2</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xi" title="diffusionpy.xi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xi</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.vpures" title="diffusionpy.vpures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vpures</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.lngiammai" title="diffusionpy.lngiammai"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lngiammai</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Gammai" title="diffusionpy.Gammai"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gammai</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -265,27 +302,80 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.lngi">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lngi" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>float</em>) – temperature</p></li>
+<li><p><strong>xi</strong> (<em>array_like</em>) – mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None</p></li>
+<li><p><strong>mi</strong> (<em>array_like</em>) – segment number</p></li>
+<li><p><strong>si</strong> (<em>array_like</em>) – segment diameter</p></li>
+<li><p><strong>ui</strong> (<em>array_like</em>) – dispersion energy</p></li>
+<li><p><strong>eAi</strong> (<em>array_like</em>) – association energy</p></li>
+<li><p><strong>kAi</strong> (<em>array_like</em>) – association volume</p></li>
+<li><p><strong>NAi</strong> (<em>array_like</em>) – association sites (only symmetric)</p></li>
+<li><p><strong>vpure</strong> (<em>array_like</em>) – pure component molar volumes</p></li>
+<li><p><strong>Mi</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Molar mass. Calculates properties on a mass basis when given. Defaults to None.</p></li>
+<li><p><strong>kij</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).</p></li>
+<li><p><strong>kijA</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>vector of activity coefficients</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.eta_iter">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">eta_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.eta_iter" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>solve the density mich yiels a given pressure p</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.ares">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">ares</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.ares" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>calculate the reduced residual helmholtz energy, the chemical potential and the real gas factor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>float</em>) – temperature</p></li>
+<li><p><strong>xi</strong> (<em>array_like</em>) – mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None</p></li>
+<li><p><strong>mi</strong> (<em>array_like</em>) – segment number</p></li>
+<li><p><strong>si</strong> (<em>array_like</em>) – segment diameter</p></li>
+<li><p><strong>ui</strong> (<em>array_like</em>) – dispersion energy</p></li>
+<li><p><strong>eAi</strong> (<em>array_like</em>) – association energy</p></li>
+<li><p><strong>kAi</strong> (<em>array_like</em>) – association volume</p></li>
+<li><p><strong>NAi</strong> (<em>array_like</em>) – association sites (only symmetric)</p></li>
+<li><p><strong>kij</strong> (<em>array_like</em>) – Matrix of binary interaction parameters for dispersion.</p></li>
+<li><p><strong>kijA</strong> (<em>array_like</em>) – Matrix of binary interaction parameters for association.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>reduced residual helmholtz energy
+mures (array_like): reduced residual chemical potential
+Zres (aaray_like): real gas factor</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ares (array_like)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.lnphi_TP">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lnphi_TP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lnphi_TP" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>calculate the log of the fugacity coeffficients</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.vpure">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.vpure" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>solve the density mich yiels a given pressure p</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.dlnai_dlnxi">
@@ -317,6 +407,56 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.T">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">T</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">298.15</span></em><a class="headerlink" href="#diffusionpy.T" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.p">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">p</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100000.0</span></em><a class="headerlink" href="#diffusionpy.p" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.npoint">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">npoint</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#diffusionpy.npoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.par">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">par</span></span><a class="headerlink" href="#diffusionpy.par" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.x1">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x1</span></span><a class="headerlink" href="#diffusionpy.x1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.x2">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x2</span></span><a class="headerlink" href="#diffusionpy.x2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.xi">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">xi</span></span><a class="headerlink" href="#diffusionpy.xi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.vpures">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpures</span></span><a class="headerlink" href="#diffusionpy.vpures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.lngiammai">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngiammai</span></span><a class="headerlink" href="#diffusionpy.lngiammai" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="diffusionpy.Gammai">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Gammai</span></span><a class="headerlink" href="#diffusionpy.Gammai" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 </section>

@@ -6,6 +6,7 @@ from textdistance import levenshtein
 from itertools import combinations
 import numpy as np
 def levensthein_pd(df,key1,key2):
+   """calculate the lvensthein distance for a pandas dataframe"""   
    df["Levensthein distance"]=df.apply(lambda x: levenshtein.distance(x[key1].lower(),key2), axis=1)#.replace('\d+', '')
    choice=df["Levensthein distance"].idxmin()
    choice2=np.where(df["Substance"].str.replace('\d+', '').str.contains(r'\b{}\b'.format(key2),case=False,regex=True))[0]
@@ -15,6 +16,7 @@ def levensthein_pd(df,key1,key2):
 
 
 def get_par(subst_input,path,header_1=None,header_2=None):
+   """get parameters from a database"""  
    conn_str = (r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};'r'DBQ='+path)
    conn = pyodbc.connect(conn_str)
    sheets=[row.table_name for row in conn.cursor().tables()]

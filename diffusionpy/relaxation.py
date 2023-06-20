@@ -2,12 +2,27 @@ import numpy as np
 from numba import njit
 import matplotlib.pyplot as plt
 def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
+    """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
+
+    Args:
+        rhovinit (array_like): vector of the partial densities of the mobile components
+        ode (array_like): ode fuinction which is modified by the function
+        EJ (array_like): Elasticity Moduli
+        etaJ (array_like): Damper constants
+        exponent (array_like): Plasticization factors
+        M2 (array_like): Molar masses of mobile compnents
+        v2 (array_like): specific volumes of mobile compnents
+
+    Returns:
+        array_like: new modified ode function with the same format as the input ode function
+    """
     R=8.31448
     T=298.15
     RV=R*T*1/(M2/1000.)*1/v2
     nJ=len(EJ)
     _,nz_1=rhovinit.shape
     def MEOS_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
+        """solves the genralized Maxwell model for relaxation"""
         _,nz=dmuext.shape
         nTH=drhovdtB.shape[0]
         nJ=len(EJ)
@@ -40,6 +55,7 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
 
 #@njit
 def MDF(sigmaJ,EJ,RV):
+    """the mechanical driving force for the stress gradient"""
     sigma=np.sum(sigmaJ*EJ,axis=1)
     dsigma=np.diff(sigma)
     dmuext=1/np.expand_dims(RV,1)*np.expand_dims(dsigma,0)
@@ -47,6 +63,7 @@ def MDF(sigmaJ,EJ,RV):
 
 #@njit
 def stress(etaWL,EJ,sigmaJ,drhodtNF,v2):
+    """calculate the change in the stresses of the maxwell elements"""
     nJ=len(EJ)
     nz_1,_=sigmaJ.shape
     dsigmaJdt=np.zeros((nz_1,nJ))
@@ -55,12 +72,14 @@ def stress(etaWL,EJ,sigmaJ,drhodtNF,v2):
     return dsigmaJdt
 
 def boundary(rhov,etaWL,EJ,sigmaJ,RV,THFaktor,v2):
+    """calculate the mass fraction vector of the surface elment as afunction of time"""
     b=np.sum(1/(etaWL[-1,:])*sigmaJ[-1,:]*EJ**2,axis=0)/RV
     A=(THFaktor/rhov[:,-1]+np.sum(EJ)*v2/RV)
     drhovdtB=np.linalg.solve(A,b) if len(A)>1 else b/A
     return drhovdtB
 
 def initialboundary(RV,EJ,v2,THFaktors,rho,mobiles,wi0,wi8):
+    """calculate the boudnary of the surface concnetration and surface stresses as a function time"""
     from scipy.special import lambertw
     B=RV/EJ/v2*np.diag(np.mean(THFaktors,axis=0))
     rhovB=B*lambertw(wi8*rho*(1/B)).real

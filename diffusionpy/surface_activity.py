@@ -5,6 +5,19 @@ from scipy.interpolate import interp1d
 
 
 def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None):
+    """_summary_
+
+    Args:
+        t (array_like): time vector
+        wi0 (array_like): Mass fractions at t=0               
+        wi8 (array_like): Mass fraction at t=infinity         
+        mobile(array_like): boolean vector indicating the mobility of a component
+        taui (array_like): time constant of the surface concentration function
+        lngi_fun (array_like, optional): activity coefficient function.
+
+    Returns:
+        array_like: mass fraction at the surface as a vector of time
+    """    
     nc=len(wi0)
     nf=np.sum(mobile)
     nt=len(t)

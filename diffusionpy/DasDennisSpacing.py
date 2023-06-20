@@ -5,6 +5,7 @@ import pandas as pd
 
 
 def DasDennis(p,dim):
+    """create a equidistance n dimensional spacing which satisfies the mass balance constraint"""
     co=(p+dim-2)/p
     nco=int(round(co*p,0))
     covec=np.linspace(0,co,nco+1)

@@ -7,6 +7,31 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 def Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
+    """calculate the time dependent surface concentration during crystallization
+
+    Args:
+        t (array_like): vector of time
+        mobiles (array_like): index array indicating the mobile components
+        immobiles (array_like): index array indicating the immobile component
+        crystallize (array_like): index array indicating the crystallizing components
+        wi0 (array_like): initial mass fractions
+        wi8 (array_like): mass fractions at time equals infinity
+        rho0i (array_like): pure component densities
+        Mi (array_like): molar mass of components
+        DAPI (array_like): crystallizing components diffusion coefficient in the vector
+        sigma (array_like): interfacial tension of crystal component and mixture
+        kt (array_like): crystal growth rate constant
+        g (array_like): crsystal growth exponent
+        deltaHSL (array_like): melting enthalpy of crystallizing components
+        TSL (array_like): melting temperature of crystallizing components
+        cpSL (array_like): differfence in liquid/solid heat capacity of crystallizing components
+        lngi_fun (array_like, optional): function of logarithmic activity coefficients
+        wv_fun (array_like, optional): function or vector how the concentration of the volatile components changes with the 
+        concentration of the cryystallizing components
+
+    Returns:
+        array_like: vector of mass fractions at the surface as a function of time
+    """
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
@@ -39,6 +64,7 @@ def Bound(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,delta
     return wiB,alpha,r
 
 def Kris(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
+    """function calculating the crystallization"""
     crystallizes=np.where(crystallize)[0]
     R=8.31445
     NA=6.023E23
