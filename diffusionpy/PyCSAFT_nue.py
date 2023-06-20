@@ -21,7 +21,7 @@ from numba import njit,config
 @njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
         'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
-    """_summary_
+    """calculate the reduced residual helmholtz energy, the chemical potential and the real gas factor
 
     Args:
         T (float): temperature
@@ -34,10 +34,16 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
         NAi (array_like): association sites (only symmetric)
         kij (array_like): Matrix of binary interaction parameters for dispersion.
         kijA (array_like): Matrix of binary interaction parameters for association.
+    Return:
+        ares (array_like): reduced residual helmholtz energy
+        mures (array_like): reduced residual chemical potential
+        Zres (aaray_like): real gas factor
     """
-    def np_add_outer(a): 
+    def np_add_outer(a):  
+        """create a outer product but with addition instead of multiplication""" 
         return a.reshape(len(a),1)+a
     def wertheim_iter(fun,x,p1,p2,p3,p4):
+        """solve this non-linear equation system for the nonbonded association sites XAi""" 
         tol=1E-8
         iter=50
         n=len(x)
@@ -125,7 +131,9 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
     # Association Contribution
     deltAij=gij*kAij*sij**3*(np.exp(eAij/T)-1.)
     rhoi=rho*xi
-    def XAi_eq(XAi,xi,rho,NAi,deltAij): return XAi-((1+np.sum(xi*rho*XAi*NAi*deltAij.T,axis=1))**-1)
+    def XAi_eq(XAi,xi,rho,NAi,deltAij):
+        """solve this non-linear equation system for the nonbonded association sites XAi"""
+        return XAi-((1+np.sum(xi*rho*XAi*NAi*deltAij.T,axis=1))**-1)
     deltAi=np.fmax(np.diag(deltAij),1E-300)
     XAi0=((-NAi+np.sqrt(NAi**2+4.*NAi*rho*deltAi))/(2.*rho*deltAi))
    #XAi0[np.isnan(XAi0)]=1.
@@ -182,6 +190,7 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
 
 #@njit(cache=True)
 def eta_iter(p,T,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
+    """solve the density mich yiels a given pressure p"""
     xi=np.ascontiguousarray(xi)
     def Z_obj(p,T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]])):
         kB = 1.380649e-23
@@ -209,6 +218,7 @@ def eta_iter(p,T,xi,mi,si,ui,eAi,kAi,NAi,kij=np.asarray([[0.]]),kijA=np.asarray(
     return eta_roots(Z_obj,p,T,eta0,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
 
 def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
+    """solve the density mich yiels a given pressure p"""
     etapures=[]
     for i in range(len(mi)):
         x=eta_iter(p,T,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))
@@ -221,6 +231,24 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
 
 #@njit(cache=True)
 def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+    """Calculate the log of the activity coefficients via the SAFT-SAC approximation
+
+    Args:
+        T (float): temperature
+        xi (array_like): mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
+        mi (array_like): segment number
+        si (array_like): segment diameter
+        ui (array_like): dispersion energy
+        eAi (array_like): association energy
+        kAi (array_like): association volume
+        NAi (array_like): association sites (only symmetric)
+        vpure (array_like): pure component molar volumes
+        Mi (array_like, optional): Molar mass. Calculates properties on a mass basis when given. Defaults to None.
+        kij (array_like, optional): Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).
+        kijA (array_like, optional): Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).
+    Returns:
+        array_like: vector of activity coefficients
+    """
     NA = 6.0221407e23
     xi=np.ascontiguousarray(xi)
     #vpfracNET=(1-ksw*RH**2)/xi[0]
@@ -243,6 +271,7 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+    """calculate the log of the fugacity coeffficients"""
     xi=np.ascontiguousarray(xi)
     if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
     etamix=np.asarray([eta_iter(p,T,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA) for i,val in enumerate(xi[0,:])])
