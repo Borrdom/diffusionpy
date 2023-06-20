@@ -1,41 +1,341 @@
+
+
 <!DOCTYPE html>
 
-<html lang="en">
+
+<html lang="en" >
+
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>diffusionpy &#8212; diffusionpy 2023 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/diffusionpy/index';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="diffusionpy.DasDennisSpacing" href="DasDennisSpacing/index.html" />
     <link rel="prev" title="API Reference" href="../index.html" />
-   
-  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
   
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  </head><body>
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
   
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">diffusionpy 2023 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="relaxation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.relaxation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="surface_activity/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xloil_functions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.xloil_functions</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
-          <div class="body" role="main">
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/autoapi/diffusionpy/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>diffusionpy</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface"><code class="docutils literal notranslate"><span class="pre">time_dep_surface()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crank_xl"><code class="docutils literal notranslate"><span class="pre">crank_xl()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.interp1d"><code class="docutils literal notranslate"><span class="pre">interp1d()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.BHX_xloil"><code class="docutils literal notranslate"><span class="pre">BHX_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennis_xloil"><code class="docutils literal notranslate"><span class="pre">DasDennis_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lngi"><code class="docutils literal notranslate"><span class="pre">lngi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.eta_iter"><code class="docutils literal notranslate"><span class="pre">eta_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.ares"><code class="docutils literal notranslate"><span class="pre">ares()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lnphi_TP"><code class="docutils literal notranslate"><span class="pre">lnphi_TP()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.T"><code class="docutils literal notranslate"><span class="pre">T</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.p"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.npoint"><code class="docutils literal notranslate"><span class="pre">npoint</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.par"><code class="docutils literal notranslate"><span class="pre">par</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.x1"><code class="docutils literal notranslate"><span class="pre">x1</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.x2"><code class="docutils literal notranslate"><span class="pre">x2</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xi"><code class="docutils literal notranslate"><span class="pre">xi</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpures"><code class="docutils literal notranslate"><span class="pre">vpures</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lngiammai"><code class="docutils literal notranslate"><span class="pre">lngiammai</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Gammai"><code class="docutils literal notranslate"><span class="pre">Gammai</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <section id="module-diffusionpy">
-<span id="diffusionpy"></span><h1><a class="reference internal" href="#module-diffusionpy" title="diffusionpy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><a class="headerlink" href="#module-diffusionpy" title="Permalink to this heading">¶</a></h1>
+<span id="diffusionpy"></span><h1><a class="reference internal" href="#module-diffusionpy" title="diffusionpy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><a class="headerlink" href="#module-diffusionpy" title="Permalink to this heading">#</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
@@ -51,10 +351,10 @@
 </div>
 </section>
 <section id="package-contents">
-<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading">¶</a></h2>
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading">#</a></h2>
 <section id="functions">
-<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">¶</a></h3>
-<table class="autosummary longtable docutils align-default">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">#</a></h3>
+<table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Diffusion_MS" title="diffusionpy.Diffusion_MS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
 <td><p>Method that computes the multi-component diffusion kinetics</p></td>
@@ -66,10 +366,10 @@
 <td><p>iterates dlnai_dlnwi as a function of the concentration wi</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.convert" title="diffusionpy.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a>(x, M[, axis])</p></td>
-<td><p></p></td>
+<td><p>convert fractions. e.g mass fractions into mole fractions</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.time_dep_surface" title="diffusionpy.time_dep_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface</span></code></a>(t, wi0, wi8, mobile, taui[, lngi_fun])</p></td>
-<td><p></p></td>
+<td><p>_summary_</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Diffusion_MS_xloil" title="diffusionpy.Diffusion_MS_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_xloil</span></code></a>(t, L, Dvec, w0, w8, Mi, mobile[, ...])</p></td>
 <td><p></p></td>
@@ -114,8 +414,8 @@
 </table>
 </section>
 <section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">¶</a></h3>
-<table class="autosummary longtable docutils align-default">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">#</a></h3>
+<table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.T" title="diffusionpy.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a></p></td>
 <td><p></p></td>
@@ -151,7 +451,7 @@
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.Diffusion_MS">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS" title="Permalink to this definition">#</a></dt>
 <dd><p>Method that computes the multi-component diffusion kinetics</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -162,6 +462,7 @@
 <li><p><strong>wi0</strong> (<em>array_like</em>) – Mass fractions at t=0               /-</p></li>
 <li><p><strong>wi8</strong> (<em>array_like</em>) – Mass fraction at t=infinity         /-</p></li>
 <li><p><strong>Mi</strong> (<em>array_like</em>) – Molar mass of components nc         /g/mol</p></li>
+<li><p><strong>mobile</strong> (<em>array_like</em>) – boolean vector indicating the mobility of a component</p></li>
 <li><p><strong>dlnai_dlnwi</strong> (<em>array_like</em>) – estimate for DlnaiDlnx at t          /-</p></li>
 <li><p><strong>Arguments</strong> (<em>Keyword</em>) – <p>wiB (array_like): Hello</p>
 <p>rho0iB (array_like): Hello</p>
@@ -188,7 +489,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.D_Matrix">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">D_Matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.D_Matrix" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">D_Matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.D_Matrix" title="Permalink to this definition">#</a></dt>
 <dd><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code>
 using the elements in the vector <code class="docutils literal notranslate"><span class="pre">Dvec</span></code>.
 It is assumed that the elements of <code class="docutils literal notranslate"><span class="pre">Dvec</span></code> fit precisly
@@ -222,86 +523,79 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.Diffusion_MS_iter">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_iter" title="Permalink to this definition">¶</a></dt>
-<dd><p>iterates dlnai_dlnwi as a function of the concentration wi</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>t</strong> (<em>array_like</em>) – time</p></li>
-<li><p><strong>L</strong> (<em>float</em>) – dry thickness /m</p></li>
-<li><p><strong>Dvec</strong> (<em>array_like</em>) – Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s</p></li>
-<li><p><strong>wi0</strong> (<em>array_like</em>) – Mass fractions at t=0               /-</p></li>
-<li><p><strong>wi8</strong> (<em>array_like</em>) – Mass fraction at t=infinity         /-</p></li>
-<li><p><strong>Mi</strong> (<em>array_like</em>) – Molar mass of components nc         /g/mol</p></li>
-<li><p><strong>dlnai_dlnwi</strong> (<em>array_like</em>) – estimate for DlnaiDlnx at t          /-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>if <code class="docutils literal notranslate"><span class="pre">full_output=False</span></code>:</p>
-<p>Matrix <code class="docutils literal notranslate"><span class="pre">wt</span></code> of mass fractions at t /-</p>
-<p>if <code class="docutils literal notranslate"><span class="pre">full_output=True</span></code>:</p>
-<p>Matrix of mass fractions at t       /-</p>
-<p>Matrix of mass fractions at t,z     /-</p>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p>diffusionpy.Diffusion_MS</p>
-</div>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_iter" title="Permalink to this definition">#</a></dt>
+<dd><p>iterates dlnai_dlnwi as a function of the concentration wi
+.. seealso:: diffusionpy.Diffusion_MS</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.convert">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.convert" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.convert" title="Permalink to this definition">#</a></dt>
+<dd><p>convert fractions. e.g mass fractions into mole fractions</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.time_dep_surface">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.time_dep_surface" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.time_dep_surface" title="Permalink to this definition">#</a></dt>
+<dd><p>_summary_</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array_like</em>) – time vector</p></li>
+<li><p><strong>wi0</strong> (<em>array_like</em>) – Mass fractions at t=0</p></li>
+<li><p><strong>wi8</strong> (<em>array_like</em>) – Mass fraction at t=infinity</p></li>
+<li><p><strong>mobile</strong> (<em>array_like</em>) – boolean vector indicating the mobility of a component</p></li>
+<li><p><strong>taui</strong> (<em>array_like</em>) – time constant of the surface concentration function</p></li>
+<li><p><strong>lngi_fun</strong> (<em>array_like</em><em>, </em><em>optional</em>) – activity coefficient function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mass fraction at the surface as a vector of time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.Diffusion_MS_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_xloil" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_xloil" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.reduce_points">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">reduce_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.reduce_points" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">reduce_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.reduce_points" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.crank_xl">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">crank_xl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crank_xl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">crank_xl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crank_xl" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.interp1d">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">interp1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.interp1d" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">interp1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.interp1d" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.BHX_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">BHX_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mfinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mrinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.BHX_xloil" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">BHX_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mfinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mrinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.BHX_xloil" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.DasDennis_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">DasDennis_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.DasDennis_xloil" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">DasDennis_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.DasDennis_xloil" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.Diffusion_MS_iter_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_iter_xloil" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_iter_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(bool,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">swelling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(object,</span> <span class="pre">dims=2)</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">np.asarray([[]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_iter_xloil" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.lngi">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lngi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lngi" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -331,13 +625,13 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.eta_iter">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">eta_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.eta_iter" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">eta_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.eta_iter" title="Permalink to this definition">#</a></dt>
 <dd><p>solve the density mich yiels a given pressure p</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.ares">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">ares</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.ares" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">ares</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.ares" title="Permalink to this definition">#</a></dt>
 <dd><p>calculate the reduced residual helmholtz energy, the chemical potential and the real gas factor</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -367,19 +661,19 @@ Zres (aaray_like): real gas factor</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.lnphi_TP">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lnphi_TP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lnphi_TP" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lnphi_TP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lnphi_TP" title="Permalink to this definition">#</a></dt>
 <dd><p>calculate the log of the fugacity coeffficients</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.vpure">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.vpure" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.vpure" title="Permalink to this definition">#</a></dt>
 <dd><p>solve the density mich yiels a given pressure p</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.dlnai_dlnxi">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">dlnai_dlnxi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.dlnai_dlnxi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">dlnai_dlnxi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">np.asarray([[0.0]])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.dlnai_dlnxi" title="Permalink to this definition">#</a></dt>
 <dd><p>Generate the derivatives of the mole fraction with concentration</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -410,52 +704,52 @@ Zres (aaray_like): real gas factor</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.T">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">T</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">298.15</span></em><a class="headerlink" href="#diffusionpy.T" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">T</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">298.15</span></em><a class="headerlink" href="#diffusionpy.T" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.p">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">p</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100000.0</span></em><a class="headerlink" href="#diffusionpy.p" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">p</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100000.0</span></em><a class="headerlink" href="#diffusionpy.p" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.npoint">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">npoint</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#diffusionpy.npoint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">npoint</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#diffusionpy.npoint" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.par">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">par</span></span><a class="headerlink" href="#diffusionpy.par" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">par</span></span><a class="headerlink" href="#diffusionpy.par" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.x1">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x1</span></span><a class="headerlink" href="#diffusionpy.x1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x1</span></span><a class="headerlink" href="#diffusionpy.x1" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.x2">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x2</span></span><a class="headerlink" href="#diffusionpy.x2" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">x2</span></span><a class="headerlink" href="#diffusionpy.x2" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.xi">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">xi</span></span><a class="headerlink" href="#diffusionpy.xi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">xi</span></span><a class="headerlink" href="#diffusionpy.xi" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.vpures">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpures</span></span><a class="headerlink" href="#diffusionpy.vpures" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">vpures</span></span><a class="headerlink" href="#diffusionpy.vpures" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.lngiammai">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngiammai</span></span><a class="headerlink" href="#diffusionpy.lngiammai" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngiammai</span></span><a class="headerlink" href="#diffusionpy.lngiammai" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="diffusionpy.Gammai">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Gammai</span></span><a class="headerlink" href="#diffusionpy.Gammai" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Gammai</span></span><a class="headerlink" href="#diffusionpy.Gammai" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -463,77 +757,140 @@ Zres (aaray_like): real gas factor</p>
 </section>
 
 
-          </div>
-          
-        </div>
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../../index.html">diffusionpy</a></h1>
+    </a>
+    <a class="right-next"
+       href="DasDennisSpacing/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
 
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a></li>
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface"><code class="docutils literal notranslate"><span class="pre">time_dep_surface()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crank_xl"><code class="docutils literal notranslate"><span class="pre">crank_xl()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.interp1d"><code class="docutils literal notranslate"><span class="pre">interp1d()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.BHX_xloil"><code class="docutils literal notranslate"><span class="pre">BHX_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DasDennis_xloil"><code class="docutils literal notranslate"><span class="pre">DasDennis_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter_xloil()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lngi"><code class="docutils literal notranslate"><span class="pre">lngi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.eta_iter"><code class="docutils literal notranslate"><span class="pre">eta_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.ares"><code class="docutils literal notranslate"><span class="pre">ares()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lnphi_TP"><code class="docutils literal notranslate"><span class="pre">lnphi_TP()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.T"><code class="docutils literal notranslate"><span class="pre">T</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.p"><code class="docutils literal notranslate"><span class="pre">p</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.npoint"><code class="docutils literal notranslate"><span class="pre">npoint</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.par"><code class="docutils literal notranslate"><span class="pre">par</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.x1"><code class="docutils literal notranslate"><span class="pre">x1</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.x2"><code class="docutils literal notranslate"><span class="pre">x2</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xi"><code class="docutils literal notranslate"><span class="pre">xi</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpures"><code class="docutils literal notranslate"><span class="pre">vpures</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.lngiammai"><code class="docutils literal notranslate"><span class="pre">lngiammai</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Gammai"><code class="docutils literal notranslate"><span class="pre">Gammai</span></code></a></li>
 </ul>
 </li>
 </ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation overview</a><ul>
-  <li><a href="../index.html">API Reference</a><ul>
-      <li>Previous: <a href="../index.html" title="previous chapter">API Reference</a></li>
-      <li>Next: <a href="DasDennisSpacing/index.html" title="next chapter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
-  </ul></li>
-  </ul></li>
+</li>
 </ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+  </nav></div>
 
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2023, Borrdom.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="../../_sources/autoapi/diffusionpy/index.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
     
+<p class="component-author">
+By Borrdom
+</p>
 
+  </div>
+  
+  <div class="footer-item">
     
+  <p class="copyright">
+    
+      © Copyright 2023, Borrdom.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
   </body>
 </html>
