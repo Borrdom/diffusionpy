@@ -1,7 +1,5 @@
 import numpy as np
-from .Stefan_Maxwell_segmental import Diffusion_MS_iter,D_Matrix,Diffusion_MS
-from .PyCSAFT_nue import vpure,lngi,dlnai_dlnxi
-from .surface_activity import time_dep_surface
+from diffusionpy import Diffusion_MS_iter,D_Matrix,Diffusion_MS,vpure,lngi,dlnai_dlnxi,time_dep_surface
 import matplotlib.pyplot as plt
 
 nc=2

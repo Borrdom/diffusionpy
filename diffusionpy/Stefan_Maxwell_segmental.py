@@ -46,7 +46,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     wi=rhoi/np.sum(rhoi,axis=0)
     wibar = averaging(wi.T).T
     rhoibar= averaging(rhoi.T).T
-    dlnai=THFaktor@np.diff(np.log(np.fmax(wi[mobiles,:],1E-8)))
+    dlnai=THFaktor@np.diff(np.log(np.fmax(wi[mobiles,:],1E-6)))
     B=BIJ_Matrix(D,wibar,mobiles,allflux) 
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)
@@ -213,7 +213,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
         residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
         return residual
-    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",options={"disp":True,"maxfev":10,"fatol":1E-6})["x"].reshape((nt,nc))
+    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc))
 
     if not full_output:
         return wtopt
