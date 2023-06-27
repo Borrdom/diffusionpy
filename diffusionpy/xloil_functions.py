@@ -1,4 +1,12 @@
-import xloil as xlo
+try:
+    import xloil as xlo
+except ImportError:
+    class xlo: 
+        func = lambda f: f
+        def Array(*args,**kwargs): return args[0]
+    _has_xloil = False
+else:
+    _has_xloil = True
 from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix,Diffusion_MS_iter
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
@@ -14,10 +22,10 @@ import fnmatch
 # mix=component()+component()
 # eos=pcsaft(mix)
 
-
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
 mobile:xlo.Array(bool,dims=1),full_output:bool=False,dlnai_dlnwi:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,rho0i:xlo.Array(float,dims=1)=None):   
+    if not _has_xloil: raise ImportError("xloil is required to do this.")
     return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,dlnai_dlnwi,swelling,taui,rho0i)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),

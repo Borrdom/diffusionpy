@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "justMyCode": false,
-            "module": "diffusionpy.${fileBasenameNoExtension}",
+            "module": "${fileBasenameNoExtension}",
         }
     ]
 }

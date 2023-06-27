@@ -7,17 +7,14 @@ authors = [
 ]
 description = "A package for describing diffusion in and out of liquids and amorphous substances"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "BSD-3-Clause"}
 
 dependencies = [
     "numpy",
     "scipy",
     "pandas",
-    "pywin32",
-    "textdistance",
-    "matplotlib",
-    "xloil"
-]
+    "matplotlib"]
+
 [build-system]
 requires = [
   "setuptools >= 40.9.0",
@@ -25,3 +22,15 @@ requires = [
 ]
 [tool.setuptools.packages.find]
 include = ["diffusionpy"]
+
+[project.scripts]
+diffusionpy_cli = 'diffusionpy.tests.PyCSAFT_Benchmark_nue:start'
+
+[project.optional-dependencies]
+# development dependency groups
+exceladdin = ["xloil",
+              "textdistance",
+              "pywin32"]
+
+
+

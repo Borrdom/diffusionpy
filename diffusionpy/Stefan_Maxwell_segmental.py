@@ -4,7 +4,7 @@ from scipy.optimize import root
 from scipy.interpolate import interp1d
 from numba import njit,config
 import time
-# config.DISABLE_JIT = True
+config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
@@ -43,15 +43,23 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     rhoi[immobiles,:]=rho*np.expand_dims(wi0[immobiles],1)
     rhoi[immobiles,-1]=rhoiB[immobiles]
     if not np.any(drhovdtB): rhoi[mobiles,-1]=rhoiB[mobiles]
+    # rhoi=np.fmax(rhoi,1)
     wi=rhoi/np.sum(rhoi,axis=0)
+    wi=np.fmin(np.fmax(wi,1E-6),1)
+    # wi=wi/np.sum(wi,axis=0)
     wibar = averaging(wi.T).T
     rhoibar= averaging(rhoi.T).T
-    dlnai=THFaktor@np.diff(np.log(np.fmax(wi[mobiles,:],1E-6)))
+    # wibar=rhoibar/np.sum(rhoibar,axis=0)
+    # dlnai=THFaktor@np.diff(np.log(wi[mobiles,:]))
+    dlnai=THFaktor@(np.diff(wi[mobiles,:])/wibar[mobiles,:])
     B=BIJ_Matrix(D,wibar,mobiles,allflux) 
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)
     di=rho*wibar[mobiles,:]*dmui/np.atleast_2d(ri).T*omega if swelling else rhoibar[mobiles,:]*dmui/np.atleast_2d(ri).T
     ji=np_linalg_solve(B,di)
+    for i in range(nTH):
+        for z in range(nz_1-1):
+            if rhoibar[i,z]<0.001: ji[i,z]=0 
     jiB=np.zeros((nTH,1))
     dji=np.diff(np.hstack((jiB,ji)))
     drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
@@ -86,7 +94,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         diffusionpy.D_Matrix
     """
     nc=len(wi0)
-    nz=20
+    
+    nz=kwargs["nz"] if "nz" in kwargs else 20
     dz=L/nz
     D=D_Matrix(Dvec/dz**2,nc)
     zvec=np.linspace(0,L,nz+1)
@@ -154,7 +163,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         rhovk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
         rhoik[k,:,:]=rhoiinit
         rhoik[k,mobiles,:]=rhovk
-        if callable(rhoiB): rhoik[k,:,-1]=rhoiB(t[k])
+        rhoik[k,:,-1]=rhoiB(t[k]) if callable(rhoiB) else rhoiB
         for i in range(nc):
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
         wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
