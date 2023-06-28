@@ -45,7 +45,7 @@ wL1D03=array([[5.1687E-06,	3.42274E-07, 9.99994489e-01],
 
 msol=500000
 m0=array([43.491,18.639,0])
-ww0=0.01
+ww0=0.1
 dl0=0.3
 dl8=0.3
 wi0=np.asarray([(1-dl0)*(1-ww0),dl0*(1-ww0),ww0])
@@ -102,7 +102,7 @@ dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 # %%
 Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
-Dvec=np.asarray([5E-12,1E-7,2E-13])
+Dvec=np.asarray([5E-12,1E-11,2E-10])
 
 # %% [markdown]
 # Next we define the time array and which component is mobile
@@ -110,7 +110,7 @@ Dvec=np.asarray([5E-12,1E-7,2E-13])
 # %%
 nt=300
 t=np.linspace(0,300,nt)*60
-mobile=np.asarray([False,True,True])
+mobile=np.asarray([False,False,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
