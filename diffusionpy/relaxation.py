@@ -23,16 +23,16 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
     _,nz_1=rhovinit.shape
     def MEOS_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         """solves the genralized Maxwell model for relaxation"""
-        _,nz=dmuext.shape
+        _,nz_1=dmuext.shape
         nTH=drhovdtB.shape[0]
         nJ=len(EJ)
-        rhov=np.zeros((nTH,nz+1))
+        rhov=np.zeros((nTH,nz_1))
         for i in range(nTH):
-            rhovtemp=x[(nz+1)*(i):(nz+1)*(1+i)]
+            rhovtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
             rhov[i,:]=rhovtemp
-        sigmaJ=np.zeros((nz+1,nJ))
+        sigmaJ=np.zeros((nz_1,nJ))
         for J in range(nJ):
-            sigmaJtemp=x[(nz+1)*(nTH+J):(nz+1)*(nTH+1+J)]
+            sigmaJtemp=x[(nz_1)*(nTH+J):(nz_1)*(nTH+1+J)]
             sigmaJ[:,J]=sigmaJtemp
         X2II=rhov/np.sum(rhoiB)
         w2II=X2II/(X2II+1)
@@ -57,7 +57,7 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
 def MDF(sigmaJ,EJ,RV):
     """the mechanical driving force for the stress gradient"""
     sigma=np.sum(sigmaJ*EJ,axis=1)
-    dsigma=np.diff(sigma)
+    dsigma=np.gradient(sigma)
     dmuext=1/np.expand_dims(RV,1)*np.expand_dims(dsigma,0)
     return dmuext
 

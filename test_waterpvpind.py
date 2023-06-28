@@ -63,7 +63,7 @@ wexp=wL1D03
 
 # %%
 nc=3
-L=0.0001
+L=0.001
 ww8=0.9
 wi8=np.asarray([dl8*(1-ww8),(1-dl8)*(1-ww8),ww8])
 Mi=np.asarray([65000,357.57,18.015])
@@ -102,7 +102,7 @@ dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 # %%
 Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
-Dvec=np.asarray([1E-11,1E-13,2E-16])
+Dvec=np.asarray([5E-12,1E-7,2E-13])
 
 # %% [markdown]
 # Next we define the time array and which component is mobile
@@ -114,14 +114,13 @@ mobile=np.asarray([False,True,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
-wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
-wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=50)
+# wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
+wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 notreleased=wt/wi0
 release=1-notreleased
 wt=m0/msol*release
 wt[:,2]=1-wt[:,0]-wt[:,1]
-wtid=wt
 
 # %% [markdown]
 # We can determine the mass dissolved in the dissolution medium by quantifying the mass that leaves the ASD. The initial mass of the ASD and the mass of the dissolution medium must be known
@@ -199,5 +198,7 @@ ax3.set_ylabel('$wi$ / -')
 
 [ax2.plot(zvec*1E6,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
-[ax3.plot(zvec*1E6,wtz[i,2,:], "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+
+
+[ax3.plot(zvec*1E6,wtz[i,1,:]/(wtz[i,0,:]+wtz[i,1,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 plt.show()

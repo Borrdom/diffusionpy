@@ -1,23 +1,38 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
-from scipy.interpolate import interp1d
-from numba import njit,config
+from scipy.interpolate import interp1d#,InterpolatedUnivariateSpline
+from numba import njit,config,stencil
 import time
 config.DISABLE_JIT = True
+
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
-    def averaging(a):
-        """make rolling average over a 2D array"""
-        return (a[1:,:]+a[:-1,:])/2.
+
     def np_linalg_solve(A,b):
-        """solve a Batch of linear system of equations"""
+        """solve a Batch of linear system of equations with numba"""
         ret = np.empty_like(b)
         for i in range(b.shape[1]):
+            # if np.linalg.det(A[:,:,i])==0:
+            #     print("stop")
+
             ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
         return ret
+
+    def np_gradient(f,fourth_order=False):
+        """reimplementation of numpy gradient with second order over the entire domain for use with numba.  Optional third order for the center"""
+        out = np.empty_like(f, np.float64)
+        out[1:-1,:] = (f[2:,:] - f[:-2,:]) / 2.0
+        out[0,:] = -(3*f[0,:] - 4*f[1,:] + f[2,:]) / 2.0
+        out[-1,:] = (3*f[-1] - 4*f[-2] + f[-3]) / 2.0
+
+        if fourth_order:
+            out[2:-2,:] *=4./3.
+            out[2:-2,:] -= (f[3:,:] - f[:-3,:]) / 12.0
+        return out
+    
     def BIJ_Matrix(D,wi,mobiles,allflux):
         """create the friction matrix which needs to be invertable"""
         nc,nz=wi.shape
@@ -34,6 +49,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
             if allflux: Dii+=Din
             B[i,i,:]=Dii
         return B[mobiles,:,:][:,mobiles,:] if not allflux else B[:-1,:-1,:]
+    
     refsegment=np.argmin(Mi)
     ri= Mi[mobiles]/Mi[refsegment]
     nc=len(Mi)
@@ -47,22 +63,30 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     wi=rhoi/np.sum(rhoi,axis=0)
     wi=np.fmin(np.fmax(wi,1E-6),1)
     # wi=wi/np.sum(wi,axis=0)
-    wibar = averaging(wi.T).T
-    rhoibar= averaging(rhoi.T).T
     # wibar=rhoibar/np.sum(rhoibar,axis=0)
     # dlnai=THFaktor@np.diff(np.log(wi[mobiles,:]))
-    dlnai=THFaktor@(np.diff(wi[mobiles,:])/wibar[mobiles,:])
-    B=BIJ_Matrix(D,wibar,mobiles,allflux) 
+    # InterpolatedUnivariateSpline(zvec,np.log(wi[mobiles,:]),k=3).derivative(n=1)(zvec)
+
+    dlnai=THFaktor@(np_gradient(np.log(wi[mobiles,:]).T).T)
+    B=BIJ_Matrix(D,wi,mobiles,allflux) 
     dmui=dlnai+dmuext
-    omega=rho/np.sum(rhoibar,axis=0)
-    di=rho*wibar[mobiles,:]*dmui/np.atleast_2d(ri).T*omega if swelling else rhoibar[mobiles,:]*dmui/np.atleast_2d(ri).T
+    omega=rho/np.sum(rhoi,axis=0)
+    di=rho*wi[mobiles,:]*dmui/np.atleast_2d(ri).T*omega if swelling else rhoi[mobiles,:]*dmui/np.atleast_2d(ri).T
+    # if np.any(np.isnan(di)):
+    #     print("stop")
     ji=np_linalg_solve(B,di)
-    for i in range(nTH):
-        for z in range(nz_1-1):
-            if rhoibar[i,z]<0.001: ji[i,z]=0 
-    jiB=np.zeros((nTH,1))
-    dji=np.diff(np.hstack((jiB,ji)))
-    drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
+    # for i in range(nTH):
+    #     for z in range(nz_1-1):
+    #         if rhov[i,z]<0.01: ji[i,z]=0 
+    jiB=np.zeros(nTH)
+    ji[:,0]=jiB
+    #dji=np.diff(np.hstack((jiB,ji)))
+    dji=np_gradient(ji.T).T
+    dji[:,-1]=drhovdtB
+    drhovdt=dji#np.hstack((dji,np.atleast_2d(drhovdtB).T))
+    # for i in range(nTH):
+    #     for z in range(nz_1-1):
+    #         if rhov[i,z]<1: drhovdt[i,z]=0 
     return  drhovdt
 
 
@@ -126,7 +150,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #____________________________________
     #def default_mode():
     xinit=rhovinit.flatten()
-    dmuext=np.zeros((nTH,nz))
+    dmuext=np.zeros((nTH,nz+1))
     rhoiB=wi8*rho
     drhovdtB=np.zeros(nTH)
     def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
