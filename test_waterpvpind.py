@@ -102,7 +102,7 @@ dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 # %%
 Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
-Dvec=np.asarray([1E-11,1E-13,2E-16])
+Dvec=np.asarray([1E-11,1E-10,2E-11])
 
 # %% [markdown]
 # Next we define the time array and which component is mobile
@@ -110,12 +110,12 @@ Dvec=np.asarray([1E-11,1E-13,2E-16])
 # %%
 nt=300
 t=np.linspace(0,300,nt)*60
-mobile=np.asarray([False,True,True])
+mobile=np.asarray([False,False,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
 wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
-wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=50)
+wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 notreleased=wt/wi0
 release=1-notreleased
