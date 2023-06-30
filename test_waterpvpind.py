@@ -63,7 +63,7 @@ wexp=wL1D03
 
 # %%
 nc=3
-L=0.0001
+L=0.001
 ww8=0.9
 wi8=np.asarray([dl8*(1-ww8),(1-dl8)*(1-ww8),ww8])
 Mi=np.asarray([65000,357.57,18.015])
@@ -102,22 +102,23 @@ dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 # %%
 Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
-Dvec=np.asarray([1E-11,1E-10,2E-11])
+Dvec=np.asarray([1E-7,6E-8,1E-14])
 
 # %% [markdown]
 # Next we define the time array and which component is mobile
 
 # %%
 nt=300
+# t=np.linspace(0,16.8,nt)*60
 t=np.linspace(0,300,nt)*60
-mobile=np.asarray([False,False,True])
+mobile=np.asarray([True,False,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
 wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
 wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
-notreleased=wt/wi0
+notreleased=wt/wi0*Lt[:,None]/L
 release=1-notreleased
 wt=m0/msol*release
 wt[:,2]=1-wt[:,0]-wt[:,1]
@@ -181,23 +182,36 @@ plt.show()
 color1 = "#99CC00"
 color2 = "#F08208"
 color3 = "#99CDE9"
+color4 = "#000000"
 
 fig1, ax1 = plt.subplots(figsize=(5, 4), dpi = 200)
 fig2, ax2 = plt.subplots(figsize=(5, 4), dpi = 200)
 fig3, ax3 = plt.subplots(figsize=(5, 4), dpi = 200)
+fig4, ax4 = plt.subplots(figsize=(5, 4), dpi = 200)
 fig1.subplots_adjust(hspace=0.5, wspace=0.3)
 fig2.subplots_adjust(hspace=0.5, wspace=0.3)
 fig3.subplots_adjust(hspace=0.5, wspace=0.3)
+fig4.subplots_adjust(hspace=0.5, wspace=0.3)
 ax1.set_xlabel('$z$ / µm')
 ax1.set_ylabel('$wi$ / -')
 ax2.set_xlabel('$z$ / µm')
 ax2.set_ylabel('$wi$ / -')
 ax3.set_xlabel('$z$ / µm')
 ax3.set_ylabel('$wi$ / -')
-[ax1.plot(zvec*1E6,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+ax4.set_xlabel('$z$ / µm')
+ax4.set_ylabel('$wi$ / -')
+[ax1.plot(zvec*1E6*Lt[i]/L,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 # ax1.plot(zexp1*Lt[0],meth, "o")
 
-[ax2.plot(zvec*1E6,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+[ax2.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
-[ax3.plot(zvec*1E6,wtz[i,2,:], "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+
+
+
+[ax3.plot(zvec*1E6*Lt[i]/L,wtz[i,2,:], "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+
+[ax4.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:]/(1-wtz[i,2,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+
+
+# [ax3.plot(zvec*1E6,wtz[i,1,:]/(wtz[i,1,:]+wtz[i,0,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 plt.show()
