@@ -45,9 +45,10 @@ wL1D03=array([[5.1687E-06,	3.42274E-07, 9.99994489e-01],
 
 msol=500000
 m0=array([43.491,18.639,0])
+mges0=np.sum(m0)
 ww0=0.01
-dl0=0.3
-dl8=0.3
+dl0=0.5
+dl8=0.5
 wi0=np.asarray([(1-dl0)*(1-ww0),dl0*(1-ww0),ww0])
 # release=wL1D03*msol/m0
 # notreleased=1-release
@@ -64,7 +65,7 @@ wexp=wL1D03
 # %%
 nc=3
 L=0.001
-ww8=0.9
+ww8=0.9999
 wi8=np.asarray([dl8*(1-ww8),(1-dl8)*(1-ww8),ww8])
 Mi=np.asarray([65000,357.57,18.015])
 T=298.15
@@ -102,7 +103,10 @@ dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
 # %%
 Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
-Dvec=np.asarray([1E-7,6E-8,1E-14])
+# Dvec=np.asarray([1E-7,6E-8,1E-14])
+Dvec=np.asarray([8E-9,2E-7,3.5E-10]) #dl 03
+Dvec=np.asarray([20E-9,2E-7,3.5E-10])
+# Dvec=np.asarray([1E-7,6E-8,1E-14])
 
 # %% [markdown]
 # Next we define the time array and which component is mobile
@@ -111,18 +115,22 @@ Dvec=np.asarray([1E-7,6E-8,1E-14])
 nt=300
 # t=np.linspace(0,16.8,nt)*60
 t=np.linspace(0,300,nt)*60
-mobile=np.asarray([True,False,True])
+mobile=np.asarray([True,True,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
 wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
 wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
-notreleased=wt/wi0*Lt[:,None]/L
-release=1-notreleased
-wt=m0/msol*release
-wt[:,2]=1-wt[:,0]-wt[:,1]
-wtid=wt
+# notreleased=wt/wi0*Lt[:,None]/L
+# release=1-notreleased
+# plt.plot((wt*Lt[:,None])[:,1])
+
+wrel=-mges0/msol*(wt*Lt[:,None]/L-wi0)
+# wt=m0/msol*release
+# wt[:,2]=1-wt[:,0]-wt[:,1]
+# wtid=wt
+
 
 # %% [markdown]
 # We can determine the mass dissolved in the dissolution medium by quantifying the mass that leaves the ASD. The initial mass of the ASD and the mass of the dissolution medium must be known
@@ -148,10 +156,12 @@ fig.subplots_adjust(hspace=0.5, wspace=0.3)
 # ax.plot(t/60,wtid[:,1], "--",color = color2 , 
 #         linewidth = 2.0, label = "wAPI")
 
-ax.plot(t/60,wt[:,0], "-",color = color1 , 
+ax.plot(t/60,wrel[:,0], "-",color = color1 , 
         linewidth = 2.0, label = "wPol")
-ax.plot(t/60,wt[:,1], "-",color = color2 , 
+ax.plot(t/60,wrel[:,1], "-",color = color2 , 
         linewidth = 2.0, label = "wAPI")
+ax.plot(t/60,wrel[:,2], "-",color = color3 , 
+        linewidth = 2.0, label = "ww")
 
 ax.plot(texp,wexp[:,0], "ro",color = color1 , 
         linewidth = 2.0, label = "wPol")
@@ -192,25 +202,35 @@ fig1.subplots_adjust(hspace=0.5, wspace=0.3)
 fig2.subplots_adjust(hspace=0.5, wspace=0.3)
 fig3.subplots_adjust(hspace=0.5, wspace=0.3)
 fig4.subplots_adjust(hspace=0.5, wspace=0.3)
-ax1.set_xlabel('$z$ / µm')
-ax1.set_ylabel('$wi$ / -')
-ax2.set_xlabel('$z$ / µm')
-ax2.set_ylabel('$wi$ / -')
-ax3.set_xlabel('$z$ / µm')
-ax3.set_ylabel('$wi$ / -')
-ax4.set_xlabel('$z$ / µm')
-ax4.set_ylabel('$wi$ / -')
-[ax1.plot(zvec*1E6*Lt[i]/L,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
-# ax1.plot(zexp1*Lt[0],meth, "o")
+ax1.set_ylabel('$z$ / µm')
+ax1.set_xlabel('$t$ / min')
+ax2.set_ylabel('$z$ / µm')
+ax2.set_xlabel('$t$ / min')
+ax3.set_ylabel('$z$ / µm')
+ax3.set_xlabel('$t$ / min')
+ax4.set_ylabel('$z$ / µm')
+ax4.set_xlabel('$t$ / min')
+Micmet,Minutes=np.meshgrid(zvec*1E6,t/60)
+expansion=Lt[:,None]/L
+pl1=ax1.contourf(Minutes,Micmet*expansion,wtz[:,0,:],cmap="Greens")
+cbar1 = fig.colorbar(pl1)
+pl2=ax2.contourf(Minutes,Micmet*expansion,wtz[:,1,:],cmap="Oranges")
+cbar2 = fig.colorbar(pl2)
+pl3=ax3.contourf(Minutes,Micmet*expansion,wtz[:,2,:],cmap="Blues")
+cbar3 = fig.colorbar(pl3)
+pl4=ax4.contourf(Minutes,Micmet*expansion,wtz[:,1,:]/(wtz[:,1,:]+wtz[:,0,:]),cmap="Reds")
+cbar4 = fig.colorbar(pl4)
+# [ax1.plot(zvec*1E6*Lt[i]/L,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+# # ax1.plot(zexp1*Lt[0],meth, "o")
 
-[ax2.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+# [ax2.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
 
 
 
-[ax3.plot(zvec*1E6*Lt[i]/L,wtz[i,2,:], "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+# [ax3.plot(zvec*1E6*Lt[i]/L,wtz[i,2,:], "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
-[ax4.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:]/(1-wtz[i,2,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+# [ax4.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:]/(1-wtz[i,2,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
 
 # [ax3.plot(zvec*1E6,wtz[i,1,:]/(wtz[i,1,:]+wtz[i,0,:]), "-",color = color3 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]

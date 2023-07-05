@@ -2,13 +2,19 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import root
 from scipy.interpolate import interp1d
-from numba import njit,config
+# from scipy.special import logsumexp
+from numba import njit,config,prange
 import time
 config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,lnrhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
+ 
+    def logsumexp(x,axis=0):
+        c = np.max(x)
+        return c + np.log(np.sum(np.exp(x - c),axis=axis))
+
     def averaging(a):
         """make rolling average over a 2D array"""
         return (a[1:,:]+a[:-1,:])/2.
@@ -51,16 +57,22 @@ def drhodt(t,lnrhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmu
     lnrhoi[immobiles,-1]=np.log(rhoiB[immobiles])
     if not np.any(drhovdtB): lnrhoi[mobiles,-1]=np.log(rhoiB[mobiles])
 
+    # lnrhoi[immobiles,:]=np.log(rho*np.expand_dims(wi0[immobiles]/(1-np.sum(wi0[immobiles])),1))
+    # lnrhoi[immobiles,-1]=np.log(rhoiB[immobiles]/(np.sum(rhoiB)-np.sum(rhoiB[immobiles])))
+    # if not np.any(drhovdtB): lnrhoi[mobiles,-1]=np.log(rhoiB[mobiles]/(np.sum(rhoiB)-np.sum(rhoiB[immobiles])))
+
     # rhoi=np.fmax(rhoi,1)
     # wi=rhoi/np.sum(rhoi,axis=0)
 
-    lnwi=lnrhoi-np.log(np.sum(np.exp(lnrhoi),axis=0))
+    # lnwi=lnrhoi-np.log(np.sum(np.exp(lnrhoi),axis=0))
+    lnwi=lnrhoi-logsumexp(lnrhoi,axis=0)
+    
     # wi=np.fmin(np.fmax(wi,1E-6),1)
     lnwv=lnwi[mobiles,:]
-    # rhoi[:,-1]=rhoi[:,-2]
+    # lnrhoi[:,-1]=rhoi[:,-2]
     # wi=wi/np.sum(wi,axis=0)
-    wibar = np.exp(averaging(lnwi.T).T)
-    rhoibar= np.exp(averaging(lnrhoi.T).T)
+    wibar = averaging(np.exp(lnwi).T).T
+    rhoibar= averaging(np.exp(lnrhoi).T).T
     
     rhovbar=rhoibar[mobiles,:]
     wvbar=wibar[mobiles,:]
@@ -75,8 +87,8 @@ def drhodt(t,lnrhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmu
     # if np.any(rhovbar<0.000001):
     #     print("stop")
     # di[rhovbar<0.000001]=0
-    ji=np_linalg_solve(B,di)
- 
+    ji=np_linalg_solve(B,di) if not allflux else np_linalg_solve(B,di[:-1,:])
+    if allflux: ji=np.vstack((ji,-np.sum(ji,axis=0))) 
     jiB=np.zeros((nTH,1))
     dji=np.diff(np.hstack((jiB,ji)))
     drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
@@ -123,18 +135,18 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     if "rho0i" not in kwargs  : rho0i=rho*np.ones(nc)
     if "rho0i" in kwargs : rho0i=kwargs["rho0i"]
     allflux=nc==nf
-    nTH=nf if not allflux else nc-1
-    mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([-1],dtype=np.int64)
+    nTH=nf #if not allflux else nc-1
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([-1],dtype=np.int64)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit=(rho*wi0*np.ones((nz+1,nc))).T
     rhovinit=rhoiinit[mobiles,:]
     #Construct TH Factor
     THFaktor=np.eye(nTH)
     if dlnai_dlnwi is not None:
-        slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles)
-        slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles)
-        massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1)
+        slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+        slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+        massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
         #THFaktor[slc1]=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value=(THFaktor[0,:,:],THFaktor[-1,:,:]))
@@ -143,21 +155,21 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #Set up the PDEs boundary,initial conditions and additional driving forces.
     #____________________________________
     #def default_mode():
-    xinit=rhovinit.flatten()
+    xinit=np.log(rhovinit.flatten())
     dmuext=np.zeros((nTH,nz))
     rhoiB=wi8*rho
     drhovdtB=np.zeros(nTH)
     def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
-        """create generic ode fucnction for drhodt"""
-        # lnrhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
-        # rhov=np.exp(lnrhov)
-        rhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
-        # if np.any(rhov==np.inf):
-        #     print("stop")
-        return drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)/np.exp(rhov)
+        """create generic ode function for drhodt"""
+        lnrhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
+        return drhodt(t,lnrhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)/np.exp(lnrhov)
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import MEOS_mode
+        def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
+            """create generic ode function for drhodt"""
+            rhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1))) 
+            return drhodt(t,np.log(rhov),THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
         xinit,ode=MEOS_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     #_____________________________________
     if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
@@ -171,16 +183,17 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         return dxdt.flatten()
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapode,(t[0],t[-1]),np.log(xinit),args=(ode,THFaktor,dmuext,rhoiB,drhovdtB),method="Radau",t_eval=t)#rtol=1E-2,atol=1E-3)
+    sol=solve_ivp(wrapode,(t[0],t[-1]),xinit,args=(ode,THFaktor,dmuext,rhoiB,drhovdtB),method="Radau",t_eval=t)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
-    x_sol=np.exp(sol["y"] )
+    x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     nt=len(t)
     wt=np.zeros((nc,nt))
     wik=np.zeros((nt,nc,nz+1))
     rhoik=np.zeros((nt,nc,nz+1))
     rhok=np.zeros(nt)
+    rhoit=np.zeros((nt,nc))
     for k in range(nt):
         rhovk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
         rhoik[k,:,:]=rhoiinit
@@ -190,7 +203,9 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
         wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
         rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
+        rhoit[k,:]=np.sum(rhoik[k,:,:-1]/nz,axis=1)
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
+    wt=(rhoit/rhok[:,None]).T
     Lt=rhok/rho*L
     # plt.plot(t,rhoik[:,1,-1])
     return wt.T if not full_output else (wt.T,wik,zvec,Lt)
