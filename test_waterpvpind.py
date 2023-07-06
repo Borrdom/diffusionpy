@@ -42,9 +42,22 @@ wL1D03=array([[5.1687E-06,	3.42274E-07, 9.99994489e-01],
 #        [1.71751000e-05, 7.58597000e-06, 9.99975239e-01],
 #        [1.73692000e-05, 8.33222000e-06, 9.99974299e-01],
 #        [1.75724000e-05, 9.19885000e-06, 9.99973229e-01]])
-
+wL1D05=array([[7.34838000e-07, 5.95664000e-07, 9.99998669e-01],
+       [1.07111000e-06, 1.11906000e-06, 9.99997810e-01],
+       [1.42408000e-06, 1.85585000e-06, 9.99996720e-01],
+       [1.86380000e-06, 3.47314000e-06, 9.99994663e-01],
+       [1.99883000e-06, 4.42371000e-06, 9.99993577e-01],
+       [2.04584000e-06, 6.09469000e-06, 9.99991859e-01],
+       [2.04858000e-06, 7.07050000e-06, 9.99990881e-01],
+       [1.96896000e-06, 8.10867000e-06, 9.99989922e-01],
+       [2.13912000e-06, 9.81494000e-06, 9.99988046e-01],
+       [2.19015000e-06, 1.09211000e-05, 9.99986889e-01],
+       [2.16470000e-06, 1.22759000e-05, 9.99985559e-01],
+       [2.24988000e-06, 1.35512000e-05, 9.99984199e-01]])
 msol=500000
 m0=array([43.491,18.639,0])
+m0=array([31.65,31.65,0.])
+
 mges0=np.sum(m0)
 ww0=0.01
 dl0=0.5
@@ -55,7 +68,7 @@ wi0=np.asarray([(1-dl0)*(1-ww0),dl0*(1-ww0),ww0])
 # wexp=notreleased*wi0
 # wexp[:,2]=1-wexp[:,0]-wexp[:,1]
 
-wexp=wL1D03
+wexp=wL1D05
 
 
 
@@ -65,8 +78,8 @@ wexp=wL1D03
 # %%
 nc=3
 L=0.001
-ww8=0.9999
-wi8=np.asarray([dl8*(1-ww8),(1-dl8)*(1-ww8),ww8])
+ww8=0.95
+wi8=np.asarray([(1-dl8)*(1-ww8),dl8*(1-ww8),ww8])
 Mi=np.asarray([65000,357.57,18.015])
 T=298.15
 p=1E5
@@ -105,7 +118,11 @@ Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
 # Dvec=np.asarray([1E-7,6E-8,1E-14])
 Dvec=np.asarray([8E-9,2E-7,3.5E-10]) #dl 03
-Dvec=np.asarray([20E-9,2E-7,3.5E-10])
+
+# Dvec=np.asarray([8E-8,2E-7,3.5E-10]) #dl 03 Problem
+# Dvec=np.asarray([12E-8,9E-10,11E-12]) #dl 05
+Dvec=np.asarray([8E-5,2E-7,3.5E-5]) #dl 05
+# Dvec=np.asarray([20E-9,2E-7,3.5E-14])
 # Dvec=np.asarray([1E-7,6E-8,1E-14])
 
 # %% [markdown]
@@ -119,7 +136,7 @@ mobile=np.asarray([True,True,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
-wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True)
+wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,nz=20)
 wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 # notreleased=wt/wi0*Lt[:,None]/L
