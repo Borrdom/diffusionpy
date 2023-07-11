@@ -20,6 +20,8 @@ def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues"):
         axes[i].set_yticklabels([])
         axes[i].set_ylim(0, np.max(zvec*1E6*expansion))
         axes[i].spines['polar'].set_visible(False)
+        axes[i].set_title(f'{t[delt*i]/60:.2f}'+" min", va='bottom')
+
     axes=np.asarray(axes)
       
     # ax30 = fig10.add_subplot(3,instances//2,instances+1)
