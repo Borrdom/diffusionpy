@@ -77,10 +77,10 @@ wexp=wL1D05
 
 # %%
 nc=3
-L=0.001
+L=0.0002
 ww8=0.95
 wi8=np.asarray([(1-dl8)*(1-ww8),dl8*(1-ww8),ww8])
-Mi=np.asarray([65000,357.57,18.015])
+Mi=np.asarray([86000,554.5,18.015])
 T=298.15
 p=1E5
 
@@ -118,7 +118,8 @@ Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
 # Dvec=np.asarray([1E-7,6E-8,1E-14])
 # Dvec=np.asarray([8E-9,2E-7,3.5E-10]) #dl 03
-Dvec=np.asarray([8E-12,2E-9,3.5E-9]) #dl 03
+# Dvec=np.asarray([8E-10,1E-11,8E-11]) #dl 03
+Dvec=np.asarray([8E-11,1E-14,8E-8]) #dl 03
 
 # Dvec=np.asarray([8E-8,2E-7,3.5E-10]) #dl 03 Problem
 # Dvec=np.asarray([12E-8,9E-10,11E-12]) #dl 05
@@ -133,13 +134,13 @@ Dvec=np.asarray([8E-12,2E-9,3.5E-9]) #dl 03
 nt=300
 # t=np.linspace(0,16.8,nt)*60
 t=np.linspace(0,300,nt)*60
-mobile=np.asarray([False,True,True])
+mobile=np.asarray([True,True,False])
 # mobile=np.asarray([False,False,True])
 
 # %%
-EJ=np.asarray([1E10])
-etaJ=np.asarray([1E13])
-exponent=np.asarray([0.,10.])
+EJ=np.asarray([2E9])
+etaJ=np.asarray([1E17])
+exponent=np.asarray([0.,1.])
 wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,nz=20)
 wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
 # wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20,EJ=EJ,etaJ=etaJ,exponent=exponent)
@@ -190,16 +191,19 @@ ax.plot(texp,wexp[:,0], "ro",color = color1 ,
 ax.plot(texp,wexp[:,1], "go",color = color2 , 
         linewidth = 2.0, label = "wAPI")
 
+fig0, ax0 = plt.subplots(figsize=(5, 4), dpi = 200)
+ax0.plot(t/60,Lt/L, "gx",color = color2 , 
+        linewidth = 2.0, label = "wAPI")
 
 
 ax.legend(fontsize="small")
 ax.set_xlabel('$t$ / s')
 ax.set_ylabel('$wi$ / -')
-ax.axis([0, 300., 0., 6E-5])
+ax.axis([0, 300., 0., 1E-4])
 start, end = ax.get_xlim()
-ax.xaxis.set_ticks(np.linspace(start, end, 5))
+# ax.xaxis.set_ticks(np.linspace(start, end, 5))
 start, end = ax.get_ylim()
-ax.yaxis.set_ticks(np.linspace(start, end, 5))
+# ax.yaxis.set_ticks(np.linspace(start, end, 5))
 plt.show()
 
 

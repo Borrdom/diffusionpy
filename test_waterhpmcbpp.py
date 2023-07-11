@@ -9,66 +9,47 @@
 # %%
 import numpy as np
 from numpy import array
-from diffusionpy import Diffusion_MS,D_Matrix,Diffusion_MS_iter,vpure,dlnai_dlnxi,lngi
+from diffusionpy import Diffusion_MS,D_Matrix,Diffusion_MS_iter,vpure,dlnai_dlnxi,lngi,circular
 import matplotlib.pyplot as plt
+
 
 # %% [markdown]
 # experimental data
 
 # %%
-texp=array([5,15,30,60,90,120,150,180,210,240,270,300])
-wL1D03=array([[5.1687E-06,	3.42274E-07, 9.99994489e-01],
-        [8.11419000e-06, 6.63373000e-07, 9.99991222e-01],
-       [1.16988000e-05, 1.30293000e-06, 9.99986998e-01],
-       [1.82872000e-05, 2.61848000e-06, 9.99979094e-01],
-       [2.43481000e-05, 4.06235000e-06, 9.99971590e-01],
-       [2.97692000e-05, 5.50577000e-06, 9.99964725e-01],
-       [3.50846000e-05, 7.11082000e-06, 9.99957805e-01],
-       [3.91787000e-05, 8.82865000e-06, 9.99951993e-01],
-       [4.30863000e-05, 1.03757000e-05, 9.99946538e-01],
-       [4.68326000e-05, 1.22831000e-05, 9.99940884e-01],
-       [4.92799000e-05, 1.34226000e-05, 9.99937297e-01],
-       [5.08487000e-05, 1.48856000e-05, 9.99934266e-01]])
 
-# wL1D03=array([[2.47540000e-06, 3.38334000e-07, 9.99997186e-01],
-#        [5.76787000e-06, 7.27514000e-07, 9.99993505e-01],
-#        [9.85161000e-06, 1.13529000e-06, 9.99989013e-01],
-#        [1.43790000e-05, 2.29403000e-06, 9.99983327e-01],
-#        [1.61947000e-05, 3.20807000e-06, 9.99980597e-01],
-#        [1.67283000e-05, 4.11030000e-06, 9.99979161e-01],
-#        [1.71512000e-05, 4.97144000e-06, 9.99977877e-01],
-#        [1.73003000e-05, 5.76267000e-06, 9.99976937e-01],
-#        [1.73463000e-05, 6.66612000e-06, 9.99975988e-01],
-#        [1.71751000e-05, 7.58597000e-06, 9.99975239e-01],
-#        [1.73692000e-05, 8.33222000e-06, 9.99974299e-01],
-#        [1.75724000e-05, 9.19885000e-06, 9.99973229e-01]])
-wL1D05=array([[7.34838000e-07, 5.95664000e-07, 9.99998669e-01],
-       [1.07111000e-06, 1.11906000e-06, 9.99997810e-01],
-       [1.42408000e-06, 1.85585000e-06, 9.99996720e-01],
-       [1.86380000e-06, 3.47314000e-06, 9.99994663e-01],
-       [1.99883000e-06, 4.42371000e-06, 9.99993577e-01],
-       [2.04584000e-06, 6.09469000e-06, 9.99991859e-01],
-       [2.04858000e-06, 7.07050000e-06, 9.99990881e-01],
-       [1.96896000e-06, 8.10867000e-06, 9.99989922e-01],
-       [2.13912000e-06, 9.81494000e-06, 9.99988046e-01],
-       [2.19015000e-06, 1.09211000e-05, 9.99986889e-01],
-       [2.16470000e-06, 1.22759000e-05, 9.99985559e-01],
-       [2.24988000e-06, 1.35512000e-05, 9.99984199e-01]])
+swelling=array([[0.       ,    0.    ],
+       [  9.24861,   0.895  ],
+       [ 11.18739,   1.08754],
+       [ 16.86526,   1.2824 ],
+       [ 32.37552,   1.54222],
+       [ 63.25758,   2.15696],
+       [121.14411,   2.80418],
+       [152.02616,   3.06168],
+       [182.76973,   3.28902],
+       [211.713  ,   3.51403],
+       [242.59505,   3.8388 ],
+       [271.53832,   4.00119],
+       [302.42037,   4.25869],
+       [333.30242,   4.38859],
+       [360.3069 ,   4.61593],
+       [420.13222,   5.06829],
+       [451.01427,   5.13324],
+       [483.83511,   5.35826]])
+texp=swelling[:,0]
+thickness=swelling[:,1]
 msol=500000
-m0=array([43.491,18.639,0])
-m0=array([31.65,31.65,0.])
-
-mges0=np.sum(m0)
+mges0=125
 ww0=0.01
-dl0=0.5
-dl8=0.5
+dl0=0.4
+dl8=0.4
 wi0=np.asarray([(1-dl0)*(1-ww0),dl0*(1-ww0),ww0])
 # release=wL1D03*msol/m0
 # notreleased=1-release
 # wexp=notreleased*wi0
 # wexp[:,2]=1-wexp[:,0]-wexp[:,1]
 
-wexp=wL1D05
+wexp=thickness
 
 
 
@@ -77,10 +58,10 @@ wexp=wL1D05
 
 # %%
 nc=3
-L=0.001
+L=6/1000
 ww8=0.95
 wi8=np.asarray([(1-dl8)*(1-ww8),dl8*(1-ww8),ww8])
-Mi=np.asarray([65000,357.57,18.015])
+Mi=np.asarray([86000,554.5,18.015])
 T=298.15
 p=1E5
 
@@ -118,7 +99,8 @@ Dvec=np.asarray([1E-13,1E-13,2E-13])
 # Dvec=np.asarray([1E-13,1E-13,1E-13])
 # Dvec=np.asarray([1E-7,6E-8,1E-14])
 # Dvec=np.asarray([8E-9,2E-7,3.5E-10]) #dl 03
-Dvec=np.asarray([8E-12,2E-9,3.5E-9]) #dl 03
+# Dvec=np.asarray([8E-10,1E-11,8E-11]) #dl 03
+Dvec=np.asarray([8E-10,1E-8,8E-8]) #dl 03
 
 # Dvec=np.asarray([8E-8,2E-7,3.5E-10]) #dl 03 Problem
 # Dvec=np.asarray([12E-8,9E-10,11E-12]) #dl 05
@@ -132,17 +114,17 @@ Dvec=np.asarray([8E-12,2E-9,3.5E-9]) #dl 03
 # %%
 nt=300
 # t=np.linspace(0,16.8,nt)*60
-t=np.linspace(0,300,nt)*60
+t=np.linspace(0,500,nt)*60
 mobile=np.asarray([False,True,True])
 # mobile=np.asarray([False,False,True])
 
 # %%
-EJ=np.asarray([1E10])
+EJ=np.asarray([2E9])
 etaJ=np.asarray([1E13])
-exponent=np.asarray([0.,10.])
+exponent=np.asarray([0.,2.])
 wtid=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,nz=20)
-wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
-# wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20,EJ=EJ,etaJ=etaJ,exponent=exponent)
+# wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20)
+wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,full_output=True,nz=20,EJ=EJ,etaJ=etaJ,exponent=exponent)
 # wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
 # notreleased=wt/wi0*Lt[:,None]/L
 # release=1-notreleased
@@ -185,21 +167,22 @@ ax.plot(t/60,wrel[:,1], "-",color = color2 ,
 ax.plot(t/60,wrel[:,2], "-",color = color3 , 
         linewidth = 2.0, label = "ww")
 
-ax.plot(texp,wexp[:,0], "ro",color = color1 , 
-        linewidth = 2.0, label = "wPol")
-ax.plot(texp,wexp[:,1], "go",color = color2 , 
+
+fig0, ax0 = plt.subplots(figsize=(5, 4), dpi = 200)
+ax0.plot(t/60,(Lt-L)*1000, "g-",color = color2 , 
         linewidth = 2.0, label = "wAPI")
 
-
+ax0.plot(texp,thickness, "gx",color = color2 , 
+        linewidth = 2.0, label = "wAPI")
 
 ax.legend(fontsize="small")
 ax.set_xlabel('$t$ / s')
 ax.set_ylabel('$wi$ / -')
-ax.axis([0, 300., 0., 6E-5])
+ax.axis([0, 300., 0., 1E-4])
 start, end = ax.get_xlim()
-ax.xaxis.set_ticks(np.linspace(start, end, 5))
+# ax.xaxis.set_ticks(np.linspace(start, end, 5))
 start, end = ax.get_ylim()
-ax.yaxis.set_ticks(np.linspace(start, end, 5))
+# ax.yaxis.set_ticks(np.linspace(start, end, 5))
 plt.show()
 
 
@@ -215,6 +198,8 @@ color1 = "#99CC00"
 color2 = "#F08208"
 color3 = "#99CDE9"
 color4 = "#000000"
+
+
 
 fig1, ax1 = plt.subplots(figsize=(5, 4), dpi = 200)
 fig2, ax2 = plt.subplots(figsize=(5, 4), dpi = 200)
@@ -234,6 +219,7 @@ ax4.set_ylabel('$z$ / µm')
 ax4.set_xlabel('$t$ / min')
 Micmet,Minutes=np.meshgrid(zvec*1E6,t/60)
 expansion=Lt[:,None]/L
+# X,Y=Micmet*np.cos(Phi)*expansion,Micmet*np.sin(Phi)*expansion
 pl1=ax1.contourf(Minutes,Micmet*expansion,wtz[:,0,:],cmap="Greens")
 cbar1 = fig.colorbar(pl1)
 pl2=ax2.contourf(Minutes,Micmet*expansion,wtz[:,1,:],cmap="Oranges")
@@ -242,8 +228,53 @@ pl3=ax3.contourf(Minutes,Micmet*expansion,wtz[:,2,:],cmap="Blues")
 cbar3 = fig.colorbar(pl3)
 pl4=ax4.contourf(Minutes,Micmet*expansion,wtz[:,1,:]/(wtz[:,1,:]+wtz[:,0,:]),cmap="Reds")
 cbar4 = fig.colorbar(pl4)
-# [ax1.plot(zvec*1E6*Lt[i]/L,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
-# # ax1.plot(zexp1*Lt[0],meth, "o")
+
+fig12,ax12=plt.subplots()
+[ax12.plot(zvec*1E6*Lt[i]/L,wtz[i,0,:], "-",color = color1 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
+
+fig10 = plt.figure()
+ax10 = fig10.add_subplot(141, polar=True)
+ax11 = fig10.add_subplot(142, polar=True)
+ax12 = fig10.add_subplot(143, polar=True)
+
+phi=np.linspace(0,2*np.pi,41)
+Rad,Phi=np.meshgrid(zvec*1E6,phi)
+pl10=ax10.contourf(Phi,Rad*expansion[0],np.meshgrid(wtz[0,2,:],phi)[0],cmap="Blues",vmin=0, vmax=1)
+# cbar10 = fig.colorbar(pl10)
+pl11=ax11.contourf(Phi,Rad*expansion[100],np.meshgrid(wtz[100,2,:],phi)[0],cmap="Blues",vmin=0, vmax=1)
+# cbar11 = fig.colorbar(pl11)
+pl12=ax12.contourf(Phi,Rad*expansion[-1],np.meshgrid(wtz[-1,2,:],phi)[0],cmap="Blues",vmin=0, vmax=1)
+# cbar12 = fig.colorbar(pl12)
+
+ax10.grid(False)
+ax11.grid(False)
+ax12.grid(False)
+
+ax10.set_xticklabels([])
+ax10.set_yticklabels([])
+ax11.set_xticklabels([])
+ax11.set_yticklabels([])
+ax12.set_xticklabels([])
+ax12.set_yticklabels([])
+
+ax10.set_ylim(0, np.max(zvec*1E6*expansion))
+ax11.set_ylim(0, np.max(zvec*1E6*expansion))
+ax12.set_ylim(0, np.max(zvec*1E6*expansion))
+
+ax10.spines['polar'].set_visible(False)
+ax11.spines['polar'].set_visible(False)
+ax12.spines['polar'].set_visible(False)
+
+ax30 = fig10.add_subplot(1,4,4)
+# ax30.axis('off')
+sm = plt.cm.ScalarMappable(cmap="Blues", norm=plt.Normalize(vmin=0, vmax=1))
+plt.colorbar(sm,ax30)
+
+
+circular(t,zvec,wtz,Lt=Lt,instances=6,comp=2,cmap="Blues")
+# cbar = plt.colorbar(pl12,ax30)
+
+# ax1.plot(zexp1*Lt[0],meth, "o")
 
 # [ax2.plot(zvec*1E6*Lt[i]/L,wtz[i,1,:], "-",color = color2 , linewidth = 2.0) for i,val in enumerate(wtz[:,0,0])]
 
