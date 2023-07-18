@@ -24,8 +24,5 @@ def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues"):
 
     axes=np.asarray(axes)
       
-    # ax30 = fig10.add_subplot(3,instances//2,instances+1)
-    # sm = plt.cm.ScalarMappable(cmap="Blues", norm=plt.Normalize(vmin=0, vmax=1))
-    # fig10.colorbar(sm,ax30,orientation='horizontal')
     fig.colorbar(pls[0], ax=axes.ravel().tolist(),orientation="horizontal")
     fig.subplots_adjust(hspace=0,wspace=0)  

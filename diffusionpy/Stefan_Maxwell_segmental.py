@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from scipy.optimize import root
+from scipy.optimize import root,fixed_point
 from scipy.interpolate import interp1d
 # from scipy.special import logsumexp
 from numba import njit,config,prange
@@ -10,14 +10,12 @@ import time
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
-
     def vanishing_check(drhovdt,rhov):
         s1,s2=rhov.shape
         for i in range(s1):
             for j in range(s2):
                 if (drhovdt[i,j]<0 and rhov[i,j]<1E-4 ): drhovdt[i,j]=0 
             return drhovdt
-
     def averaging(a):
         """make rolling average over a 2D array"""
         return (a[1:,:]+a[:-1,:])/2.
@@ -47,14 +45,8 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     ri= Mi[mobiles]/Mi[refsegment]
     nc=len(Mi)
     nTH,nz_1=rhov.shape
-
-    
-    # vanishing=np.exp(rhov)<1E-4
     rhoi=np.zeros((nc,nz_1))
     rhoi[mobiles,:]=rhov
-    # vanishing=rhov<1E-4
-    # rhoi=np.fmax(rhoi,1E-4)
-
     rhoi[immobiles,:]=rho*np.expand_dims(wi0[immobiles],1)
     rhoi[immobiles,-1]=rhoiB[immobiles]
     if not np.any(drhovdtB): rhoi[mobiles,-1]=rhoiB[mobiles]
@@ -67,20 +59,11 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     rhovbar=rhoibar[mobiles,:]
     wvbar=wibar[mobiles,:]
     dlnwv=dlnwi[mobiles,:]
-    # wibar=rhoibar/np.sum(rhoibar,axis=0)
-
-    # wibar=rhoibar/np.sum(rhoibar,axis=0)
-    # dlnai=THFaktor@np.diff(np.log(wi[mobiles,:]))
-    # dlnai=THFaktor@(np.diff(wv)/wvbar)
     dlnai=THFaktor@(dlnwv)
     B=BIJ_Matrix(D,wibar,mobiles,allflux)
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)
     di=rho*wvbar*dmui/np.atleast_2d(ri).T*omega if swelling else rhovbar*dmui/np.atleast_2d(ri).T
-    # di[vanishing2]=0
-    # if np.any(rhovbar<0.000001):
-    #     print("stop")
-    # di[rhovbar<0.000001]=0
     ji=np_linalg_solve(B,di) if not allflux else np_linalg_solve(B,di[:-1,:])
     if allflux:
         nonetflux=np.expand_dims(-np.sum(ji,axis=0),0)
@@ -88,9 +71,6 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     jiB=np.zeros((nTH,1))
     dji=np.diff(np.hstack((jiB,ji)))
     drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
-    
-    # decreasing=drhovdt<0
-    # drhovdt[vanishing&decreasing]=0
     return  vanishing_check(drhovdt,rhov)
 
 
@@ -145,11 +125,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
         slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
         massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-        #THFaktor[slc1]=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
         THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value=(THFaktor[0,:,:],THFaktor[-1,:,:]))
-    
-    
     #Set up the PDEs boundary,initial conditions and additional driving forces.
     #____________________________________
     #def default_mode():
@@ -254,8 +231,12 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
         residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
         return residual
-    wtopt=root(wt_obj,wt_old.flatten(),method="df-sane",options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc))
-
+    def wt_fix(wt):
+        dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
+    method=kwargs["method"] if "method" in kwargs  else "df-sane"
+    wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc))  if method!="fixedpoint" else fixed_point(wt_fix,wt_old,xtol=1E-4,maxiter=20)
+    # 
     if not full_output:
         return wtopt
     else: 

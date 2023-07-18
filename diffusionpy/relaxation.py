@@ -53,7 +53,7 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
     xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
     return xinit,MEOS_ode
 
-#@njit
+@njit
 def MDF(sigmaJ,EJ,RV):
     """the mechanical driving force for the stress gradient"""
     sigma=np.sum(sigmaJ*EJ,axis=1)
@@ -61,7 +61,7 @@ def MDF(sigmaJ,EJ,RV):
     dmuext=1/np.expand_dims(RV,1)*np.expand_dims(dsigma,0)
     return dmuext
 
-#@njit
+@njit
 def stress(etaWL,EJ,sigmaJ,drhodtNF,v2):
     """calculate the change in the stresses of the maxwell elements"""
     nJ=len(EJ)
@@ -71,21 +71,21 @@ def stress(etaWL,EJ,sigmaJ,drhodtNF,v2):
         dsigmaJdt[:,i]=-1/etaWL[:,i]*sigmaJ[:,i]*EJ[i]+np.sum(drhodtNF*np.expand_dims(v2,1),axis=0)
     return dsigmaJdt
 
-def boundary(rhov,etaWL,EJ,sigmaJ,RV,THFaktor,v2):
-    """calculate the mass fraction vector of the surface elment as afunction of time"""
-    b=np.sum(1/(etaWL[-1,:])*sigmaJ[-1,:]*EJ**2,axis=0)/RV
-    A=(THFaktor/rhov[:,-1]+np.sum(EJ)*v2/RV)
-    drhovdtB=np.linalg.solve(A,b) if len(A)>1 else b/A
-    return drhovdtB
+# def boundary(rhov,etaWL,EJ,sigmaJ,RV,THFaktor,v2):
+#     """calculate the mass fraction vector of the surface elment as afunction of time"""
+#     b=np.sum(1/(etaWL[-1,:])*sigmaJ[-1,:]*EJ**2,axis=0)/RV
+#     A=(THFaktor/rhov[:,-1]+np.sum(EJ)*v2/RV)
+#     drhovdtB=np.linalg.solve(A,b) if len(A)>1 else b/A
+#     return drhovdtB
 
-def initialboundary(RV,EJ,v2,THFaktors,rho,mobiles,wi0,wi8):
-    """calculate the boudnary of the surface concnetration and surface stresses as a function time"""
-    from scipy.special import lambertw
-    B=RV/EJ/v2*np.diag(np.mean(THFaktors,axis=0))
-    rhovB=B*lambertw(wi8*rho*(1/B)).real
-    sigmaJB=(rhovB-wi0*rho)*v2
-    rhoiB=rho*wi8
-    rhoiB[mobiles]=rhovB
-    return rhoiB,sigmaJB
+# def initialboundary(RV,EJ,v2,THFaktors,rho,mobiles,wi0,wi8):
+#     """calculate the boudnary of the surface concnetration and surface stresses as a function time"""
+#     from scipy.special import lambertw
+#     B=RV/EJ/v2*np.diag(np.mean(THFaktors,axis=0))
+#     rhovB=B*lambertw(wi8*rho*(1/B)).real
+#     sigmaJB=(rhovB-wi0*rho)*v2
+#     rhoiB=rho*wi8
+#     rhoiB[mobiles]=rhovB
+#     return rhoiB,sigmaJB
     
     
