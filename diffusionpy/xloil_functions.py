@@ -21,6 +21,8 @@ from .PyCSAFT_nue import lngi,vpure,dlnai_dlnxi
 import fnmatch
 # mix=component()+component()
 # eos=pcsaft(mix)
+from matplotlib import pyplot
+
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
@@ -89,7 +91,7 @@ def DasDennis_xloil(p:int,dim:int):
 def add_custom(a,b):
     return a+b
 
-#@xlo.func(command=True)
+@xlo.func(command=True)
 def get_path(ctrl):
     root = Tk()
     root.withdraw()
@@ -101,7 +103,7 @@ def get_path(ctrl):
 
 
 
-#@xlo.func
+@xlo.func
 def get_par_xloil(subst_input,path):
     wb=xlo.active_workbook()
     sheet1=wb.add(name="Parameters_PC_SAFT")
@@ -152,7 +154,7 @@ def get_par_xloil(subst_input,path):
 
 
 
-#@xlo.func(command=True)
+@xlo.func(command=True)
 def create_header(ctrl):
     cell1=xloil.Range("Parameters_PC_SAFT!B3:B13")
     comps=cell1.trim().value.flatten()

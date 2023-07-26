@@ -5,7 +5,8 @@ from scipy.interpolate import interp1d
 # from scipy.special import logsumexp
 from numba import njit,config,prange
 import time
-# config.DISABLE_JIT = True
+
+config.DISABLE_JIT = True
 
 @njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
