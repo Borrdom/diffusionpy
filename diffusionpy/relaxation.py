@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 import matplotlib.pyplot as plt
-def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
+def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
 
     Args:
@@ -21,7 +21,7 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
     RV=R*T*1/(M2/1000.)*1/v2
     nJ=len(EJ)
     _,nz_1=rhovinit.shape
-    def MEOS_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
+    def relaxation_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         """solves the genralized Maxwell model for relaxation"""
         _,nz=dmuext.shape
         nTH=drhovdtB.shape[0]
@@ -51,7 +51,7 @@ def MEOS_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2):
     sigmaJB=np.zeros((nJ))
     sigmaJ0[-1,:]=sigmaJB
     xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
-    return xinit,MEOS_ode
+    return xinit,relaxation_ode
 
 @njit
 def MDF(sigmaJ,EJ,RV):

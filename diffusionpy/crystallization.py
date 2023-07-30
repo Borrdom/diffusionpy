@@ -1,6 +1,61 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
+def crystallization_mode(rhovinit,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,ode,deltaHSL,TSL,cpSL,DAPI,sigma,kt,g,lngi_fun):
+    """alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization
+
+    Args:
+        rhovinit (array_like): vector of the partial densities of the mobile components
+        ode (array_like): ode fuinction which is modified by the function
+        deltaHSL (array_like): Melting Enthalpy
+        TSL (array_like): Melting temperature
+        DAPI (array_like) Diffusioncoefficient of the crystallizing substance in its surroundings
+        sigma (array_like): interfacial tension of crystal to its surrounding
+        kt (array_like): rate of crystal growth kinetics
+        g (array_like): order of crystal growth kinetics
+
+    Returns:
+        array_like: new modified ode function with the same format as the input ode function
+    """
+
+    _,nz_1=rhovinit.shape
+    def crystallization_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
+        """solves the genralized Maxwell model for relaxation"""
+        _,nz=dmuext.shape
+        nTH=drhovdtB.shape[0]
+        rhov=np.zeros((nTH,nz+1))
+        for i in range(nTH):
+            rhovtemp=x[(nz+1)*(i):(nz+1)*(1+i)]
+            rhov[i,:]=rhovtemp
+        alpha=x[(nz+1)*(nTH+1):(nz+1)*(nTH+2)]
+        r=x[(nz+1)*(nTH+2):(nz+1)*(nTH+3)]
+        rhov=np.ascontiguousarray(rhov)
+        # dmuext=MDF(sigmaJ,EJ,RV)
+        drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
+        dalphadt,drdt=CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun=None)
+        # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
+        # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
+        # drhovdt[:,-1]=drhovdtB
+        fvec=np.hstack((drhovdt.flatten(),dalphadt.flatten(),drdt.flatten()))
+        return fvec
+    crystallizes=np.where(crystallize)[0]
+    M=Mi[crystallizes]/1000.
+    rho=rho0i[crystallizes]
+    AR=100
+    pre=rho*np.pi/(4*AR**2)
+    R=8.31445
+    NA=6.023E23
+    kB=R/NA
+    C0=rho/M*NA 
+    temp=298.15
+    lnai=lngi_fun(wi8)+np.log(wi8)
+    lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
+    dmu_sla0=lnai[crystallizes]-lnaiSLE 
+    alpha0=np.zeros(nz_1)
+    r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
+    xinit=np.hstack((rhovinit.flatten(),alpha0.flatten(),r0.flatten()))
+    return xinit,crystallization_ode
+
 def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun=None,wv_fun=None):
     """calculate the time dependent surface concentration during crystallization
 
