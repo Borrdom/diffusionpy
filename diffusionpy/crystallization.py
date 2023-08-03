@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-def crystallization_mode(rhovinit,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,ode,deltaHSL,TSL,cpSL,DAPI,sigma,kt,g,lngi_fun):
+def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,deltaHSL,TSL,cpSL,DAPI,sigma,kt,g,lngi_tz):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization
 
     Args:
@@ -19,6 +19,9 @@ def crystallization_mode(rhovinit,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi
     """
 
     _,nz_1=rhovinit.shape
+    crystallizes=np.where(crystallize)[0]
+    M=Mi[crystallizes]/1000.
+    rho=rho0i[crystallizes]
     def crystallization_ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         """solves the genralized Maxwell model for relaxation"""
         _,nz=dmuext.shape
@@ -27,20 +30,31 @@ def crystallization_mode(rhovinit,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi
         for i in range(nTH):
             rhovtemp=x[(nz+1)*(i):(nz+1)*(1+i)]
             rhov[i,:]=rhovtemp
-        alpha=x[(nz+1)*(nTH+1):(nz+1)*(nTH+2)]
-        r=x[(nz+1)*(nTH+2):(nz+1)*(nTH+3)]
+        alpha=x[(nz+1)*(nTH):(nz+1)*(nTH+1)]
+        r=x[(nz+1)*(nTH+1):(nz+1)*(nTH+2)]
         rhov=np.ascontiguousarray(rhov)
-        # dmuext=MDF(sigmaJ,EJ,RV)
-        drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
-        dalphadt,drdt=CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun=None)
+        rhov[:,-1]=rhoiB[mobiles]
+        alphabar=(alpha[1:]+alpha[:-1])/2
+        rhosum=np.sum(rhov,axis=0)+np.sum(rho0i[immobiles])
+        wv=rhov/rhosum
+        rhobar=(rhosum[1:]+rhosum[:-1])/2
+        porosity=(1-alphabar*rhobar/rho)[:,None,None]
+        eta=1.5
+        drhovdt=ode(t,rhov,THFaktor*porosity**eta,dmuext,rhoiB,drhovdtB)
+        # drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
+        dalphadt,drdt=[],[]
+        for i in range(nz+1):
+            a,b=CNT(t,alpha[i],r[i],mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz[i],wv_fun=wv[:,i])
+            dalphadt.append(a)
+            drdt.append(b)
+        dalphadt=np.asarray(dalphadt)
+        drdt=np.asarray(drdt)
         # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
         # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
         # drhovdt[:,-1]=drhovdtB
         fvec=np.hstack((drhovdt.flatten(),dalphadt.flatten(),drdt.flatten()))
         return fvec
-    crystallizes=np.where(crystallize)[0]
-    M=Mi[crystallizes]/1000.
-    rho=rho0i[crystallizes]
+
     AR=100
     pre=rho*np.pi/(4*AR**2)
     R=8.31445
@@ -48,11 +62,11 @@ def crystallization_mode(rhovinit,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi
     kB=R/NA
     C0=rho/M*NA 
     temp=298.15
-    lnai=lngi_fun(wi8)+np.log(wi8)
+    lnai=lngi_tz[-1](0)+np.log(wi8)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     dmu_sla0=lnai[crystallizes]-lnaiSLE 
-    alpha0=np.zeros(nz_1)
     r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
+    alpha0=pre*(r0)**3
     xinit=np.hstack((rhovinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
 
@@ -92,7 +106,7 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     kB=R/NA
     C0=rho/M*NA 
     temp=298.15
-    lnai=lngi_fun(wi8)+np.log(wi8)
+    lnai=lngi_fun(0)+np.log(wi8)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     dmu_sla0=lnai[crystallizes]-lnaiSLE
     r0=2*sigma/(C0*dmu_sla0*kB*temp)
@@ -136,7 +150,9 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     wi[crystallizes]=(1-wv)*dl_la
     wi[immobiles[crystallizes!=immobiles]]=(1-wv)*(1-dl_la)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
-    lnai=lngi_fun(wi)+np.log(wi)
+    lnai=lngi_fun(t)+np.log(wi)
+    # lnaiSLE=np.log(0.03)
+    # lnai=np.log(wi)
     dmu_sla=lnai[crystallizes]-lnaiSLE
     rstar = ((2*sigma)/(C0*kB*temp*dmu_sla))
     deltaG=sigma**3*(16*np.pi)/(3*(C0*kB*temp*dmu_sla)**2)
@@ -144,6 +160,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     wv0=wi0[mobiles]
     wv8=wi8[mobiles]
     beta=np.fmin((wv-wv0)/(wv8-wv0),1)
+    # beta=1
     ze=(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*dmu_sla**2
     f=4*np.pi*rstar*DAPI*Xn_la*NA*np.fmax(beta,1E-4)
     dNdt = ze*f*C0*np.exp(-deltaG/(kB*temp))#*cs.exp(-NA)/NA**0.5
@@ -151,5 +168,6 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
+    dalphadt[alpha>dl0]=0
     return dalphadt,drdt
 

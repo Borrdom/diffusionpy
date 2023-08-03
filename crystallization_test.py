@@ -156,8 +156,12 @@ vpures=vpure(p,T,**par)
 # %%
 par["vpure"]=vpures
 lngi_fun=lambda wi: lngi(T,wi,**par)
+R=8.3145
+lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
+lnai0=lngi_fun(wi0)+np.log(wi0)
 
-# %% [markdown]
+# lngi_fun=lambda wi: 
+# %% [markdown] 
 # # Ives–Pienvichitr Power Law Relation https://doi.org/10.1007/s11242-018-1086-2
 # # Alternativ Krishna https://doi.org/10.1016/S0009-2509(96)00458-7
 # #und dann Knudsen Diffusion. Die Porengröße und ide porosität ändert sich mit alpha
@@ -169,36 +173,47 @@ lngi_fun=lambda wi: lngi(T,wi,**par)
 # Lambda=amorphizität**eta  # referenzamorphizitä 1 dadurch voller diffusionkoeffizient effektiver diffusionskoeffizient
 
 # %%
-nt=300
+nt=30
 t=np.linspace(0,texp[-1],nt)*60
-witB,alpha,r=time_dep_surface_cryst(t,np.asarray([True,False,False]),np.asarray([False,True,True]),crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_fun,wv_fun)
+witB=np.ones((nc,nt))*wi0[:,None]
+lngi_t=interp1d(t,np.asarray([lngi_fun(wi0)]*nt),axis=0)
+for i in range(5):
+       witB,alpha,r=time_dep_surface_cryst(t,np.asarray([True,False,False]),np.asarray([False,True,True]),crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_t,wv_fun)
+       lngi_t=interp1d(t,np.asarray([lngi_fun(wi) for wi in witB.T]),axis=0)
+       # plt.plot(t,alpha)
 tmin=t/60
+# plt.show()
+Dvec=np.asarray([1E-14,1E-15,1E-15])
+L=3E-5
 
-Dvec=np.asarray([1E-13,1E-15,1E-15])
-L=2.5E-5
 
 
+# dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
+# dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
+# dlnai_dlnwi=np.stack([np.eye(3,3)]*nt)
+# # amorphizität=(1-alpha)[:,None,None]
+# Lambda=1-np.exp(-amorphizität/0.3)
 
-dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
-dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
-dlnai_dlnwi=np.stack([np.eye(3,3)]*nt)
-amorphizität=(1-alpha)[:,None,None]
-Lambda=1-np.exp(-amorphizität/0.3)
-
-eta=1.5
-Lambda=amorphizität**eta  # referenzamorphizitä 1 dadurch voller diffusionkoeffizient effektiver diffusionskoeffizient
+# eta=1.5
+# Lambda=amorphizität**eta  # referenzamorphizitä 1 dadurch voller diffusionkoeffizient effektiver diffusionskoeffizient
 
 # wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,dlnai_dlnwi=dlnai_dlnwi*Lambda)
-wt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,deltaHSL=deltaHSL,TSL=TSL,cpSL=cpSL,crystallize=crystallize,sigma=sigma,DAPI=DAPI,kt=kt,g=g,swelling=True,lngi_fun=lngi_fun,dlnai_dlnwi=dlnai_dlnwi*Lambda)
-# wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
-notreleased=wt/wi0
-release=(1-notreleased)
+wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True)
 
-wtid=wt
-# plt.plot(t/60,witB.T[:,0],"bo")
-plt.plot(t/60,release[:,2]*100,'b',label="Non-ideal and wiB(t)")
-plt.plot(t/60,release[:,1]*100,'b',label="Non-ideal and wiB(t)")
-plt.plot(t/60,alpha*100,'r',label="Non-ideal and wiB(t)")
+for i in range(2):
+       lngi_tz=np.asarray([[lngi_fun(col) for col in row.T] for row in wtz])
+       wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,deltaHSL=deltaHSL,TSL=TSL,cpSL=cpSL,crystallize=crystallize,sigma=sigma,DAPI=DAPI,kt=kt,g=g,full_output=True,lngi_tz=lngi_tz)
+# lngi_tz=np.asarray([[lngi_fun(col) for col in row.T] for row in wtz])
+# wt,wtz,zvec,Lt=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,deltaHSL=deltaHSL,TSL=TSL,cpSL=cpSL,crystallize=crystallize,sigma=sigma,DAPI=DAPI,kt=kt,g=g,full_output=True,lngi_tz=lngi_tz)
+# wt=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=True,witB=witB.T,dlnai_dlnwi_fun=dlnai_dlnwi_fun)
+       notreleased=wt/wi0
+       release=(1-notreleased)
+
+       wtid=wt
+       # plt.plot(t/60,witB.T[:,0],"bo")
+       plt.plot(t/60,release[:,2]*100,label="Non-ideal and wiB(t)")
+       # plt.plot(t/60,release[:,1]*100,label="Non-ideal and wiB(t)")
+# plt.plot(t/60,alpha*100,'r',label="Non-ideal and wiB(t)")
 
 plt.plot(texp,relapi10,'bx',label="Non-ideal and wiB(t)")
 plt.plot(texp,relapi20,'bx',label="Non-ideal and wiB(t)")

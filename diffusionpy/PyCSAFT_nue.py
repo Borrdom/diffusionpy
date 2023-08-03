@@ -182,10 +182,10 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
     # Association Contribution
     deltAijz=gijz*kAij*sij**3*(np.exp(eAij/T)-1.)
     Zassoc=-1./2.*np.sum((1.-XAi)*NAi*ntype*xi)-rho/2.*np.sum(np.outer(XAi,XAi)*deltAijz*np.outer(NAi,NAi)*np.outer(xi,xi)*ntype)
-    Zres=Zhc+Zdisp+Zassoc
+    Z=1+Zhc+Zdisp+Zassoc
     #_______________________mures__________________________________
-    mures = fres + (Zres) + fresx - np.dot(xi, fresx)
-    return fres,mures,Zres
+    mures = fres + (Z-1) + fresx - np.dot(xi, fresx)
+    return fres,mures,Z
     
 
 #@njit(cache=True)
@@ -263,9 +263,9 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
     lngi_id=np.log(vpfrac)+1.-vpfrac
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
-    _,mures,Zres=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
+    _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
-    lngi_p=vpfrac*Zres if "NETGP" not in kwargs else 0
+    lngi_p=vpfrac*(Z1-1) if "NETGP" not in kwargs else 0
     with np.errstate(divide='ignore',invalid='ignore'):
         lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
     return lngi_id+lngi_res-lngi_p+lngi_wx

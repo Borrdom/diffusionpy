@@ -6,9 +6,9 @@ from scipy.interpolate import interp1d
 from numba import njit,config,prange
 import time
 
-config.DISABLE_JIT = True
+# config.DISABLE_JIT = True
 
-@njit(['f8[:,:](f8, f8[:,::1], f8[:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
+@njit(['f8[:,:](f8, f8[:,::1], f8[:,:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
     def vanishing_check(drhovdt,rhov):
@@ -60,7 +60,10 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     rhovbar=rhoibar[mobiles,:]
     wvbar=wibar[mobiles,:]
     dlnwv=dlnwi[mobiles,:]
-    dlnai=THFaktor@(dlnwv)
+    dlnai=np.zeros_like(dlnwv)
+    for i in range(nz_1-1):
+        dlnai[:,i]=THFaktor[i,:,:]@(dlnwv[:,i])
+    # dlnai=THFaktor@dlnwv
     B=BIJ_Matrix(D,wibar,mobiles,allflux)
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)
@@ -121,13 +124,14 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     rhoiinit=(rho*wi0*np.ones((nz+1,nc))).T
     rhovinit=rhoiinit[mobiles,:]
     #Construct TH Factor
-    THFaktor=np.eye(nTH)
+    THFaktor=np.asarray([np.eye(nTH)]*nz)
     if dlnai_dlnwi is not None:
         slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
         slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
         massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-        THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
-        THFaktor= interp1d(t,THFaktor,axis=0,bounds_error=False,fill_value=(THFaktor[0,:,:],THFaktor[-1,:,:]))
+        THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
+        THFaktor_= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
+        THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
     #Set up the PDEs boundary,initial conditions and additional driving forces.
     #____________________________________
     #def default_mode():
@@ -145,13 +149,16 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         xinit,ode=relaxation_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
         from .crystallization import crystallization_mode
-        xinit,ode=crystalliztaion_mode(rhovinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],kwargs["lngi_fun"])
+        lngi_tz=[interp1d(t,kwargs["lngi_tz"][:,i,:],axis=0,bounds_error=False) for i in range(nz+1)]
+        xinit,ode=crystallization_mode(rhovinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        # THFaktor= lambda t: (np.ones((nz,nTH,nTH))-alpha)*THFaktor_(t)
     #_____________________________________
     if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
         """evaluate time dependent functions and insert into the generic odes"""
         THFaktor=THFaktor(t)    if callable(THFaktor)   else THFaktor
+        #hier könnte das eins minus alpha irgendwo muss das x ausgepackt werden
         rhoiB=rhoiB(t)          if callable(rhoiB)      else rhoiB
         drhovdtB=drhovdtB(t,x)  if callable(drhovdtB)   else drhovdtB
         dxdt=ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB)
@@ -164,6 +171,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
     # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     x_sol=sol["y"]
+    # rhoend=x_sol[:(nz+1)*nTH,-1]
+    # alphaend=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),-1]
     nt=len(t)
     wt=np.zeros((nc,nt))
     wik=np.zeros((nt,nc,nz+1))
