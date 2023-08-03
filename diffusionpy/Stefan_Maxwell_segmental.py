@@ -8,7 +8,7 @@ import time
 
 # config.DISABLE_JIT = True
 
-@njit(['f8[:,:](f8, f8[:,::1], f8[:,:,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
+@njit(['f8[:,:](f8, f8[:,::1], f8[:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[::1],f8[::1])'],cache=True)
 def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
     def vanishing_check(drhovdt,rhov):
@@ -20,6 +20,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     def averaging(a):
         """make rolling average over a 2D array"""
         return (a[1:,:]+a[:-1,:])/2.
+    
     def np_linalg_solve(A,b):
         """solve a Batch of linear system of equations"""
         ret = np.empty_like(b)
@@ -51,9 +52,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     rhoi[immobiles,:]=rho*np.expand_dims(wi0[immobiles],1)
     rhoi[immobiles,-1]=rhoiB[immobiles]
     if not np.any(drhovdtB): rhoi[mobiles,-1]=rhoiB[mobiles]
-
     wi=rhoi/np.sum(rhoi,axis=0)
-    
     wibar = averaging(wi.T).T
     dlnwi=np.diff(wi)/wibar
     rhoibar= averaging(rhoi.T).T
@@ -61,9 +60,7 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     wvbar=wibar[mobiles,:]
     dlnwv=dlnwi[mobiles,:]
     dlnai=np.zeros_like(dlnwv)
-    for i in range(nz_1-1):
-        dlnai[:,i]=THFaktor[i,:,:]@(dlnwv[:,i])
-    # dlnai=THFaktor@dlnwv
+    for i in range(nz_1-1): dlnai[:,i]=THFaktor[i,...]@np.ascontiguousarray(dlnwv[:,i])
     B=BIJ_Matrix(D,wibar,mobiles,allflux)
     dmui=dlnai+dmuext
     omega=rho/np.sum(rhoibar,axis=0)

@@ -4,7 +4,7 @@ from scipy.optimize import root
 from scipy.interpolate import interp1d
 
 
-def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None):
+def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_t=None):
     """_summary_
 
     Args:
@@ -29,19 +29,15 @@ def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_fun=None):
     lam=1-np.exp(-t[:,None]/taui[None,:])
     wvt=wv0*(1-lam)+wv8*lam
 
-    if lngi_fun is not None:
-        lnai8=lngi_fun(wi8)+np.log(wi8)
-        lnai0=lngi_fun(wi0)+np.log(wi0)
+    if lngi_t is not None:
+        lnai8=lngi_t[-1,:] +  np.log(wi8)
+        lnai0=lngi_t[0,:]  +  np.log(wi0)
         
         av0=np.exp(lnai0[mobiles])
         av8=np.exp(lnai8[mobiles])
         avt=av0*(1-lam)+av8*lam
-        def obj_f(wv,av):
-            wi=np.zeros_like(wi0)
-            wi[mobiles]=wv
-            wi[immobiles]=(1-np.sum(wv))*wi0[immobiles]/np.sum(wi0[immobiles])
-            return av/np.exp(lngi_fun(wi))[mobiles]-wv
-        wvt=np.asarray([root(obj_f,x0=wvt[i,:],args=(val))["x"] for i,val in enumerate(avt)])
+        lnwvt=np.log(avt)-lngi_t[:,mobiles]
+        wvt=np.exp(lnwvt)
     wit=np.zeros((nt,nc))
     wit[:,mobiles]=wvt
     wit[:,immobiles]=(1-np.sum(wvt,axis=1)[:,None])*wi0[None,immobiles]/np.sum(wi0[immobiles])

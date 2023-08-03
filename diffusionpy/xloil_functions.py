@@ -16,6 +16,7 @@ from tkinter import Tk,filedialog,simpledialog
 from .read_componentdatabase import get_par
 import xloil.pandas
 import pandas as pd
+from .surface_activity import time_dep_surface
 #from epcsaftpy import pcsaft,component,mixture
 from .PyCSAFT_nue import lngi,vpure,dlnai_dlnxi
 import fnmatch
@@ -26,12 +27,14 @@ from matplotlib import pyplot
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-mobile:xlo.Array(bool,dims=1),full_output:bool=False,dlnai_dlnwi:xlo.Array(float,dims=2)=None,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,rho0i:xlo.Array(float,dims=1)=None):   
-    if not _has_xloil: raise ImportError("xloil is required to do this.")
-    return Diffusion_MS(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,dlnai_dlnwi,swelling,taui,rho0i)
+mobile:xlo.Array(bool,dims=1),full_output:bool=False,dlnai_dlnwi:xlo.Array(float,dims=2)=None,swelling:bool=False,witB:xlo.Array(float,dims=2)=None):   
+    # if not _has_xloil: raise ImportError("xloil is required to do this.")
+    kwargs={}
+    if witB is not None: kwargs.update({"witB":witB}) 
+    return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,full_output,dlnai_dlnwi,swelling,**kwargs)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-mobile:xlo.Array(bool,dims=1),full_output:bool=False,swelling:bool=False,taui:xlo.Array(float,dims=1)=None,rho0i:xlo.Array(float,dims=1)=None,
+mobile:xlo.Array(bool,dims=1),full_output:bool=False,swelling:bool=False,
 pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.asarray([[]])):   
     T=298.15
     Mw=pure[1:,3].astype(float)
@@ -57,8 +60,13 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
     return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,swelling,taui,rho0i,T,par)
 
 @xlo.func
+def time_dep_surface_xloil(t:xlo.Array(float,dims=1),wi0:xlo.Array(float,dims=1),wi8:xlo.Array(float,dims=1),mobile:xlo.Array(bool,dims=1),taui:xlo.Array(float,dims=1),lngi_t:xlo.Array(float,dims=2)=None):
+    return time_dep_surface(t.copy(),wi0.copy(),wi8.copy(),mobile.copy(),taui.copy(),lngi_t)
+
+@xlo.func
 def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
     return np.gradient(x,y)
+
 
 @xlo.func
 def reduce_points(x,n:int):
