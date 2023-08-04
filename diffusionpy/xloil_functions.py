@@ -27,16 +27,24 @@ from matplotlib import pyplot
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-mobile:xlo.Array(bool,dims=1),full_output:bool=False,dlnai_dlnwi:xlo.Array(float,dims=2)=None,swelling:bool=False,witB:xlo.Array(float,dims=2)=None):   
+mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=None,full_output:bool=False):   
     # if not _has_xloil: raise ImportError("xloil is required to do this.")
     kwargs={}
-    if witB is not None: kwargs.update({"witB":witB}) 
-    return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,full_output,dlnai_dlnwi,swelling,**kwargs)
+    if witB is not None: kwargs.update({"witB":witB})
+    if full_output: 
+        _,wtz,zvec,Lt=Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,None,swelling,**kwargs)
+        nz=len(zvec)
+        zt=Lt[None,:]*zvec[:,None]/L
+        res=zt.flatten()[::-1,None]
+        for i in range(len(w0)):
+            res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
+        return res
+    else: 
+        return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,None,swelling,**kwargs)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
-mobile:xlo.Array(bool,dims=1),full_output:bool=False,swelling:bool=False,
-pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.asarray([[]])):   
-    T=298.15
+mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=None,T:float=298.15,p:float=1E5,
+pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.asarray([[]]),maxit:int=10,full_output:bool=False):
     Mw=pure[1:,3].astype(float)
     mi=pure[1:,4].astype(float)
     sigi=pure[1:,6].astype(float)
@@ -47,7 +55,7 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
     nc=len(Mw)
     kij1=np.char.replace(kij[1:,2].astype(str),",",".").astype(float)
     kij=D_Matrix(kij1,nc)
-    vpures=vpure(1E5,T,mi,sigi,ui,eAiBi,kAiBi,Na)
+    vpures=vpure(p,T,mi,sigi,ui,eAiBi,kAiBi,Na)
     par={"mi":mi,
     "Mi":Mw,
     "si":sigi,
@@ -57,7 +65,22 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
     "NAi":Na,
     "kij":kij,
     "vpure":vpures}
-    return Diffusion_MS_iter(t.copy(),L,Dvec,w0.copy(),w8.copy(),Mi,mobile,full_output,swelling,taui,rho0i,T,par)
+    dlnai_dlnwi_fun=lambda wi: dlnai_dlnxi(T,wi,**par)
+    kwargs={}
+    if witB is not None: kwargs.update({"witB":witB})
+    kwargs.update({"method":"fixedpoint"})
+    kwargs.update({"maxit":7})
+    if full_output: 
+        _,wtz,zvec,Lt=Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,swelling,dlnai_dlnwi_fun,**kwargs)
+        nz=len(zvec)
+        zt=Lt[None,:]*zvec[:,None]/L
+        res=zt.flatten()[::-1,None]
+        for i in range(len(w0)):
+            res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
+        return res
+    else: 
+        return Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,swelling,dlnai_dlnwi_fun,**kwargs)
+
 
 @xlo.func
 def time_dep_surface_xloil(t:xlo.Array(float,dims=1),wi0:xlo.Array(float,dims=1),wi8:xlo.Array(float,dims=1),mobile:xlo.Array(bool,dims=1),taui:xlo.Array(float,dims=1),lngi_t:xlo.Array(float,dims=2)=None):

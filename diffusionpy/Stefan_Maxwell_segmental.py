@@ -245,7 +245,12 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
     method=kwargs["method"] if "method" in kwargs  else "df-sane"
-    wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc))  if method!="fixedpoint" else fixed_point(wt_fix,wt_old,xtol=1E-4,maxiter=20)
+    if method!="fixedpoint":
+        wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc)) 
+    else:
+        for i in range(kwargs["maxit"]):
+            wtopt=wt_fix(wt_old)
+            wt_old=wtopt
     # 
     if not full_output:
         return wtopt

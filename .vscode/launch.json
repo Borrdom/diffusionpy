@@ -10,6 +10,13 @@
             "request": "launch",
             "justMyCode": false,
             "module": "${fileBasenameNoExtension}",
+        },
+        {
+            "name": "Attach to Process",
+            "type": "python",
+            "request": "attach",
+            "justMyCode": false,
+            "port": 5678,
         }
     ]
 }
