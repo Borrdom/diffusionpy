@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import mpltern
+from scipy.interpolate import interp1d
 
 
-def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues"):
+def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues",vmin=None,vmax=None,label=None,tinterp=None):
     matplotlib.rcParams['mathtext.fontset'] = 'custom'
     matplotlib.rcParams['mathtext.rm'] = 'Calibri'
     matplotlib.rcParams['mathtext.it'] = 'Calibri'
@@ -23,30 +24,37 @@ def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues"):
     plt.rc('font', **font)
     plt.rc('axes', titlesize=font["size"]) 
     L=zvec[-1]
-    expansion=Lt[:,None]/L if Lt is not None else np.ones_like(t)
+    expansion=Lt[:,None]/L if Lt is not None else np.ones_like(t)[:,None]
     phi=np.linspace(0,2*np.pi,41)
     Rad,Phi=np.meshgrid(zvec*1E6,phi)
+
     fig, axes = plt.subplots(2,instances//2, constrained_layout=True,subplot_kw={'projection': 'polar'},figsize=(7,5),dpi=250)
     # axes=[]
     axes=axes.flatten()
     pls=[]
     delt=len(t)//instances
+    if vmin is None: vmin=np.min(wtz) 
+    if vmax is None: vmax=np.max(wtz)
+    wtz_fun=interp1d(t,wtz,axis=0)
+    if tinterp is None: tinterp=np.linspace(t[0],t[-1],instances) 
     for i in range(instances):
         axes[i].grid(False)
         # axes.append(fig.add_subplot(2,instances//2,i+1, polar=True))
-        pls.append(axes[i].contourf(Phi,Rad*expansion[delt*i],np.meshgrid(wtz[delt*i,comp,:],phi)[0],cmap=cmap,levels=np.linspace(0,1,11)))
+        pls.append(axes[i].contourf(Phi,Rad*expansion[delt*i],np.meshgrid(wtz_fun(tinterp[i])[comp,:],phi)[0],cmap=cmap,vmin=vmin,vmax=vmax))
         axes[i].grid(False)
         axes[i].set_xticklabels([])
         axes[i].set_yticklabels([])
         axes[i].set_ylim(0, np.max(zvec*1E6*expansion))
         axes[i].spines['polar'].set_visible(False)
-        axes[i].set_title(f'{t[delt*i]/60:.2f}'+" min", va='bottom')
+        axes[i].set_title(f'{tinterp[i]/60:.2f}'+" min", va='bottom')
 
     axes=np.asarray(axes)
       
-    cbar=fig.colorbar(pls[0], ax=axes.ravel().tolist(),orientation="horizontal")
-    cbar.set_label('$w_i / -$')
+    cbar=fig.colorbar(pls[-1], ax=axes.ravel().tolist(),orientation="horizontal")
+    if label is None: label='$w_i / -$'
+    cbar.set_label(label)
     fig.subplots_adjust(hspace=0,wspace=0)  
+    return fig, axes
 
 def basic_colors(Formatstring):
     if "g" in Formatstring: return "#99CC00" #green
@@ -68,6 +76,7 @@ class origin_like:
         matplotlib.rcParams['xtick.major.pad']='5'
         matplotlib.rcParams['ytick.major.pad']='5'
         matplotlib.rcParams['axes.linewidth'] = 0.5
+        matplotlib.rcParams['axes.axisbelow'] = True
         # matplotlib.rcParams["toolbar"] = "toolmanager"
         # plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
         

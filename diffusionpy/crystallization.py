@@ -39,13 +39,19 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
         rhosum=np.sum(rhov,axis=0)+np.sum(rho0i[immobiles])
         wv=rhov/rhosum
         rhobar=(rhosum[1:]+rhosum[:-1])/2
+        # porosity=(1-alpha*rhosum/rho)[:,None]
         porosity=(1-alphabar*rhobar/rho)[:,None,None]
         eta=1.5
+
+        def isinfornan(x):
+            if np.any(np.isinf(x)) or np.any(np.isnan(x)):
+                print("Im inf or nan")
+
         drhovdt=ode(t,rhov,THFaktor*porosity**eta,dmuext,rhoiB,drhovdtB)
         # drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
         # dalphadt,drdt=[],[]
         # for i in range(nz+1):
-        dalphadt,drdt=CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
+        dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
         #     dalphadt.append(a)
         #     drdt.append(b)
         # dalphadt=np.asarray(dalphadt)
@@ -70,10 +76,10 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
     alpha0=pre*(r0)**3
     xinit=np.hstack((rhovinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
-@njit
-def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi,wv):
+@njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
+def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi,wv):
     """Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model"""
-    crystallizes=np.where(crystallize)[0]
+    
     R=8.31445
     NA=6.023E23
     kB=R/NA
@@ -84,6 +90,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     pre=rho*np.pi/(4*AR**2)
     C0=rho/M*NA
     dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
+    # wv=np.fmax(wv,0)
     X_la=dl0-alpha
     Xn_la=X_la/M
     nTH,nz_1=wv.shape
@@ -93,8 +100,8 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
 
     # wv=wv_fun(dl_la) if callable(wv_fun) else wv_fun
     wi[mobiles,:]=wv
-    wi[crystallizes,:]=(1-wv)*dl_la
-    wi[immobiles[crystallizes!=immobiles],:]=(1-wv)*(1-dl_la)
+    wi[crystallizes,:]=(1-np.sum(wv,axis=0))*dl_la
+    wi[immobiles[crystallizes!=immobiles],:]=(1-np.sum(wv,axis=0))*(1-dl_la)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     lnai=lngi.T+np.log(wi)
     # lnaiSLE=np.log(0.03)
@@ -105,7 +112,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     # wv=wi[mobiles]
     wv0=wi0[mobiles]
     wv8=wi8[mobiles]
-    beta=np.fmin((wv-wv0)/(wv8-wv0),1)
+    beta=np.fmin((wv-wv0)/(wv8-wv0),1)[0,:]
     # beta=1
     ze=(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*dmu_sla**2
     f=4*np.pi*rstar*DAPI*Xn_la*NA*np.fmax(beta,1E-4)
@@ -114,6 +121,8 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
+    for i in range(nz_1):
+        if alpha[i]>dl0: dalphadt[:,i]=0 
     # dalphadt[alpha>dl0]=0
     return dalphadt,drdt
 

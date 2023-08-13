@@ -60,6 +60,9 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
     wvbar=wibar[mobiles,:]
     dlnwv=dlnwi[mobiles,:]
     dlnai=np.zeros_like(dlnwv)
+    # if THFaktor.ndim==2:
+    #     dlnai=dlnwv+np.diff(THFaktor[:,mobiles],axis=0).T
+    # else:
     for i in range(nz_1-1): dlnai[:,i]=THFaktor[i,...]@np.ascontiguousarray(dlnwv[:,i])
     B=BIJ_Matrix(D,wibar,mobiles,allflux)
     dmui=dlnai+dmuext
@@ -136,6 +139,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     dmuext=np.zeros((nTH,nz))
     rhoiB=wi8*rho
     drhovdtB=np.zeros(nTH)
+    return_sigma=False
+    return_alpha=False
     def ode(t,x,THFaktor,dmuext,rhoiB,drhovdtB):
         """create generic ode function for drhodt"""
         rhov=np.ascontiguousarray(np.reshape(x,(nTH,nz+1)))
@@ -144,12 +149,20 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import relaxation_mode
         xinit,ode=relaxation_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
+        return_sigma=True
+
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
         from .crystallization import crystallization_mode
         lngi_tz=interp1d(t,kwargs["lngi_tz"],axis=0,bounds_error=False)
         xinit,ode=crystallization_mode(rhovinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        return_alpha=True
+        # THFaktor=lngi_tz
         # THFaktor= lambda t: (np.ones((nz,nTH,nTH))-alpha)*THFaktor_(t)
     #_____________________________________
+    # if "lngi_tz" in kwargs:
+    #     lngi_tz=interp1d(t,kwargs["lngi_tz"],axis=0,bounds_error=False,kind="quadratic")
+    #     THFaktor=lngi_tz
+
     if "witB" in kwargs: rhoiB=interp1d(t,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
 
     def wrapode(t,x,ode,THFaktor,dmuext,rhoiB,drhovdtB):
@@ -169,7 +182,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     x_sol=sol["y"]
     # rhoend=x_sol[:(nz+1)*nTH,-1]
-    # alphaend=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),-1]
+    
     nt=len(t)
     wt=np.zeros((nc,nt))
     wik=np.zeros((nt,nc,nz+1))
@@ -190,7 +203,18 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     wt=(rhoit/rhok[:,None]).T
     Lt=rhok/rho*L
     # plt.plot(t,rhoik[:,1,-1])
-    return wt.T if not full_output else (wt.T,wik,zvec,Lt)
+    if return_sigma:
+        nJ=len(kwargs["EJ"])
+        sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
+        return(wt.T,sigmaJ) if not full_output else (wt.T,wik,zvec,Lt,sigmaJ)
+
+    elif return_alpha:
+        alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
+        r=x_sol[(nz+1)*(nTH+1):(nz+1)*(nTH+2),:]
+        return (wt.T,alpha,r) if not full_output else (wt.T,wik,zvec,Lt,alpha,r)
+
+    else:
+        return wt.T if not full_output else (wt.T,wik,zvec,Lt)
 
 
 def D_Matrix(Dvec,nc):
@@ -225,6 +249,32 @@ def D_Matrix(Dvec,nc):
         D[np.tril_indices_from(D,k=-1)]=Dvec
     return D
 
+def wegstein(fun,x):
+    """Solving via wegsteins method"""
+    tol=1E-6
+    maxiter=50
+    f = fun(x)
+    xx=f    
+    dx = xx - x
+    ff = fun(xx)
+    df=ff-f
+    nt,nc=x.shape
+    for i in range(maxiter):
+        e=np.linalg.norm(dx,2)/nt
+        print(f"iter {i+1}: ||F|| = {e}")
+        if e<tol: 
+            return xx 
+        a = df/dx
+        q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)*0
+        x=xx
+        xx = q * xx + (1-q) * ff
+        # xx[:,-1]=1-np.sum(xx[:,:-1],axis=1)
+        f=ff
+        ff = fun(xx)    
+        df=ff-f
+        dx=xx-x
+    return xx  
+
 def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=False,dlnai_dlnwi_fun=None,**kwargs):
     """iterates dlnai_dlnwi as a function of the concentration wi
     See also:
@@ -245,8 +295,10 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
     method=kwargs["method"] if "method" in kwargs  else "df-sane"
-    if method!="fixedpoint":
+    if method=="df-sane":
         wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc)) 
+    elif method=="wegstein":
+        wtopt=wegstein(wt_fix,wt_old)
     else:
         for i in range(kwargs["maxit"]):
             wtopt=wt_fix(wt_old)
@@ -257,7 +309,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     else: 
         dlnai_dlnwiopt=np.asarray([dlnai_dlnwi_fun(wtopt[i,:]) for i,val in enumerate(wtopt[:,0])])
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
-    
+
 def convert(x,M,axis=0):
     """convert fractions. e.g mass fractions into mole fractions"""
     y=np.empty(x.shape,M.dtype)
