@@ -43,14 +43,12 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
         porosity=(1-alphabar*rhobar/rho)[:,None,None]
         eta=1.5
 
-        def isinfornan(x):
-            if np.any(np.isinf(x)) or np.any(np.isnan(x)):
-                print("Im inf or nan")
-
         drhovdt=ode(t,rhov,THFaktor*porosity**eta,dmuext,rhoiB,drhovdtB)
         # drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
         # dalphadt,drdt=[],[]
         # for i in range(nz+1):
+
+
         dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
         #     dalphadt.append(a)
         #     drdt.append(b)
@@ -74,6 +72,7 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
     dmu_sla0=lnai[crystallizes]-lnaiSLE 
     r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
     alpha0=pre*(r0)**3
+    
     xinit=np.hstack((rhovinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
 @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
@@ -122,7 +121,8 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     dalphadN=pre*(r)**3
     dalphadt=np.fmax((drdt*dalphadr+dNdt*dalphadN),0)
     for i in range(nz_1):
-        if alpha[i]>dl0: dalphadt[:,i]=0 
+        if alpha[i]>dl0: dalphadt[:,i]=0
+        if alpha[i]<0: dalphadt[:,i]=0  
     # dalphadt[alpha>dl0]=0
     return dalphadt,drdt
 

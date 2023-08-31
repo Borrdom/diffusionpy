@@ -126,12 +126,20 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     #Construct TH Factor
     THFaktor=np.asarray([np.eye(nTH)]*nz)
     if dlnai_dlnwi is not None:
-        slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-        slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
-        massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-        THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
-        THFaktor_= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
-        THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
+        if len(dlnai_dlnwi.shape)==3:
+            slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+            slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+            massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
+            THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
+            THFaktor_= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
+            THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
+        if len(dlnai_dlnwi.shape)==4:
+            slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz+1)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+            slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz+1)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+            massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
+            THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
+            THFaktor= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:,:],THFaktor_[-1,:,:,:]))
+            # THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
     #Set up the PDEs boundary,initial conditions and additional driving forces.
     #____________________________________
     #def default_mode():
@@ -178,7 +186,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     sol=solve_ivp(wrapode,(t[0],t[-1]),xinit,args=(ode,THFaktor,dmuext,rhoiB,drhovdtB),method="Radau",t_eval=t)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    if not sol["success"]: print("------------- Modeling failed the initial conditions are returned instead ----------------"); return wi0*np.ones((nc,nt)).T 
+    if not sol["success"]: raise Exception(sol["message"])# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
     # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     x_sol=sol["y"]
     # rhoend=x_sol[:(nz+1)*nTH,-1]
@@ -246,7 +254,8 @@ def D_Matrix(Dvec,nc):
     else:
         D=np.zeros((nc,nc))
         D[np.triu_indices_from(D,k=1)]=Dvec
-        D[np.tril_indices_from(D,k=-1)]=Dvec
+        D=D.T
+        D[np.triu_indices_from(D,k=1)]=Dvec
     return D
 
 def wegstein(fun,x):
@@ -258,14 +267,13 @@ def wegstein(fun,x):
     dx = xx - x
     ff = fun(xx)
     df=ff-f
-    nt,nc=x.shape
     for i in range(maxiter):
-        e=np.linalg.norm(dx,2)/nt
+        e=np.linalg.norm(dx.flatten(),2)/np.prod(x.shape)
         print(f"iter {i+1}: ||F|| = {e}")
         if e<tol: 
             return xx 
         a = df/dx
-        q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)*0
+        q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
         x=xx
         xx = q * xx + (1-q) * ff
         # xx[:,-1]=1-np.sum(xx[:,:-1],axis=1)
@@ -283,17 +291,20 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     """
     nt=len(t)
     nc=len(wi0)
-    if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
-    dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
-    wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
+    
+    # if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
+    # dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
+    # wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
+    _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
+    _,_,nz=wt_old.shape
     def wt_obj(wt_old):
-        wt=wt_old.reshape((nt,nc))
-        dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
+        wtz=wt_old.reshape((nt,nc,nz))
+        dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtz])
         residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
         return residual
-    def wt_fix(wt):
-        dlnai_dlnwi=np.asarray([dlnai_dlnwi_fun(wt[i,:]) for i in range(nt)])
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
+    def wt_fix(wtz):
+        dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtz])
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,full_output=True,**kwargs)[1]
     method=kwargs["method"] if "method" in kwargs  else "df-sane"
     if method=="df-sane":
         wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc)) 
@@ -304,14 +315,26 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
             wtopt=wt_fix(wt_old)
             wt_old=wtopt
     # 
-    if not full_output:
-        return wtopt
-    else: 
-        dlnai_dlnwiopt=np.asarray([dlnai_dlnwi_fun(wtopt[i,:]) for i,val in enumerate(wtopt[:,0])])
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=True,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
+
+    dlnai_dlnwiopt=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtopt])
+    return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
 
 def convert(x,M,axis=0):
     """convert fractions. e.g mass fractions into mole fractions"""
     y=np.empty(x.shape,M.dtype)
     np.copyto(y.T,M)
     return x*y/np.sum(x*y,axis=axis)
+
+def correctMB(dlnai_dlnwi,mobile,nt,wi0):
+    mobiles=np.where(mobile)[0]
+    immobiles=np.where(~mobile)[0]
+    allflux=len(mobile)==np.sum(mobile)
+    wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
+    wi0_mobiles=wi0[mobiles]/np.sum(wi0[mobiles])
+    slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+    slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+    slc3=np.ix_(np.asarray(range(nt)),mobiles, immobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+    massbalancecorrection1=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
+    massbalancecorrection2=np.sum(dlnai_dlnwi[slc3]*wi0_mobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc3],axis=1)
+    THFaktor_=dlnai_dlnwi[slc1]-np.stack((massbalancecorrection1[:,None,:],massbalancecorrection2[:,None,:]),axis=1)
+    return THFaktor_
