@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit,config
+from numba import njit,config,prange
 # config.DISABLE_JIT=True
 # import os
 # os.environ['NUMBA_DEBUG_CACHE'] = "1"
@@ -230,7 +230,9 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     return vmol
 
 #@njit(cache=True)
-def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
+@njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
+def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Calculate the log of the activity coefficients via the SAFT-SAC approximation
 
     Args:
@@ -254,8 +256,9 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     #vpfracNET=(1-ksw*RH**2)/xi[0]
     #vmol=v0pNE/vpfracNET
     wi=xi
-    if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
-    vmol=np.sum(vpure*xi) if "vmol" not in kwargs else kwargs["vmol"]
+    #if Mi is not None: xi=xi/Mi/np.sum(xi/Mi)
+    xi=xi/Mi/np.sum(xi/Mi)
+    vmol=np.sum(vpure*xi) #if "vmol" not in kwargs else kwargs["vmol"]
     vpfrac=vpure/vmol
     # vpfrac=mi/np.sum(mi*xi)
     di=si*(1.-0.12*np.exp(-3*ui/T))
@@ -265,9 +268,9 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
     _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
-    lngi_p=vpfrac*(Z1-1) if "NETGP" not in kwargs else 0
-    with np.errstate(divide='ignore',invalid='ignore'):
-        lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
+    lngi_p=vpfrac*(Z1-1) #if "NETGP" not in kwargs else 0
+    #with np.errstate(divide='ignore',invalid='ignore'):
+    lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
     return lngi_id+lngi_res-lngi_p+lngi_wx
 
 #@njit(cache=True)
@@ -279,7 +282,8 @@ def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),idx=None,**kwargs):
+@njit('f8[:,::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',cache=True)
+def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Generate the derivatives of the mole fraction with concentration
 
     Args:
@@ -299,19 +303,46 @@ def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi=None,kij=np.asarray([[0.]]),k
     Returns:
         array_like: martrix of derivatives of the mole fraction with concentration
     """
-    xi=np.ascontiguousarray(xi)
     nc = len(xi)
     h = 1E-26
-    df = np.zeros([nc, nc])
+    df = np.zeros((nc, nc))
     for i in range(nc):
         dx = np.zeros(nc, dtype = 'c16')
         dx[i] = h * 1j
-        if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
+        #if idx is not None: dx[idx] = - h * 1j #x3+dx3=1-x1+dx1-x2+dx2=x3+dx1+dx2
         #wi_= wi+dx
         #xi_=wi_/Mi/(wi_/Mi).sum()
         out =  lngi(T,xi+dx,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
         df[i] = out.imag/h
     return df*xi+np.eye(nc)
+
+@njit('f8[:,:,:,::1](f8,f8[:,:,::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',parallel=True,cache=True)
+def dlnai_dlnxi_loop(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
+    """Generate the derivatives of the mole fraction with concentration
+
+    Args:
+        T (float): temperature
+        xi (array_like): mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
+        mi (array_like): segment number
+        si (array_like): segment diameter
+        ui (array_like): dispersion energy
+        eAi (array_like): association energy
+        kAi (array_like): association volume
+        NAi (array_like): association sites (only symmetric)
+        vpure (array_like): pure component molar volumes
+        Mi (array_like, optional): Molar mass. Calculates properties on a mass basis when given. Defaults to None.
+        kij (array_like, optional): Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).
+        kijA (array_like, optional): Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).
+        idx (int, optional): index which components mass balance is considered. If None mass balance is ignored. Defaults to None.
+    Returns:
+        array_like: martrix of derivatives of the mole fraction with concentration
+    """
+    nt,nz,nc = xi.shape
+    dlnai_dlnxi_vec=np.zeros((nt,nz,nc,nc))
+    for i in prange(nt):
+        for j in prange(nz):
+            dlnai_dlnxi_vec[i,j,:,:]=dlnai_dlnxi(T,np.ascontiguousarray(xi[i,j,:]),mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
+    return dlnai_dlnxi_vec
 
 def initialize():
     T=298.15
@@ -325,14 +356,17 @@ def initialize():
     "ui":np.asarray([353.95,198.24]),
     "eAi":np.asarray([2425.67,2653.4]),
     "kAi":np.asarray([0.04509,0.032384]),
-    "NAi":np.asarray([1.,1.])}
+    "NAi":np.asarray([1.,1.]),
+    "Mi":np.asarray([1.,1.]),
+    "kij":np.asarray([[0.]]),
+    "kijA":np.asarray([[0.]])}
     x1=np.linspace(0,1,npoint)
     x2=1-x1
     xi=np.vstack((x1,x2))
     vpures=vpure(p,T,**par)
     par["vpure"]=vpures
-    lngiammai=np.asarray([lngi(T,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
-    Gammai=np.asarray([dlnai_dlnxi(T,xi[:,i],**par).flatten() for i,val in enumerate(xi[0,:])])
+    lngiammai=np.asarray([lngi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
+    Gammai=np.asarray([dlnai_dlnxi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
 
 initialize()
 

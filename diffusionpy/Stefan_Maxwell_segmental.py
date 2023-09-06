@@ -19,11 +19,11 @@ def drhodt(t,rhov,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuex
             return drhovdt
     def averaging(a):
         """make rolling average over a 2D array"""
-        return (a[1:,:]+a[:-1,:])/2.
+        return (a[1:,...]+a[:-1,...])/2.
     
     def np_linalg_solve(A,b):
         """solve a Batch of linear system of equations"""
-        ret = np.empty_like(b)
+        ret = np.zeros_like(b)
         for i in range(b.shape[1]):
             ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
         return ret
@@ -105,6 +105,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     See Also:
         diffusionpy.D_Matrix
     """
+    print("------------- Initialization and postprocessing ----------------")
+    start1=time.time_ns()
     nc=len(wi0)
     
     nz=kwargs["nz"] if "nz" in kwargs else 20
@@ -134,8 +136,8 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
             THFaktor_= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
             THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
         if len(dlnai_dlnwi.shape)==4:
-            slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz+1)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-            slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz+1)),-1, np.arange(0,nc-1,dtype=np.int64)) 
+            slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+            slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.asarray(range(nz)),-1, np.arange(0,nc-1,dtype=np.int64)) 
             massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
             THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
             THFaktor= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:,:],THFaktor_[-1,:,:,:]))
@@ -183,7 +185,7 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
         return dxdt.flatten()
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    sol=solve_ivp(wrapode,(t[0],t[-1]),xinit,args=(ode,THFaktor,dmuext,rhoiB,drhovdtB),method="Radau",t_eval=t)#rtol=1E-2,atol=1E-3)
+    sol=solve_ivp(wrapode,(t[0],t[-1]),xinit,args=(ode,THFaktor,dmuext,rhoiB,drhovdtB),method="RK23",t_eval=t)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: raise Exception(sol["message"])# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
@@ -211,6 +213,9 @@ def Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,s
     wt=(rhoit/rhok[:,None]).T
     Lt=rhok/rho*L
     # plt.plot(t,rhoik[:,1,-1])
+    end1=time.time_ns()
+    print(f"------------- Initialization and postprocessing took {((end1-start1)-(end-start))/1E9} seconds----------------")
+    
     if return_sigma:
         nJ=len(kwargs["EJ"])
         sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
@@ -296,14 +301,22 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     # dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
     # wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
     _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
-    _,_,nz=wt_old.shape
+    _,_,nz_1=wt_old.shape
     def wt_obj(wt_old):
-        wtz=wt_old.reshape((nt,nc,nz))
+        wtz=wt_old.reshape((nt,nc,nz_1))
+        wtz=(wtz[:,:,:1]+wtz[:,:,:-1])/2
         dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtz])
         residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
         return residual
     def wt_fix(wtz):
-        dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtz])
+        wtz=(wtz[:,:,:1]+wtz[:,:,:-1])/2
+        wtz=wtz.reshape((nt,nz_1-1,nc))
+        print("------------- Start PC-SAFT modeling ----------------")
+        start=time.time_ns()
+        # dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz])
+        dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
+        end=time.time_ns()
+        print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,full_output=True,**kwargs)[1]
     method=kwargs["method"] if "method" in kwargs  else "df-sane"
     if method=="df-sane":
@@ -314,10 +327,14 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         for i in range(kwargs["maxit"]):
             wtopt=wt_fix(wt_old)
             wt_old=wtopt
-    # 
-
-    dlnai_dlnwiopt=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtopt])
-    return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
+    if full_output:
+        # dlnai_dlnwiopt=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in (wtopt[:,:,:1]+wtopt[:,:,:-1])/2])
+        wtopt=(wtopt[:,:,:1]+wtopt[:,:,:-1])/2
+        wtopt=wtopt.reshape((nt,nz_1-1,nc))
+        dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
+    else:
+        return np.average(wtopt,axis=2)
 
 def convert(x,M,axis=0):
     """convert fractions. e.g mass fractions into mole fractions"""
