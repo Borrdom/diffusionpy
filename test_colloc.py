@@ -49,6 +49,7 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
     zE=np.linspace(0,1,nE+1)
     NS=np.polynomial.legendre.leggauss(nP)[0]
     NS=(NS-NS[0])/(NS[-1]-NS[0])
+    NS=np.asarray([0,0.1127,0.5,0.8873,1])
     n=(nP-1)*nE+1
     z=np.asarray([0])
     zvec=[]
@@ -59,7 +60,7 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
         zvec.append(zP)
         z=np.hstack((z,zP[1:]))
 
-    # z=np.asarray([0,0.1127,0.5,0.8873,1])
+    
     A=np.zeros((nP,nP))
     C=np.zeros((nP,nP))
     D=np.zeros((nP,nP))
@@ -76,7 +77,7 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
 
 
 
-nP=4
+nP=5
 nE=4
 n=(nP-1)*nE+1
 # z,T,S=orthogonal_collocation(n)
@@ -103,7 +104,7 @@ def fun(c):
         f[P0:P8]=fun_(cP,dcdz,d2cd2z)
         if i>0: f[(nP-1)*i]=dcdz_[-1]-dcdz[0] 
         if i==0: f[0]=dcdz[0]-Pe*(c[0]-1) # RB1 
-        if i==nE: f[-1]=dcdz[-1]# RB2
+        if i==(nE-1): f[-1]=dcdz[-1]# RB2
         dcdz_=dcdz
     return f
 # def fun(c):
