@@ -31,6 +31,7 @@ def broyden(fun,x):
 
 
 def orthogonal_collocation(n=4):
+    
     z=(np.polynomial.legendre.leggauss(n+1)[0]+1)/2
     # z=np.asarray([0,0.1127,0.5,0.8873,1])
     A=np.zeros((n+1,n+1))
@@ -45,11 +46,13 @@ def orthogonal_collocation(n=4):
     S=C@Ainv
     T=D@Ainv
     return z,T,S
+
 def orthogonal_collocation_finite_elements(nP=4,nE=4):
     zE=np.linspace(0,1,nE+1)
     NS=np.polynomial.legendre.leggauss(nP)[0]
     NS=(NS-NS[0])/(NS[-1]-NS[0])
-    NS=np.asarray([0,0.1127,0.5,0.8873,1])
+    # NS=np.asarray([0,0.1127,0.5,0.8873,1])
+    NS=np.linspace(0,1,nP) # equidistant collocation
     n=(nP-1)*nE+1
     z=np.asarray([0])
     zvec=[]
@@ -75,50 +78,68 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
 
     return z,T,S
 
-
-
-nP=5
-nE=4
-n=(nP-1)*nE+1
-# z,T,S=orthogonal_collocation(n)
-z,T,S=orthogonal_collocation_finite_elements(nP,nE)
-def fun_(c,dcdz,d2cd2z):
-    Pe=1
-    Da=1
-    f=1/Pe*d2cd2z-dcdz-Da*c**2
-    return f 
-def fun(c):
-    f=np.zeros_like(c)
-    Pe=1
-    Da=1
-
-    for i in range(nE):
-        # f[i*nP] # übergang?
-        P0=i*(nP-1)
-        P8=(i+1)*(nP-1)+1
-        cP=c[P0:P8]
-        
-        d2cd2z=T@cP
-        dcdz=S@cP
-
-        f[P0:P8]=fun_(cP,dcdz,d2cd2z)
-        if i>0: f[(nP-1)*i]=dcdz_[-1]-dcdz[0] 
-        if i==0: f[0]=dcdz[0]-Pe*(c[0]-1) # RB1 
-        if i==(nE-1): f[-1]=dcdz[-1]# RB2
-        dcdz_=dcdz
-    return f
-# def fun(c):
-#     Pe=1
-#     Da=1
-#     f=np.zeros_like(c)
-#     for i in range(n+1):
-#         f[i]=1/Pe*np.dot(T[i,:],c)-np.dot(S[i,:],c)-Da*c[i]**2
-#     f[0]=np.dot(S[0,:],c)-Pe*(c[0]-1)
-#     f[-1]=np.dot(S[-1,:],c)
-#     return f
-c0=np.ones(n)
-c=broyden(fun,c0)
 import matplotlib.pyplot as plt
-plt.plot(z,c)
+nshow=4
+fig,ax=plt.subplots(1,nshow)
+
+
+for w in range(nshow):
+    nP=7
+    nE=1+w
+    n=(nP-1)*nE+1
+    # z,T,S=orthogonal_collocation(n)
+    z,T,S=orthogonal_collocation_finite_elements(nP,nE)
+    print(S)
+    def fun_(c,dcdz,d2cd2z):
+        Pe=1
+        Da=1
+        f=1/Pe*d2cd2z-dcdz-Da*c**2
+        return f 
+    def fun(c):
+        f=np.zeros_like(c)
+        Pe=1
+        Da=1
+
+        for i in range(nE):
+            # f[i*nP] # übergang?
+            P0=i*(nP-1)
+            P8=(i+1)*(nP-1)+1
+            cP=c[P0:P8]
+            
+            
+            dcdz=S@cP
+            d2cd2z=S@dcdz
+            # d2cd2z=T@cP
+            if i>0: dcdz[0]=dcdz_[-1]
+            f[P0:P8]=fun_(cP,dcdz,d2cd2z)
+            
+            # if i>0: f[(nP-1)*i]=dcdz_[-1]-dcdz[0] 
+            if i==0: f[0]=dcdz[0]-Pe*(c[0]-1) # RB1 
+            if i==(nE-1): f[-1]=dcdz[-1]# RB2
+            dcdz_=dcdz
+        return f
+    # def fun(c):
+    #     Pe=1
+    #     Da=1
+    #     f=np.zeros_like(c)
+    #     for i in range(n+1):
+    #         f[i]=1/Pe*np.dot(T[i,:],c)-np.dot(S[i,:],c)-Da*c[i]**2
+    #     f[0]=np.dot(S[0,:],c)-Pe*(c[0]-1)
+    #     f[-1]=np.dot(S[-1,:],c)
+    #     return f
+    c0=np.ones(n)
+    c=broyden(fun,c0)
+    
+    
+    ax[w].plot(z,c,"o-")
+    zE=np.linspace(0,1,nE+1)
+    for i in range(nE):
+        ax[w].plot([zE[i],zE[i]],[0.59,0.7311],"k")
+        ax[w].plot([zE[i+1],zE[i+1]],[0.59,0.7311],"k")
 plt.show()
-print(c)
+    # print(c)
+S=np.asarray([[-9.183300132670368, 13.95870750793668, -7.32835571279449, 3.5529483375281643, -0.9999999999999911],  # Collocation matrix calculated for 5 collocation points
+[-1.7403293111129658, -1.3744088030005464, 4.3546484316145255, -1.682881139058434, 0.44297082155741346], 
+[0.5458250331675965, -2.601439792602136, 3.552713678800501e-15, 2.6014397926021253, -0.5458250331675947], 
+[-0.4429708215574084, 1.6828811390584317, -4.354648431614518, 1.3744088030005417, 1.7403293111129672], 
+[0.9999999999999858, -3.552948337528136, 7.328355712794462, -13.95870750793668, 9.183300132670368]])
