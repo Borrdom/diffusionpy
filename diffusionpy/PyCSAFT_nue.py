@@ -44,7 +44,7 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
         return a.reshape(len(a),1)+a
     def wertheim_iter(fun,x,p1,p2,p3,p4):
         """solve this non-linear equation system for the nonbonded association sites XAi""" 
-        tol=1E-15
+        tol=1E-8
         iter=50
         n=len(x)
         f=fun(x,p1,p2,p3,p4)

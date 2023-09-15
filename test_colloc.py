@@ -52,9 +52,9 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
     NS=np.polynomial.chebyshev.chebpts1(nP)
     # NS=np.polynomial.legendre.leggauss(nP)[0]
     NS=(NS-NS[0])/(NS[-1]-NS[0])
-    # print(NS.tolist())
+    print(NS.tolist())
     # NS=np.asarray([0,0.1127,0.5,0.8873,1])
-    NS=np.linspace(0,1,nP) # equidistant collocation
+    # NS=np.linspace(0,1,nP) # equidistant collocation
     n=(nP-1)*nE+1
     z=np.asarray([0])
     zvec=[]
@@ -69,15 +69,20 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
     A=np.zeros((nP,nP))
     C=np.zeros((nP,nP))
     D=np.zeros((nP,nP))
+    # vec=np.asarray(range(0,nP*2,2))
     for i in range(nP):
         for j in range(nP):
-            # A[i,j]=zP[i]**j
-            # C[i,j]=j*zP[i]**(j-1) if j>0 else 0
-            # D[i,j]=j*(j-1)*zP[i]**(j-2) if j>1 else 0
-
-            A[i,j]=np.exp(-zP[i]*j)
-            C[i,j]=-j*np.exp(-zP[i]*j)
-            D[i,j]=j**2*np.exp(-zP[i]*j)
+            A[i,j]=NS[i]**j
+            C[i,j]=j*NS[i]**(j-1) if j>0 else 0
+            D[i,j]=j*(j-1)*NS[i]**(j-2) if j>1 else 0
+    # for i,vali in enumerate(vec):
+    #     for j,valj in enumerate(vec):
+    #         A[i,j]=zP[i]**valj
+    #         C[i,j]=valj*zP[i]**(valj-1) if j>0 else 0
+    #         D[i,j]=valj*(valj-1)*zP[i]**(valj-2) #if j>1 else 0
+            # A[i,j]=np.exp(-zP[i]*j)
+            # C[i,j]=-j*np.exp(-zP[i]*j)
+            # D[i,j]=j**2*np.exp(-zP[i]*j)
     Ainv=np.linalg.inv(A)
     S=C@Ainv
     T=D@Ainv
@@ -90,8 +95,8 @@ fig,ax=plt.subplots(1,nshow)
 
 
 for w in range(nshow):
-    nP=5
-    nE=1+w
+    nP=2
+    nE=3+w
     n=(nP-1)*nE+1
     # z,T,S=orthogonal_collocation(n)
     z,T,S=orthogonal_collocation_finite_elements(nP,nE) 
@@ -110,8 +115,8 @@ for w in range(nshow):
             P8=(i+1)*(nP-1)+1
             cP=c[P0:P8]
             
-            dcdz=S@cP
-            d2cd2z=S@dcdz
+            dcdz=(S@cP)*nE
+            d2cd2z=(S@dcdz)*nE
             # d2cd2z=T@cP
             if i>0: dcdz[0]=dcdz_[-1]
             f[P0:P8]=fun_(cP,dcdz,d2cd2z,Pe,Da)
