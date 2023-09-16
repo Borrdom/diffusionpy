@@ -50,7 +50,7 @@ def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,
     nc=len(Mi)
     nTH,nz_1=rhov.shape
     #_________
-    nP=5
+    nP=2
 
     nE=(nz_1-1)//(nP-1) # 5 Collocation points used to calculate the amount of finite elements there should be an error when these do not match the given nz
     # S=np.asarray([
@@ -73,7 +73,7 @@ def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,
     [1., -3.2360679774998857, 6.472135954999686, -13.70820393249943, 9.472135954999601]])
     #4th order
     # S=np.asarray([[-5.828427124746187, 8.242640687119275, -3.414213562373087, 0.9999999999999973], [-1.4142135623730971, -0.41421356237309154, 2.414213562373092, -0.5857864376269044], [0.5857864376269034, -2.4142135623730896, 0.414213562373088, 1.4142135623730976], [-0.9999999999999956, 3.414213562373087, -8.242640687119275, 5.828427124746187]])
-    # S=np.asarray([[-1.0, 1.0], [-1.0, 1.0]]) #basically finite differences
+    S=np.asarray([[-1.0, 1.0], [-1.0, 1.0]]) #basically finite differences
     # S=np.asarray([[-19.19566935808956, 28.293504037135108, -14.591793886480787, 8.987918414870705, -5.603875471610536, 3.10991626417524, -1.0000000000001705],
     # [-3.603875471609483, -1.960771339502083, 8.09783467904494, -4.000000000000474, 2.317667207394258, -1.2469796037176133, 0.3961245283903642],
     # [0.8900837358252135, -3.8780021506949454, -0.5211062828031919, 4.98791841487004, -2.246979603717616, 1.1099162641748106, -0.34183037765438584],
@@ -159,7 +159,7 @@ def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,
     djv[:,-1]=0
 
     # drhovdt=np.hstack((dji,np.atleast_2d(drhovdtB).T))
-    return  djv.flatten()
+    return  vanishing_check(djv,rhov).flatten()
 
 
 def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,**kwargs):
@@ -194,7 +194,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     nc=len(wi0)
     
     nz=kwargs["nz"] if "nz" in kwargs else 20
-    nP=5
+    nP=2
     nE=(nz)//(nP-1)
     dz=L/(nE)
     D=D_Matrix(Dvec/dz**2,nc)    
@@ -202,7 +202,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     # NS=np.asarray([0.,0.25,0.5,0.75,1.]) #equidistant
     NS=np.asarray([0.,0.19098301,0.5,0.80901699,1.]) #chebyshev 1st order
     # NS=np.asarray([0.0, 0.2928932188134524, 0.7071067811865476, 1.0]) #chebyshev 1st order 4th polynomial
-    # NS=np.asarray([0.,1.])
+    NS=np.asarray([0.,1.])
     # NS=np.asarray([0.0, 0.09903113209758088, 0.27747906604368555, 0.5, 0.7225209339563144, 0.9009688679024191, 1.0])
     # NS=np.asarray([0.0, 0.5, 1.0])
     z=np.asarray([0.])
@@ -229,12 +229,14 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
         if len(dlnai_dlnwi.shape)==3:
-            slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-            slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
-            massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-            THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
-            THFaktor_= interp1d(t,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
-            THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
+            # slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+            # slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
+            # massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
+            # THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection[:,None,:]
+            # THFaktor_= interp1d(tint,THFaktor_,axis=0,bounds_error=False,fill_value=(THFaktor_[0,:,:],THFaktor_[-1,:,:]))
+            # THFaktor= lambda t: np.ones((nz,nTH,nTH))*THFaktor_(t)
+            dlnai_dlnwi=np.swapaxes(np.asarray([dlnai_dlnwi]*(nz+1)),0,1)
+            
         if len(dlnai_dlnwi.shape)==4:
             slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
             slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
@@ -251,6 +253,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     drhovdtB=np.zeros(nTH)
     return_sigma=False
     return_alpha=False
+    # float64, array(float64, 2d, C), array(float64, 1d, C), array(float64, 4d, C), array(int64, 1d, C), array(int64, 1d, C), array(float64, 1d, C), array(float64, 2d, F), bool, bool, float64, array(float64, 1d, C), array(float64, 2d, C), array(float64, 2d, C), array(float64, 1d, C)"
     @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[:,::1],f8[::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
         """create generic ode function for drhodt"""
@@ -260,12 +263,12 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import relaxation_mode
-        xinit,ode=relaxation_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles])
+        xinit,ode=relaxation_mode(rhovinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles],tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
         return_sigma=True
 
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
         from .crystallization import crystallization_mode
-        lngi_tz=interp1d(t,kwargs["lngi_tz"],axis=0,bounds_error=False)
+        lngi_tz=interp1d(tint,kwargs["lngi_tz"],axis=0,bounds_error=False)
         xinit,ode=crystallization_mode(rhovinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
         return_alpha=True
         # THFaktor=lngi_tz
