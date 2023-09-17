@@ -10,7 +10,7 @@ from .FEM_collocation import collocation,collocation_space
 
 
 @njit(['f8[::1](f8, f8[:,::1],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[:,::1],f8[::1])'],cache=True)
-def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
+def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """change in the partial density with time"""
     def vanishing_check(drhovdt,rhov):
         s1,s2=rhov.shape
@@ -39,19 +39,21 @@ def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,
                     Dii+=wi[j,:]/D[i,j]
             if allflux: Dii+=Din
             B[i,i,:]=Dii
-        return B[mobiles,:,:][:,mobiles,:] if not allflux else B[:-1,:-1,:]
+        return B[mobiles,:,:][:,mobiles,:] 
+        
     refsegment=np.argmin(Mi)
     ri= Mi[mobiles]/Mi[refsegment]
     nc=len(Mi)
-    nTH,nz_1=rhov.shape
-    rhoi=np.zeros((nc,nz_1))
-    rhoi[mobiles,:]=rhov
-    rhoi[immobiles,:]=rho*np.expand_dims(wi0[immobiles],1) if not allflux else np.expand_dims(rho-np.sum(rhoi[:-1,:],axis=0),0)
+    nTH,nz_1=wv.shape
+    wi=np.zeros((nc,nz_1))
+    wi[mobiles,:]=wv
+    wi0_immobiles=np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),axis=1)
+    wi[immobiles,:]=(1-np.expand_dims(np.sum(wv,axis=0),axis=0))*wi0_immobiles
     for j in range(nc):
-        rhoi[j,-1]=np.interp(t,tint,rhoiB[:,j])
-    rhov[:,-1]=rhoi[mobiles,-1]
-    wi=rhoi/np.sum(rhoi,axis=0)
-    wv=wi[mobiles,:]
+        wi[j,-1]=np.interp(t,tint,rhoiB[:,j]/rho)
+    wv[:,-1]=wi[mobiles,-1]
+    
+    
     dwv=np.zeros((nTH,nz_1))
     for j in range(nTH):
         dwv[j,:]=collocation(wv[j,:],nz_1,True)
@@ -67,14 +69,17 @@ def drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,
         dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i])
     B=BIJ_Matrix(D,wi,mobiles,allflux)
     dmuv=dlnav+dmuext
-    omega=rho/np.sum(rhoi,axis=0)
-    dv=rho*wv*dmuv/np.atleast_2d(ri).T*omega if swelling else rhov*dmuv/np.atleast_2d(ri).T
+    omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
+    dv=rho*wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
     jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
     djv=np.zeros((nTH,nz_1))
     for j in range(nTH):
         djv[j,:]=collocation(jv[j,:],nz_1,False)    
     djv[:,-1]=0
-    return  vanishing_check(djv,rhov).flatten()
+    dwvdt=np.zeros_like(djv)
+    for j in range(nTH):
+        dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:]
+    return  (dwvdt*omega/rho).flatten()#vanishing_check(djv,rhov).flatten()
 
 
 def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,**kwargs):
@@ -108,7 +113,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     start1=time.time_ns()
     nc=len(wi0)
     
-    nz=kwargs["nz"] if "nz" in kwargs else 21
+    nz=kwargs["nz"] if "nz" in kwargs else 20
     z,nE=collocation_space(nz+1)
     dz=L/(nE)
     D=D_Matrix(Dvec/dz**2,nc)    
@@ -125,6 +130,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit=(rho*wi0*np.ones((nz+1,nc))).T
     rhovinit=rhoiinit[mobiles,:]
+    wiinit=(wi0*np.ones((nz+1,nc))).T
+    wiinit[:,-1]=wi8
+    wvinit=wiinit[mobiles,:]
     #Construct TH Factor
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
@@ -147,7 +155,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     #Set up the PDEs boundary,initial conditions and additional driving forces.
     #____________________________________
     #def default_mode():
-    xinit=rhovinit.flatten()
+    xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
     rhoiB=wi8[None,:]*rho*np.ones((nt,nc))
     drhovdtB=np.zeros(nTH)
@@ -157,8 +165,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[:,::1],f8[::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
         """create generic ode function for drhodt"""
-        rhov=np.reshape(np.ascontiguousarray(x),(nTH,nz+1))
-        return drhodt(t,rhov,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
+        wv=np.reshape(np.ascontiguousarray(x),(nTH,nz+1))
+        return drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
         
     # Mechanical equation of state (MEOS)      
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
@@ -169,7 +177,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
         from .crystallization import crystallization_mode
         lngi_tz=interp1d(tint,kwargs["lngi_tz"],axis=0,bounds_error=False)
-        xinit,ode=crystallization_mode(rhovinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
         return_alpha=True
         # THFaktor=lngi_tz
         # THFaktor= lambda t: (np.ones((nz,nTH,nTH))-alpha)*THFaktor_(t)
@@ -202,24 +210,14 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     nt=len(tint)
     wt=np.zeros((nc,nt))
     wik=np.zeros((nt,nc,nz+1))
-    rhoik=np.zeros((nt,nc,nz+1))
-    rhok=np.zeros(nt)
-    rhoit=np.zeros((nt,nc))
+
     for k in range(nt):
-        rhovk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
-        rhoik[k,:,:]=rhoiinit
-        
-        rhoik[k,mobiles,:]=rhovk
-        rhoik[k,:,-1]=rhoiB[k,:]
-        # if allflux: rhoik[k,immobiles,:]=rho-np.sum(rhoik[k,:-1,:],axis=0) 
-        for i in range(nc):
-            wik[k,i,:]=rhoik[k,i,:]/np.sum(rhoik[k,:,:],axis=0)
-        wik[k,immobiles,-1]=(1-np.sum(wik[k,mobiles,-1],axis=0))*wi0_immobiles
-        rhok[k]=np.sum(np.sum(rhoik[k,:,:-1]/nz,axis=1),axis=0)
-        rhoit[k,:]=np.sum(rhoik[k,:,:-1]/nz,axis=1)
+        wvk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
+        wik[k,:,:]= wiinit
+        wik[k,mobiles,:]=wvk
+        wik[k,immobiles,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_immobiles[:,None]
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
-    wt=(rhoit/rhok[:,None]).T
-    Lt=rhok/rho*L
+    Lt=np.sum(wi0[immobiles])/(1-np.sum(wt[mobiles,:],axis=0))*L
     # plt.plot(t,rhoik[:,1,-1])
     end1=time.time_ns()
     print(f"------------- Initialization and postprocessing took {((end1-start1)-(end-start))/1E9} seconds----------------")

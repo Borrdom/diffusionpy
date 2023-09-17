@@ -5,7 +5,7 @@ from numba import njit,config,prange
 import time
 
 # config.DISABLE_JIT = True
-def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,deltaHSL,TSL,cpSL,DAPI,sigma,kt,g,lngi_tz):
+def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,deltaHSL,TSL,cpSL,DAPI,sigma,kt,g,lngi_tz):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization
 
     Args:
@@ -22,7 +22,7 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
         array_like: new modified ode function with the same format as the input ode function
     """
 
-    _,nz_1=rhovinit.shape
+    _,nz_1=wvinit.shape
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
@@ -30,26 +30,27 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
         """solves the genralized Maxwell model for relaxation"""
         _,nz_1=dmuext.shape
         nTH=drhovdtB.shape[0]
-        rhov=np.zeros((nTH,nz_1))
+        wv=np.zeros((nTH,nz_1))
         for i in range(nTH):
-            rhovtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
-            rhov[i,:]=rhovtemp
+            wvtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
+            wv[i,:]=wvtemp
+        # wv=np.fmin(np.fmax(wv,1E-300),1.)
         alpha=np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],0)
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
-        rhov=np.ascontiguousarray(rhov)
+        wv=np.ascontiguousarray(wv)
         for i in range(nTH):
-            rhov[i,-1]=np.interp(t,tint,rhoiB[:,mobiles[i]])
-        alphabar=(alpha[1:]+alpha[:-1])/2
-        rhosum=np.sum(rhov,axis=0)+np.sum(wi0[immobiles]*rho)
-        rhosum[-1]=(np.sum(rhov,axis=0)+np.sum(wi8[immobiles]*rho))[-1]
-        wv=np.fmax(rhov/rhosum,0)
-        rhobar=(rhosum[1:]+rhosum[:-1])/2
+            wv[i,-1]=np.interp(t,tint,rhoiB[:,mobiles[i]]/rho)
+        # alphabar=(alpha[1:]+alpha[:-1])/2
+        # rhosum=np.sum(rhov,axis=0)+np.sum(wi0[immobiles]*rho)
+        # rhosum[-1]=(np.sum(rhov,axis=0)+np.sum(wi8[immobiles]*rho))[-1]
+        # wv=np.fmax(rhov/rhosum,0)
+        omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
         # porosity=(1-alpha*rhosum/rho)[:,None]
-        porosity=(1-alpha*rhosum/rho)[None,:,None,None]
+        porosity=(1-alpha/omega)[None,:,None,None]
         # porosity=(1-alpha)[:,None,None,None]
         eta=1.5
 
-        drhovdt=ode(t,np.ascontiguousarray(rhov.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
+        drhovdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
         # drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
         # dalphadt,drdt=[],[]
         # for i in range(nz+1):
@@ -79,7 +80,7 @@ def crystallization_mode(rhovinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0
     r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
     alpha0=pre*(r0)**3
     
-    xinit=np.hstack((rhovinit.flatten(),alpha0.flatten(),r0.flatten()))
+    xinit=np.hstack((wvinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
 @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
 def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi,wv):
