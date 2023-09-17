@@ -95,8 +95,8 @@ fig,ax=plt.subplots(1,nshow)
 
 
 for w in range(nshow):
-    nP=2
-    nE=3+w
+    nP=4
+    nE=1+w
     n=(nP-1)*nE+1
     # z,T,S=orthogonal_collocation(n)
     z,T,S=orthogonal_collocation_finite_elements(nP,nE) 

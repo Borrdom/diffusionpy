@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit
 import matplotlib.pyplot as plt
+from .FEM_collocation import collocation,collocation_space
+
 def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
 
@@ -58,8 +60,9 @@ def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,
 def MDF(sigmaJ,EJ,RV):
     """the mechanical driving force for the stress gradient"""
     sigma=np.sum(sigmaJ*EJ,axis=1)
-    dsigma=np.zeros_like(sigma)
-    dsigma[1:]=np.diff(sigma)
+    nz_1=sigma.shape[0]
+    dsigma=collocation(sigma,nz_1,True)
+    dsigma[0]=0
     dmuext=1/np.expand_dims(RV,1)*np.expand_dims(dsigma,0)
     return dmuext
 
