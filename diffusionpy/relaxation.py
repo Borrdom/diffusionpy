@@ -3,7 +3,7 @@ from numba import njit
 import matplotlib.pyplot as plt
 from .FEM_collocation import collocation,collocation_space
 
-def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
+def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
 
     Args:
@@ -23,31 +23,32 @@ def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,
     RV=R*T*1/(M2/1000.)*1/v2
     nJ=len(EJ)
     _,nz_1=rhovinit.shape
-    def relaxation_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
+    def relaxation_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
-        _,nz_1=dmuext.shape
-        nTH=drhovdtB.shape[0]
+        nTH,nz_1=dmuext.shape
         nJ=len(EJ)
-        rhov=np.zeros((nTH,nz_1))
+        wv=np.zeros((nTH,nz_1))
         for i in range(nTH):
-            rhovtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
-            rhov[i,:]=rhovtemp
+            wvtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
+            wv[i,:]=wvtemp
         sigmaJ=np.zeros((nz_1,nJ))
         for J in range(nJ):
             sigmaJtemp=x[(nz_1)*(nTH+J):(nz_1)*(nTH+1+J)]
             sigmaJ[:,J]=sigmaJtemp
-        X2II=rhov/np.sum(rhoiB)
-        w2II=X2II/(X2II+1)
+        
+        w2II=wv
         WL=np.prod(np.exp(-w2II*np.expand_dims(exponent,-1)),0)
         etaWL=np.expand_dims(WL,1)*np.expand_dims(etaJ,0)
         #rhoiB[0]=rhov[:,-1]
-        rhov=np.ascontiguousarray(rhov)
+        wv=np.ascontiguousarray(wv)
         dmuext=MDF(sigmaJ,EJ,RV)
         #float64, array(float64, 1d, C), array(float64, 1d, C), pyobject, array(int64, 1d, C), array(int64, 1d, C), array(float64, 1d, C), array(float64, 2d, F), bool, bool, float64, array(float64, 1d, C), array(float64, 2d, C), array(float64, 2d, C), array(float64, 1d, C)
-        drhovdt=ode(t,np.ascontiguousarray(rhov.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
+        dwvdt=np.reshape(ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB),(nTH,nz_1))
+        omega=(np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0)))**-1
+        drhovdt=dwvdt*rho/omega-np.sum(dwvdt/np.sum(wi0[immobiles]),axis=0)*wv
         dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
         # drhovdt[:,-1]=drhovdtB
-        fvec=np.hstack((drhovdt.flatten(),dsigmaJdt.flatten()))
+        fvec=np.hstack((dwvdt.flatten(),dsigmaJdt.flatten()))
         return fvec
     
     sigmaJ0=np.zeros((nz_1,nJ))

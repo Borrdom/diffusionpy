@@ -26,10 +26,9 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
-    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB):
+    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
-        _,nz_1=dmuext.shape
-        nTH=drhovdtB.shape[0]
+        nTH,nz_1=dmuext.shape
         wv=np.zeros((nTH,nz_1))
         for i in range(nTH):
             wvtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
@@ -39,32 +38,17 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
         wv=np.ascontiguousarray(wv)
         for i in range(nTH):
-            wv[i,-1]=np.interp(t,tint,rhoiB[:,mobiles[i]]/rho)
-        # alphabar=(alpha[1:]+alpha[:-1])/2
-        # rhosum=np.sum(rhov,axis=0)+np.sum(wi0[immobiles]*rho)
-        # rhosum[-1]=(np.sum(rhov,axis=0)+np.sum(wi8[immobiles]*rho))[-1]
-        # wv=np.fmax(rhov/rhosum,0)
+            wv[i,-1]=np.interp(t,tint,wiB[:,mobiles[i]])
+
         omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
-        # porosity=(1-alpha*rhosum/rho)[:,None]
         porosity=(1-alpha/omega)[None,:,None,None]
-        # porosity=(1-alpha)[:,None,None,None]
         eta=1.5
 
-        drhovdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB)
-        # drhovdt=ode(t,rhov,THFaktor,dmuext,rhoiB,drhovdtB)
-        # dalphadt,drdt=[],[]
-        # for i in range(nz+1):
-
+        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
 
         dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
-        #     dalphadt.append(a)
-        #     drdt.append(b)
-        # dalphadt=np.asarray(dalphadt)
-        # drdt=np.asarray(drdt)
-        # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
-        # dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
-        # drhovdt[:,-1]=drhovdtB
-        fvec=np.hstack((drhovdt.flatten(),dalphadt.flatten(),drdt.flatten()))
+
+        fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten(),drdt.flatten()))
         return fvec
 
     AR=100
