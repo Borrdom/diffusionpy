@@ -22,14 +22,18 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
         """solve a Batch of linear system of equations"""
         ret = np.zeros_like(b)
         for i in range(b.shape[1]):
+            # Q,R=np.linalg.qr(A[:,:,i])
+            # y=np.ascontiguousarray(Q.T)@np.ascontiguousarray(b[:,i])
+            # ret[:, i] = np.linalg.solve(R, y)
             ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
+            # print(np.linalg.cond(A[:,:,i]))
         return ret
     def BIJ_Matrix(D,wi,mobiles,allflux):
         """create the friction matrix which needs to be invertable"""
         nc,nz_1=wi.shape
         B=np.zeros((nc,nc,nz_1))
         for i in range(nc):
-            Din=wi[-1,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz_1)
+            Din=wi[i,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz_1)
             Dii=np.zeros(nz_1)
             for j in range(nc):
                 if j!=i:
@@ -59,17 +63,31 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
         dwv[j,:]=collocation(wv[j,:],nz_1,True)
     dwv[:,0]=0
     dlnwv=dwv/wv
+
+    # ddlnwv=np.zeros((nTH,nz_1))
+    # for j in range(nTH):
+    #     ddlnwv[j,:]=collocation(dlnwv[j,:],nz_1,True)
+    # dddlnwv=np.zeros((nTH,nz_1))
+    # for j in range(nTH):
+    #     dddlnwv[j,:]=collocation(ddlnwv[j,:],nz_1,True)
+
     THFaktor_=np.zeros((nz_1,nTH,nTH))
     for i in range(nz_1):
         for j in range(nTH):
             for k in range(nTH):
                 THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
     dlnav=np.zeros_like(dlnwv)
+    # kbin=0.1
     for i in range(nz_1): 
-        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i])
+        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+        # if np.linalg.det(THFaktor_[i,...])>0.001: dlnav[:,i]=dlnav[:,i]- dddlnwv*kbin
+    # if THFaktor_[0,0,0]!=1: dlnav[-1,:]=-np.sum(dlnav[:-1,:]*wv[:-1,:],axis=0)/wv[-1,:] 
+    
     B=BIJ_Matrix(D,wi,mobiles,allflux)
     dmuv=dlnav+dmuext
     omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
+    # Xv=np.sum(wv,axis=0)/(1-np.sum(wv,axis=0))
+    # omega=1/(1+Xv) if not allflux else np.ones(nz_1)
     dv=rho*wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
     jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
     djv=np.zeros((nTH,nz_1))
@@ -79,6 +97,10 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
     dwvdt=np.zeros_like(djv)
     for j in range(nTH):
         dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:]
+        dwvdt[j,-1]=-0
+
+    # if np.sum(-jv*dlnav)<0: print("Entropy decreases")
+        # else: print("Entropy increases")
     return  (dwvdt*omega/rho).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -126,7 +148,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([-1],dtype=np.int64)
+    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([nc-1],dtype=np.int64)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     rhoiinit=(rho*wi0*np.ones((nz+1,nc))).T
     rhovinit=rhoiinit[mobiles,:]
@@ -144,6 +166,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
             massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=2)
             THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
+            print(np.linalg.det(THFaktor))
+
 
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
@@ -197,6 +221,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         wik[k,:,:]= wiinit
         wik[k,mobiles,:]=wvk
         wik[k,immobiles,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_immobiles[:,None]
+        wik[k,:,-1]=wiB[k,:]
         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
     Lt=np.sum(wi0[immobiles])/(1-np.sum(wt[mobiles,:],axis=0))*L
     # plt.plot(t,rhoik[:,1,-1])
@@ -287,7 +312,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     # if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
     # dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
     # wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
-    _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
+    _,wt_old,_,_=Diffusion_MS(t,L,Dvec/100,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
     _,_,nz_1=wt_old.shape
     def wt_obj(wt_old):
         wtz=wt_old.reshape((nt,nc,nz_1))
@@ -298,6 +323,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     def wt_fix(wtz):
         # wtz=(wtz[:,:,:1]+wtz[:,:,:-1])/2
         wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
+        # if np.any(wtz<0): print("Hold Up! Wait a Minute")
         print("------------- Start PC-SAFT modeling ----------------")
         start=time.time_ns()
         # dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz])
@@ -335,10 +361,10 @@ def correctMB(dlnai_dlnwi,mobile,nt,wi0):
     allflux=len(mobile)==np.sum(mobile)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     wi0_mobiles=wi0[mobiles]/np.sum(wi0[mobiles])
-    slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-    slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
-    slc3=np.ix_(np.asarray(range(nt)),mobiles, immobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
-    massbalancecorrection1=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-    massbalancecorrection2=np.sum(dlnai_dlnwi[slc3]*wi0_mobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc3],axis=1)
-    THFaktor_=dlnai_dlnwi[slc1]-np.stack((massbalancecorrection1[:,None,:],massbalancecorrection2[:,None,:]),axis=1)
-    return THFaktor_
+    slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
+    slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
+    massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=2)
+    THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
+    print(np.linalg.det(THFaktor))
+
+    return THFaktor

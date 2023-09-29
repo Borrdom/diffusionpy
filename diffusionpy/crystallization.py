@@ -26,6 +26,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
+    dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
     def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
         nTH,nz_1=dmuext.shape
@@ -34,14 +35,32 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
             wvtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
             wv[i,:]=wvtemp
         # wv=np.fmin(np.fmax(wv,1E-300),1.)
-        alpha=np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],0)
+        alpha=np.fmin(np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],1E-29),dl0)
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
         wv=np.ascontiguousarray(wv)
         for i in range(nTH):
             wv[i,-1]=np.interp(t,tint,wiB[:,mobiles[i]])
 
-        omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
-        porosity=(1-alpha/omega)[None,:,None,None]
+        # omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
+        # omega=1
+        # omega[-1]=1.
+        # porosity= 1-Vcr/V
+        # Vcr=mcr/rhocr
+        # V=m/rho=(m0+mvoc)/rho=m0(1+Xvoc)/rho
+        # Annahme: rho=rhocr
+        # Vcr/V=1-mcr/m0/(1+Xvoc)*rho
+        # mvoc=Xvoc*m0
+        # Xvoc=wv/(1-wv)
+
+        # V0=m0/rhobar
+        # V/V0=m/m0*rhobar/rho
+        # m=m0+mvoc
+        # if t/60>30:
+        #     pass
+        Xv=np.sum(wv,axis=0)/(1-np.sum(wv,axis=0))
+        omega=1-1/(1+Xv)
+        # omega[-1]=1.
+        porosity=(1-alpha*omega)[None,:,None,None]
         eta=1.5
 
         dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
@@ -113,8 +132,8 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
     dalphadt=drdt*dalphadr+dNdt*dalphadN
-    for i in range(nz_1):
-        if alpha[i]>dl0: dalphadt[:,i]=0
+    # for i in range(nz_1):
+    #     if alpha[i]>dl0: dalphadt[:,i]=0
         # if alpha[i]<0: dalphadt[:,i]=0  
     # dalphadt[alpha>dl0]=0
     return dalphadt,drdt

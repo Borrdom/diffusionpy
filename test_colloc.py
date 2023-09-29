@@ -52,7 +52,7 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
     NS=np.polynomial.chebyshev.chebpts1(nP)
     # NS=np.polynomial.legendre.leggauss(nP)[0]
     NS=(NS-NS[0])/(NS[-1]-NS[0])
-    print(NS.tolist())
+    # print(NS.tolist())
     # NS=np.asarray([0,0.1127,0.5,0.8873,1])
     NS=np.linspace(0,1,nP) # equidistant collocation
     n=(nP-1)*nE+1
@@ -70,37 +70,58 @@ def orthogonal_collocation_finite_elements(nP=4,nE=4):
     C=np.zeros((nP,nP))
     D=np.zeros((nP,nP))
     # vec=np.asarray(range(0,nP*2,2))
+    epsilon0=0.4/(nP)*nE*2
+    epsilon1=0.4/(nP)*nE*2
+
+    epsilon0=0.1#*np.sqrt(nP)
+    epsilon1=0.1#*np.sqrt(nP)
     for i in range(nP):
         for j in range(nP):
-            # A[i,j]=NS[i]**j
-            # C[i,j]=j*NS[i]**(j-1) if j>0 else 0
-            # D[i,j]=j*(j-1)*NS[i]**(j-2) if j>1 else 0
+            A[i,j]=NS[i]**j
+            C[i,j]=j*NS[i]**(j-1) if j>0 else 0
+            D[i,j]=j*(j-1)*NS[i]**(j-2) if j>1 else 0
     # for i,vali in enumerate(vec):
     #     for j,valj in enumerate(vec):
     #         A[i,j]=zP[i]**valj
     #         C[i,j]=valj*zP[i]**(valj-1) if j>0 else 0
     #         D[i,j]=valj*(valj-1)*zP[i]**(valj-2) #if j>1 else 0
-            A[i,j]=np.exp(zP[i]*j)
-            C[i,j]=j*np.exp(zP[i]*j)
-            D[i,j]=j**2*np.exp(-zP[i]*j)
+            # A[i,j]=np.exp(zP[i]*j)
+            # C[i,j]=j*np.exp(zP[i]*j)
+            # D[i,j]=j**2*np.exp(-zP[i]*j)
+
+            # epsilon=(epsilon1-epsilon0)*zP[j]+epsilon0
+            # # epsilon=epsilon0
+
+            # A[i,j]=np.exp(-(epsilon*(zP[j]-zP[i]))**2)
+            # C[i,j]=2*epsilon**2*(zP[j]-zP[i])*np.exp(-(epsilon*(zP[j]-zP[i]))**2)
+
+    # Q,R=np.linalg.qr(A)
+
     Ainv=np.linalg.inv(A)
+    # Ainv=Q.T@np.linalg.inv(R)
+    print(np.linalg.det(A))
     S=C@Ainv
     T=D@Ainv
 
-    return z,T,S
+    return z,T,S,Ainv,A
 
 import matplotlib.pyplot as plt
 nshow=4
 fig,ax=plt.subplots(1,nshow)
 
-
+S_=1
 for w in range(nshow):
     nP=2
-    nE=1+w
+    nE=5+w
     n=(nP-1)*nE+1
     # z,T,S=orthogonal_collocation(n)
-    z,T,S=orthogonal_collocation_finite_elements(nP,nE) 
-    print(S.tolist())
+    z,T,S,Ainv,A=orthogonal_collocation_finite_elements(nP,nE)
+    print(S)
+    # import pandas as pd
+    # S= pd.read_excel("E:/RBF_QR_1D/Stencil_11x11.xlsx",header=None).values
+    # fig1,ax1=plt.subplots()
+    # ax1.matshow(S)
+    # print(S.tolist())
     def fun_(c,dcdz,d2cd2z,Pe,Da):
         f=1/Pe*d2cd2z-dcdz-Da*c**2
         return f 
@@ -114,16 +135,18 @@ for w in range(nshow):
             P0=i*(nP-1)
             P8=(i+1)*(nP-1)+1
             cP=c[P0:P8]
-            
+ 
             dcdz=(S@cP)
+            if i==0: dcdz[0]=Pe*(c[0]-1) # RB1 
+            if i==(nE-1): dcdz[-1]=0# RB2   
+            if i==0: dcdz_=np.zeros_like(cP)
+            # if i>0: dcdz[0]=dcdz_[-1]
             d2cd2z=(S@dcdz)
             # d2cd2z=T@cP
-            if i>0: dcdz[0]=dcdz_[-1]
+
             f[P0:P8]=fun_(cP,dcdz,d2cd2z,Pe,Da)
-            
             # if i>0: f[(nP-1)*i]=dcdz_[-1]-dcdz[0] 
-            if i==0: f[0]=dcdz[0]-Pe*(c[0]-1) # RB1 
-            if i==(nE-1): f[-1]=dcdz[-1]# RB2
+
             dcdz_=dcdz
         return f
     # def fun(c):
@@ -137,7 +160,11 @@ for w in range(nshow):
     #     return f
     c0=np.ones(n)
     c=broyden(fun,c0)
-    
+    S_=S
+    # we=Ainv@c
+    # print(we)
+    # print(Ainv)
+    # print(A)
     
     ax[w].plot(z,c,"o-")
     zE=np.linspace(0,1,nE+1)
