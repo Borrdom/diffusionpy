@@ -7,7 +7,7 @@ except ImportError:
     _has_xloil = False
 else:
     _has_xloil = True
-from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix,Diffusion_MS_iter,correctMB
+from .Stefan_Maxwell_segmental import Diffusion_MS,D_Matrix,Diffusion_MS_iter
 from .crank_and_other import crank,BHX
 from .DasDennisSpacing import DasDennis
 import numpy as np
@@ -274,21 +274,6 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     #                 pars=a[i]
     #     eos = pcsaft(pars)
 
-    def correctMB(dlnai_dlnwi,mobile,nt,wi0):
-        mobiles=np.where(mobile)[0]
-        immobiles=np.where(~mobile)[0]
-        allflux=len(mobile)==np.sum(mobile)
-        wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
-        wi0_mobiles=wi0[mobiles]/np.sum(wi0[mobiles])
-        slc1=np.ix_(np.asarray(range(nt)),mobiles, mobiles) if not allflux else (np.asarray(range(nt)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-        slc2=np.ix_(np.asarray(range(nt)),immobiles, mobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
-        # slc3=np.ix_(np.asarray(range(nt)),mobiles, immobiles) if not allflux else (np.asarray(range(nt)),-1, np.arange(0,nc-1,dtype=np.int64)) 
-        massbalancecorrection1=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,:,None],axis=1) if not allflux else np.sum(dlnai_dlnwi[slc2],axis=1)
-        # massbalancecorrection2=np.sum(dlnai_dlnwi[slc3]*wi0_immobiles[None,None,:],axis=2) if not allflux else np.sum(dlnai_dlnwi[slc3],axis=1)
-        # THFaktor_=dlnai_dlnwi[slc1]-np.hstack((massbalancecorrection1[:,None,:],massbalancecorrection2[:,None,:]))
-        THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection1[:,None,:]
-        # THFaktor_=dlnai_dlnwi[slc1]-massbalancecorrection2[:,:,None]
-        return THFaktor_
     par={"mi":mi,
     "Mi":Mw,
     "si":sigi,
@@ -349,15 +334,7 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
 
             #lnphi=generate(eos.logfugef(xi,T,p,state=state.upper(),v0=1/rho0,Xass0=Xass0)[0]) if 'lnphi' not in vars() else lnphi
             results=add_entry(results,THFaktor.send(None))
-        elif "korr" in entry:
 
-            mobile=np.asarray([True,True,False,False])
-            THFaktorkorr=generate(correctMB(dlnai_dlnxi(T,xi,**par)[None,:,:],mobile,1,xi).flatten()) if 'THFaktorkorr' not in vars() else THFaktorkorr
-            results=add_entry(results,THFaktorkorr.send(None))
-
-        elif "det" in entry:
-            det=generate([np.linalg.det(dlnai_dlnxi(T,xi,**par))]) if 'det' not in vars() else det
-            results=add_entry(results,det.send(None))
         elif "M [" in entry:
             if fractiontype=="x":
                 results=add_entry(results,(xi*Mw).sum())

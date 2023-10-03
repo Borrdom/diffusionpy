@@ -3,11 +3,11 @@ from numba import njit
 import matplotlib.pyplot as plt
 from .FEM_collocation import collocation,collocation_space
 
-def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
+def relaxation_mode(wvinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
 
     Args:
-        rhovinit (array_like): vector of the partial densities of the mobile components
+        wvinit (array_like): vector of the mass fractions of the mobile components
         ode (array_like): ode fuinction which is modified by the function
         EJ (array_like): Elasticity Moduli
         etaJ (array_like): Damper constants
@@ -22,7 +22,7 @@ def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,
     T=298.15
     RV=R*T*1/(M2/1000.)*1/v2
     nJ=len(EJ)
-    _,nz_1=rhovinit.shape
+    _,nz_1=wvinit.shape
     def relaxation_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
         nTH,nz_1=dmuext.shape
@@ -54,7 +54,7 @@ def relaxation_mode(rhovinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,
     sigmaJ0=np.zeros((nz_1,nJ))
     sigmaJB=np.zeros((nJ))
     sigmaJ0[-1,:]=sigmaJB
-    xinit=np.hstack((rhovinit.flatten(),sigmaJ0.flatten()))
+    xinit=np.hstack((wvinit.flatten(),sigmaJ0.flatten()))
     return xinit,relaxation_ode
 
 @njit

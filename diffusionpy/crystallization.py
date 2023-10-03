@@ -9,7 +9,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization
 
     Args:
-        rhovinit (array_like): vector of the partial densities of the mobile components
+        wvinit (array_like): vector of the mass fractions of the mobile components
         ode (array_like): ode fuinction which is modified by the function
         deltaHSL (array_like): Melting Enthalpy
         TSL (array_like): Melting temperature

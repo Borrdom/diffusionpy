@@ -1,8 +1,5 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from scipy.optimize import root,fixed_point
-from scipy.interpolate import interp1d
-# from scipy.special import logsumexp
 from numba import njit,config,prange
 import time
 from .FEM_collocation import collocation,collocation_space
@@ -143,7 +140,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
             massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=2)
             THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
-            print(np.linalg.det(THFaktor))
+            # print(np.linalg.det(THFaktor))
 
 
     xinit=wvinit.flatten()
@@ -172,14 +169,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         from .liquidseperation import liquidseperation_mode
         kappaii=kwargs["kappaii"]/dz**2
         xinit,ode=liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
-        # THFaktor=lngi_tz
-        # THFaktor= lambda t: (np.ones((nz,nTH,nTH))-alpha)*THFaktor_(t)
-    #_____________________________________
-    # if "lngi_tz" in kwargs:
-    #     lngi_tz=interp1d(t,kwargs["lngi_tz"],axis=0,bounds_error=False,kind="quadratic")
-    #     THFaktor=lngi_tz
-
-    #interp1d(tint,kwargs['witB']*rho,axis=0,bounds_error=False,fill_value=(kwargs['witB'][0]*rho,kwargs['witB'][-1]*rho))
 
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
@@ -271,7 +260,8 @@ def wegstein(fun,x):
         if e<tol: 
             return xx 
         a = df/dx
-        q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
+        # q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
+        q=0 # resort to fixed point iteration as it works best for this case
         x=xx
         xx = q * xx + (1-q) * ff
         # xx[:,-1]=1-np.sum(xx[:,:-1],axis=1)
@@ -287,65 +277,19 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
         diffusionpy.Diffusion_MS
     
     """
-    nt=len(t)
-    nc=len(wi0)
-    
-    # if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
-    # dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
-    # wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
     _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
     _,_,nz_1=wt_old.shape
-    def wt_obj(wt_old):
-        wtz=wt_old.reshape((nt,nc,nz_1))
-        # wtz=(wtz[:,:,:1]+wtz[:,:,:-1])/2
-        dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in wtz])
-        residual=(wt-Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)).flatten()/nt
-        return residual
     def wt_fix(wtz):
-        # wtz=(wtz[:,:,:1]+wtz[:,:,:-1])/2
         wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
-        # if np.any(wtz<0): print("Hold Up! Wait a Minute")
         print("------------- Start PC-SAFT modeling ----------------")
         start=time.time_ns()
-        # dlnai_dlnwi=np.asarray([[dlnai_dlnwi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz])
         dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
         end=time.time_ns()
         print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,full_output=True,**kwargs)[1]
-    method=kwargs["method"] if "method" in kwargs  else "df-sane"
-    if method=="df-sane":
-        wtopt=root(wt_obj,wt_old.flatten(),method=method,options={"disp":True,"maxfev":30,"fatol":1E-6})["x"].reshape((nt,nc)) 
-    elif method=="wegstein":
-        wtopt=wegstein(wt_fix,wt_old)
-    else:
-        for i in range(kwargs["maxit"]):
-            wtopt=wt_fix(wt_old)
-            wt_old=wtopt
-    if full_output:
-        # dlnai_dlnwiopt=np.asarray([[dlnai_dlnwi_fun(col) for col in row.T] for row in (wtopt[:,:,:1]+wtopt[:,:,:-1])/2])
-        # wtopt=(wtopt[:,:,:1]+wtopt[:,:,:-1])/2
-        wtopt=np.ascontiguousarray(np.swapaxes(wtopt,1,2))
-        dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
-    else:
-        return np.average(wtopt,axis=2)
+    wtopt=wegstein(wt_fix,wt_old)
+    wtopt=np.ascontiguousarray(np.swapaxes(wtopt,1,2))
+    dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
+    return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,swelling=swelling,**kwargs)
 
-def convert(x,M,axis=0):
-    """convert fractions. e.g mass fractions into mole fractions"""
-    y=np.empty(x.shape,M.dtype)
-    np.copyto(y.T,M)
-    return x*y/np.sum(x*y,axis=axis)
 
-def correctMB(dlnai_dlnwi,mobile,nt,wi0):
-    mobiles=np.where(mobile)[0]
-    immobiles=np.where(~mobile)[0]
-    allflux=len(mobile)==np.sum(mobile)
-    wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
-    wi0_mobiles=wi0[mobiles]/np.sum(wi0[mobiles])
-    slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.arange(0,nc-1,dtype=np.int64), np.arange(0,nc-1,dtype=np.int64)) 
-    slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles) #if not allflux else np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),np.asarray([nc-1]), np.arange(0,nc-1,dtype=np.int64)) 
-    massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) #if not allflux else np.sum(dlnai_dlnwi[slc2],axis=2)
-    THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
-    print(np.linalg.det(THFaktor))
-
-    return THFaktor
