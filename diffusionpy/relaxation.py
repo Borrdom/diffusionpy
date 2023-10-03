@@ -3,7 +3,7 @@ from numba import njit
 import matplotlib.pyplot as plt
 from .FEM_collocation import collocation,collocation_space
 
-def relaxation_mode(wvinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
+def relaxation_mode(wvinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation 
 
     Args:
@@ -23,7 +23,7 @@ def relaxation_mode(wvinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,im
     RV=R*T*1/(M2/1000.)*1/v2
     nJ=len(EJ)
     _,nz_1=wvinit.shape
-    def relaxation_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
+    def relaxation_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
         nTH,nz_1=dmuext.shape
         nJ=len(EJ)
@@ -43,8 +43,9 @@ def relaxation_mode(wvinit,ode,EJ, etaJ, exponent,M2,v2,tint,THFaktor,mobiles,im
         wv=np.ascontiguousarray(wv)
         dmuext=MDF(sigmaJ,EJ,RV)
         #float64, array(float64, 1d, C), array(float64, 1d, C), pyobject, array(int64, 1d, C), array(int64, 1d, C), array(float64, 1d, C), array(float64, 2d, F), bool, bool, float64, array(float64, 1d, C), array(float64, 2d, C), array(float64, 2d, C), array(float64, 1d, C)
-        dwvdt=np.reshape(ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB),(nTH,nz_1))
+        dwvdt=np.reshape(ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB),(nTH,nz_1))
         omega=(np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0)))**-1
+        rho=np.average(1/v2)
         drhovdt=dwvdt*rho/omega-np.sum(dwvdt/np.sum(wi0[immobiles]),axis=0)*wv
         dsigmaJdt=stress(etaWL,EJ,sigmaJ,drhovdt,v2)
         # drhovdt[:,-1]=drhovdtB

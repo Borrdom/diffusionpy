@@ -2,8 +2,8 @@ import numpy as np
 from numba import njit
 from .FEM_collocation import collocation,collocation_space
 
-def liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
-    def liquidseperatiopn_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
+def liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
+    def liquidseperatiopn_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """solves the diffusion model coupled with the density gradient theory"""
         nTH,nz_1=dmuext.shape
         wv=np.zeros((nTH,nz_1))
@@ -14,7 +14,7 @@ def liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,
             wv[j,-1]=np.interp(t,tint,wiB[:,j])
         wv=np.ascontiguousarray(wv)
         if not np.allclose(THFaktor[0,0,:,:],np.eye(nTH)): dmuext=DGT(wv,kappaii) 
-        return ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
+        return ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
     return wvinit.flatten(),liquidseperatiopn_ode
 
 @njit

@@ -27,7 +27,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
     dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
-    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
+    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
         nTH,nz_1=dmuext.shape
         wv=np.zeros((nTH,nz_1))
@@ -63,7 +63,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         porosity=(1-alpha*omega)[None,:,None,None]
         eta=1.5
 
-        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
+        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
 
         dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
 
@@ -174,7 +174,7 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     kB=R/NA
     C0=rho/M*NA 
     temp=298.15
-    lnai=lngi_fun(0)+np.log(wi8)
+    lnai=lngi_fun(wi8)+np.log(wi8)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     dmu_sla0=lnai[crystallizes]-lnaiSLE
     r0=2*sigma/(C0*dmu_sla0*kB*temp)

@@ -32,7 +32,7 @@ mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=N
     kwargs={}
     if witB is not None: kwargs.update({"witB":witB})
     if full_output: 
-        _,wtz,zvec,Lt=Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,None,swelling,**kwargs)
+        _,wtz,zvec,Lt=Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,None,**kwargs)
         nz=len(zvec)
         zt=Lt[None,:]*zvec[:,None]/L
         res=zt.flatten()[::-1,None]
@@ -40,7 +40,7 @@ mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=N
             res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
         return res
     else: 
-        return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,None,swelling,**kwargs)
+        return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,None,**kwargs)
 @xlo.func
 def Diffusion_MS_iter_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
 mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=None,T:float=298.15,p:float=1E5,
@@ -74,7 +74,7 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
     kwargs.update({"method":"fixedpoint"})
     kwargs.update({"maxit":7})
     if full_output: 
-        _,wtz,zvec,Lt=Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,swelling,dlnai_dlnwi_fun,**kwargs)
+        _,wtz,zvec,Lt=Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,True,dlnai_dlnwi_fun,**kwargs)
         nz=len(zvec)
         zt=Lt[None,:]*zvec[:,None]/L
         res=zt.flatten()[::-1,None]
@@ -82,7 +82,7 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
             res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
         return res
     else: 
-        return Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,swelling,dlnai_dlnwi_fun,**kwargs)
+        return Diffusion_MS_iter(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),Mi.copy(),mobile,False,dlnai_dlnwi_fun,**kwargs)
 
 
 @xlo.func
