@@ -12,21 +12,18 @@ from .FEM_collocation import collocation,collocation_space
 @njit(['f8[::1](f8, f8[:,::1],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, b1, f8, f8[::1],f8[:,:],f8[:,::1])'],cache=True)
 def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB):
     """change in the partial density with time"""
-    def vanishing_check(drhovdt,rhov):
-        s1,s2=rhov.shape
+    def vanishing_check(dwvdt,wv):
+        s1,s2=wv.shape
         for i in range(s1):
             for j in range(s2):
-                if (drhovdt[i,j]<0 and rhov[i,j]<1E-4 ): drhovdt[i,j]=0 
-            return drhovdt
+                if (dwvdt[i,j]<0 and wv[i,j]<0 ): dwvdt[i,j]=0
+                if (dwvdt[i,j]>0 and wv[i,j]>1 ): dwvdt[i,j]=0  
+            return dwvdt
     def np_linalg_solve(A,b):
         """solve a Batch of linear system of equations"""
         ret = np.zeros_like(b)
         for i in range(b.shape[1]):
-            # Q,R=np.linalg.qr(A[:,:,i])
-            # y=np.ascontiguousarray(Q.T)@np.ascontiguousarray(b[:,i])
-            # ret[:, i] = np.linalg.solve(R, y)
             ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
-            # print(np.linalg.cond(A[:,:,i]))
         return ret
     def BIJ_Matrix(D,wi,mobiles,allflux):
         """create the friction matrix which needs to be invertable"""
@@ -56,55 +53,32 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
     for j in range(nc):
         wi[j,-1]=np.interp(t,tint,wiB[:,j])
     wv[:,-1]=wi[mobiles,-1]
-    
-    
     dwv=np.zeros((nTH,nz_1))
     for j in range(nTH):
         dwv[j,:]=collocation(wv[j,:],nz_1,True)
     dwv[:,0]=0
     dlnwv=dwv/wv
-
-    # ddwv=np.zeros((nTH,nz_1))
-    # for j in range(nTH):
-    #     ddwv[j,:]=collocation(dwv[j,:],nz_1,False)
-    #     ddwv[j,-1]=0
-    # dddwv=np.zeros((nTH,nz_1))
-    
-    # for j in range(nTH):
-    #     dddwv[j,:]=collocation(ddwv[j,:],nz_1,True)
-
     THFaktor_=np.zeros((nz_1,nTH,nTH))
     for i in range(nz_1):
         for j in range(nTH):
             for k in range(nTH):
                 THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
     dlnav=np.zeros_like(dlnwv)
-    # kbin=0.0001
     for i in range(nz_1): 
-        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
-        # if np.linalg.det(THFaktor_[i,...])<0.001: dlnav[:,i]=dlnav[:,i]+ dddwv[:,i]*kbin
-    # if THFaktor_[0,0,0]!=1: dlnav[-1,:]=-np.sum(dlnav[:-1,:]*wv[:-1,:],axis=0)/wv[-1,:] 
-    
+        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
     B=BIJ_Matrix(D,wi,mobiles,allflux)
     dmuv=dlnav+dmuext
     omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-    # Xv=np.sum(wv,axis=0)/(1-np.sum(wv,axis=0))
-    # omega=1/(1+Xv) if not allflux else np.ones(nz_1)
     dv=rho*wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
     jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
-    # jv[-1,-1]+=10
     djv=np.zeros((nTH,nz_1))
     for j in range(nTH):
         djv[j,:]=collocation(jv[j,:],nz_1,False)    
-    # djv[:,-1]=0
     dwvdt=np.zeros_like(djv)
     for j in range(nTH):
         dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:]
         dwvdt[j,-1]=-0
-
-    # if np.sum(-jv*dlnav)<0: print("Entropy decreases")
-        # else: print("Entropy increases")
-    return  (dwvdt*omega/rho).flatten()#vanishing_check(djv,rhov).flatten()
+    return  vanishing_check((dwvdt*omega/rho),wv).flatten()#vanishing_check(djv,rhov).flatten()
 
 
 def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,swelling=False,**kwargs):
@@ -194,6 +168,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         lngi_tz=interp1d(tint,kwargs["lngi_tz"],axis=0,bounds_error=False)
         xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
         return_alpha=True
+    if "kappaii" in kwargs:
+        from .liquidseperation import liquidseperation_mode
+        kappaii=kwargs["kappaii"]/dz**2
+        xinit,ode=liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,wiB)
         # THFaktor=lngi_tz
         # THFaktor= lambda t: (np.ones((nz,nTH,nTH))-alpha)*THFaktor_(t)
     #_____________________________________
@@ -315,7 +293,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,swelling=Fals
     # if dlnai_dlnwi_fun is None : Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output,None,swelling,**kwargs)
     # dlnai_dlnwi=np.stack([dlnai_dlnwi_fun(wi8*0.5+wi0*0.5)]*nt)
     # wt_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,swelling=swelling,**kwargs)
-    _,wt_old,_,_=Diffusion_MS(t,L,Dvec/100,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
+    _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,swelling=swelling,**kwargs,full_output=True)
     _,_,nz_1=wt_old.shape
     def wt_obj(wt_old):
         wtz=wt_old.reshape((nt,nc,nz_1))
