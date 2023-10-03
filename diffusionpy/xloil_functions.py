@@ -313,6 +313,7 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
     if fractiontype=="w": Mi=Mw
     if fractiontype=="x": Mi=None
     Mw/np.sum(xi*Mw)
+    ri=Mw/np.min(Mw)
     for entry in header[0]:
         if "Density" in entry:
             if fractiontype=="x":
@@ -355,7 +356,7 @@ def PC_SAFT_NpT2(pure,kij,header,inputs):
             results=add_entry(results,THFaktorkorr.send(None))
 
         elif "det" in entry:
-            det=generate([np.linalg.det(dlnai_dlnxi(T,xi,**par,idx=-1))]) if 'det' not in vars() else det
+            det=generate([np.linalg.det(dlnai_dlnxi(T,xi,**par))]) if 'det' not in vars() else det
             results=add_entry(results,det.send(None))
         elif "M [" in entry:
             if fractiontype=="x":

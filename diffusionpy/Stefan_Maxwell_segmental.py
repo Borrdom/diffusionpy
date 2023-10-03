@@ -64,12 +64,14 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
     dwv[:,0]=0
     dlnwv=dwv/wv
 
-    # ddlnwv=np.zeros((nTH,nz_1))
+    # ddwv=np.zeros((nTH,nz_1))
     # for j in range(nTH):
-    #     ddlnwv[j,:]=collocation(dlnwv[j,:],nz_1,True)
-    # dddlnwv=np.zeros((nTH,nz_1))
+    #     ddwv[j,:]=collocation(dwv[j,:],nz_1,False)
+    #     ddwv[j,-1]=0
+    # dddwv=np.zeros((nTH,nz_1))
+    
     # for j in range(nTH):
-    #     dddlnwv[j,:]=collocation(ddlnwv[j,:],nz_1,True)
+    #     dddwv[j,:]=collocation(ddwv[j,:],nz_1,True)
 
     THFaktor_=np.zeros((nz_1,nTH,nTH))
     for i in range(nz_1):
@@ -77,10 +79,10 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
             for k in range(nTH):
                 THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
     dlnav=np.zeros_like(dlnwv)
-    # kbin=0.1
+    # kbin=0.0001
     for i in range(nz_1): 
-        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
-        # if np.linalg.det(THFaktor_[i,...])>0.001: dlnav[:,i]=dlnav[:,i]- dddlnwv*kbin
+        dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+        # if np.linalg.det(THFaktor_[i,...])<0.001: dlnav[:,i]=dlnav[:,i]+ dddwv[:,i]*kbin
     # if THFaktor_[0,0,0]!=1: dlnav[-1,:]=-np.sum(dlnav[:-1,:]*wv[:-1,:],axis=0)/wv[-1,:] 
     
     B=BIJ_Matrix(D,wi,mobiles,allflux)
@@ -90,10 +92,11 @@ def drhodt(t,wv,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dm
     # omega=1/(1+Xv) if not allflux else np.ones(nz_1)
     dv=rho*wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
     jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
+    # jv[-1,-1]+=10
     djv=np.zeros((nTH,nz_1))
     for j in range(nTH):
         djv[j,:]=collocation(jv[j,:],nz_1,False)    
-    djv[:,-1]=0
+    # djv[:,-1]=0
     dwvdt=np.zeros_like(djv)
     for j in range(nTH):
         dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:]
