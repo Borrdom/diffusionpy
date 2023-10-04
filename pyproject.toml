@@ -11,10 +11,15 @@ license = {text = "BSD-3-Clause"}
 
 dependencies = [
     "numpy",
+    "CPython",
+    "pyodbc",
+    "textdistance",
     "scipy",
     "pandas",
     "matplotlib",
-    "mpltern"]
+    "mpltern",
+    "xloil",
+    "numba"]
 
 [build-system]
 requires = [

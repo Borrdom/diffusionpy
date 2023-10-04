@@ -37,6 +37,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         # wv=np.fmin(np.fmax(wv,1E-300),1.)
         alpha=np.fmin(np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],1E-29),dl0)
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
+        
         wv=np.ascontiguousarray(wv)
         for i in range(nTH):
             wv[i,-1]=np.interp(t,tint,wiB[:,mobiles[i]])
