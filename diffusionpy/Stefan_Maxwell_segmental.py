@@ -68,7 +68,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             nc,nz_1=wi.shape
             B=np.zeros((nc,nc,nz_1))
             for i in range(nc):
-                Din=wi[-1,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz_1)
+                Din=wi[i,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz_1)
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
