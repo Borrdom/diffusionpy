@@ -50,7 +50,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[::1],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """change in the weight fraction with time"""
-        def vanishing_check(dwvdt,wv):
+        def vanishing_check(dwvdt,wv):# Realitätscheck gegen neg. Konz.
             s1,s2=wv.shape
             for i in range(s1):
                 for j in range(s2):
@@ -236,26 +236,26 @@ def D_Matrix(Dvec,nc):
                [1.e-13, 0.e+00, 3.e-13],
                [2.e-13, 3.e-13, 0.e+00]])
     """
-    nd=(nc-1)*nc//2 
-    if len(Dvec)!=nd: 
-        raise Exception("Wrong length of ``Dvec``. Provide array with ``(nc-1)*nc/2`` entries")
+    nd=(nc-1)*nc//2 #Anzahl der Diffusionskoeffizienten
+    if len(Dvec)!=nd: #Länge des Vektors der Diff.Koeffs. muss mit Anzahl der Koeffs- übereinstimmen
+        raise Exception("Wrong length of ``Dvec``. Provide array with ``(nc-1)*nc/2`` entries") #Sonst wird ein Fehler ausgegeben
     else:
-        D=np.zeros((nc,nc))
-        D[np.triu_indices_from(D,k=1)]=Dvec
-        D=D.T
-        D[np.triu_indices_from(D,k=1)]=Dvec
-    return D
+        D=np.zeros((nc,nc)) # 0-Matrix der Dimension nc,nc wird erstellt
+        D[np.triu_indices_from(D,k=1)]=Dvec #Dreiecksmatrix mit Werten aus Dvec wird erstellt
+        D=D.T # D wird transformiert
+        D[np.triu_indices_from(D,k=1)]=Dvec #Dreiecksmatrix mit Werten aus Dvec wird erstellt
+    return D # D wird zurückgegeben
 
 def wegstein(fun,x):
     """Solving via wegsteins method"""
-    tol=1E-6
-    maxiter=10
+    tol=1E-6 #Toleranzbereich
+    maxiter=10 #Anzahl max. Iterationen
     f = fun(x)
     xx=f    
     dx = xx - x
     ff = fun(xx)
     df=ff-f
-    for i in range(maxiter):
+    for i in range(maxiter): #Iteration von 0 bis maxiter
         e=np.linalg.norm(dx.flatten(),2)/np.prod(x.shape)
         print(f"iter {i+1}: ||F|| = {e}")
         if e<tol: 
