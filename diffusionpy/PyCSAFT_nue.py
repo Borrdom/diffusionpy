@@ -230,9 +230,9 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     return vmol
 
 #@njit(cache=True)
-@njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
-'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
-def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
+@njit(['Tuple((f8[::1], f8[::1], f8[::1],f8[::1]))(f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+'Tuple((c16[::1], c16[::1], c16[::1],c16[::1]))(f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
+def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Calculate the log of the activity coefficients via the SAFT-SAC approximation
 
     Args:
@@ -268,10 +268,16 @@ def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.asarray([[0.]]),np.asarray([[0.]]))[0] for i,val in enumerate(etapure)])
     _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
-    lngi_p=vpfrac*(Z1-1) #if "NETGP" not in kwargs else 0
+    lngi_p=-vpfrac*(Z1-1) #if "NETGP" not in kwargs else 0
     #with np.errstate(divide='ignore',invalid='ignore'):
     lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
-    return lngi_id+lngi_res-lngi_p+lngi_wx
+    return lngi_id,lngi_res,lngi_p,lngi_wx
+
+@njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
+def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
+    lngi_id,lngi_res,lngi_p,lngi_wx=SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
+    return lngi_id+lngi_res+lngi_p+lngi_wx
 
 #@njit(cache=True)
 def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.asarray([[0.]]),**kwargs):
