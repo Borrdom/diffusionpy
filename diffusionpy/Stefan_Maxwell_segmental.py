@@ -63,20 +63,17 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             for i in range(b.shape[1]):
                 ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
             return ret
-        def BIJ_Matrix(D,wi,mobiles,allflux):
+        def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
             B=np.zeros((nc,nc,nz_1))
             for i in range(nc):
-                Din=wi[i,:]/D[i,-1] if (i+1)!=nc else np.zeros(nz_1)
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
                         Dij=-wi[i,:]/D[i,j] 
-                        if allflux: Dij+=Din
                         B[i,j,:]=Dij
                         Dii+=wi[j,:]/D[i,j]
-                if allflux: Dii+=Din
                 B[i,i,:]=Dii
             return B[mobiles,:,:][:,mobiles,:] 
         nTH,nz_1=dmuext.shape
@@ -104,19 +101,25 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         dlnav=np.zeros_like(dlnwv)
         for i in range(nz_1): 
             dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
-        B=BIJ_Matrix(D,wi,mobiles,allflux)
+        B=BIJ_Matrix(D,wi,mobiles)
+        if allflux:
+            for i in range(nz_1): 
+                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],wv[:,i])
         dmuv=dlnav+dmuext
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
         dv=wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
+        if allflux: jv[-1,:]=-np.sum(jv[:-1,:],axis=0)
         djv=np.zeros((nTH,nz_1))
+        # print(np.sum(jv,axis=0))
         for j in range(nTH):
             djv[j,:]=collocation(jv[j,:],nz_1,False)    
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
-            dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:]
+            dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] #if not allflux else djv[j,:]
             dwvdt[j,-1]=-0
-        return  vanishing_check((dwvdt*omega),wv).flatten()#vanishing_check(djv,rhov).flatten()
+        # return  vanishing_check((dwvdt*omega),wv).flatten()#vanishing_check(djv,rhov).flatten()
+        return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
     print("------------- Initialization and postprocessing ----------------")
@@ -130,9 +133,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     nf=int(np.sum(mobile))
     nt=len(tint)
     allflux=nc==nf
-    nTH=nf if not allflux else nc-1
-    mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([nc-1],dtype=np.int64)
+    nTH=nf #if not allflux else nc-1
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     wiinit=(wi0*np.ones((nz+1,nc))).T
     wiinit[:,-1]=wi8
