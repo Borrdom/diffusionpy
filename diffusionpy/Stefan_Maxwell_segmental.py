@@ -63,6 +63,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             for i in range(b.shape[1]):
                 ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
             return ret
+        refsegment=np.argmin(Mi)
+        ri= Mi/Mi[refsegment]
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
@@ -71,16 +73,13 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
-                        Dij=-wi[i,:]/D[i,j] 
+                        Dij=-ri[j]*wi[i,:]/D[i,j] 
                         B[i,j,:]=Dij
-                        Dii+=wi[j,:]/D[i,j]
+                        Dii+=ri[i]*wi[j,:]/D[i,j]
                 B[i,i,:]=Dii
             return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
         wv=np.reshape(np.ascontiguousarray(x),(nTH,nz_1))    
-        refsegment=np.argmin(Mi)
-        ri= Mi[mobiles]/Mi[refsegment]
-        
         nc=len(Mi)
         wi=np.zeros((nc,nz_1))
         wi[mobiles,:]=wv
@@ -89,7 +88,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         for j in range(nc):
             wi[j,-1]=np.interp(t,tint,wiB[:,j])
         wv[:,-1]=wi[mobiles,-1]
-        r=np.sum(wv/np.atleast_2d(ri).T,axis=0)**-1
         dwv=np.zeros((nTH,nz_1))
         for j in range(nTH):
             dwv[j,:]=collocation(wv[j,:],nz_1,True)
@@ -107,8 +105,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         
         if allflux:
             for i in range(nz_1):
-                B[:,:,i]=B[:,:,i]*np.atleast_2d(ri)+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
-                
+                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dlnav+dmuext
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
         dv=wv*dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega              
@@ -181,7 +178,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    if not sol["success"]: raise Exception(sol["message"])# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
+    if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
     # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     x_sol=sol["y"]
     # rhoend=x_sol[:(nz+1)*nTH,-1]
