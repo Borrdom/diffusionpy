@@ -61,25 +61,29 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             """solve a Batch of linear system of equations"""
             ret = np.zeros_like(b)
             for i in range(b.shape[1]):
-                ret[:, i] = np.linalg.solve(A[:,:,i], b[:,i])
+                ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
             return ret
+        refsegment=np.argmin(Mi)
+        ri= Mi[mobiles]/Mi[refsegment]
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
             B=np.zeros((nc,nc,nz_1))
             for i in range(nc):
+                Din=wi[i,:]/D[i,-1] #if (i+1)!=nc else np.zeros(nz_1)
+                # Din=wi[i,:]*(np.sum(wi0[immobiles]/np.sum(wi0[immobiles])/D[i,immobiles],axis=0))
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
                         Dij=-wi[i,:]/D[i,j] 
+                        if allflux: Dij+=Din
                         B[i,j,:]=Dij
                         Dii+=wi[j,:]/D[i,j]
+                if allflux: Dii+=Din
                 B[i,i,:]=Dii
-            return B[mobiles,:,:][:,mobiles,:] 
+            return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
         wv=np.reshape(np.ascontiguousarray(x),(nTH,nz_1))    
-        refsegment=np.argmin(Mi)
-        ri= Mi[mobiles]/Mi[refsegment]
         nc=len(Mi)
         wi=np.zeros((nc,nz_1))
         wi[mobiles,:]=wv
@@ -102,23 +106,25 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         for i in range(nz_1): 
             dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
-        if allflux:
-            for i in range(nz_1): 
-                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],wv[:,i])
+
+        # if allflux:
+        #     for i in range(nz_1):
+        #         B[:,:,i]=B[:,:,i]+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dlnav+dmuext
-        omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        dv=wv*dmuv/np.atleast_2d(ri).T*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
+        # omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
+        omega=(1-np.sum(wv,axis=0))/np.sum(wi0[immobiles],axis=0) if not allflux else np.ones(nz_1)
+        dv=wv*dmuv*omega/np.atleast_2d(ri).T #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
+        # if THFaktor[0,0,0,0]!=1 and allflux:
+        #     for i in range(nz_1): 
+        #          dv[-1,i]=-np.sum(dv[:-1,i])          
+        # print(wv)    
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
-        if allflux: jv[-1,:]=-np.sum(jv[:-1,:],axis=0)
         djv=np.zeros((nTH,nz_1))
-        # print(np.sum(jv,axis=0))
         for j in range(nTH):
             djv[j,:]=collocation(jv[j,:],nz_1,False)    
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
-            dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] #if not allflux else djv[j,:]
-            dwvdt[j,-1]=-0
-        # return  vanishing_check((dwvdt*omega),wv).flatten()#vanishing_check(djv,rhov).flatten()
+            dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -133,9 +139,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     nf=int(np.sum(mobile))
     nt=len(tint)
     allflux=nc==nf
-    nTH=nf #if not allflux else nc-1
-    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
+    nTH=nf if not allflux else nc-1
+    mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([nc-1],dtype=np.int64)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     wiinit=(wi0*np.ones((nz+1,nc))).T
     wiinit[:,-1]=wi8
@@ -178,10 +184,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     start=time.time_ns()
     # sol=nbkode.BDF5(ode,tint[0],xinit,params=[tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB]).run(tint)
     # sol=nbrk_ode(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB),rk_method=0,t_eval=tint)#rtol=1E-2,atol=1E-3)
-    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB),method="Radau",t_eval=tint)#rtol=1E-2,atol=1E-3)
+    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    if not sol["success"]: raise Exception(sol["message"])# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
+    if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
     # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
     x_sol=sol["y"]
     # rhoend=x_sol[:(nz+1)*nTH,-1]
