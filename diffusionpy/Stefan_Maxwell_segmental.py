@@ -64,22 +64,18 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
             return ret
         refsegment=np.argmin(Mi)
-        ri= Mi[mobiles]/Mi[refsegment]
+        ri= Mi/Mi[refsegment]
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
             B=np.zeros((nc,nc,nz_1))
             for i in range(nc):
-                Din=wi[i,:]/D[i,-1] #if (i+1)!=nc else np.zeros(nz_1)
-                # Din=wi[i,:]*(np.sum(wi0[immobiles]/np.sum(wi0[immobiles])/D[i,immobiles],axis=0))
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
-                        Dij=-wi[i,:]/D[i,j] 
-                        if allflux: Dij+=Din
+                        Dij=-ri[j]*wi[i,:]/D[i,j] 
                         B[i,j,:]=Dij
-                        Dii+=wi[j,:]/D[i,j]
-                if allflux: Dii+=Din
+                        Dii+=ri[i]*wi[j,:]/D[i,j]
                 B[i,i,:]=Dii
             return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
@@ -106,18 +102,13 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         for i in range(nz_1): 
             dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
-
-        # if allflux:
-        #     for i in range(nz_1):
-        #         B[:,:,i]=B[:,:,i]+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
+        
+        if allflux:
+            for i in range(nz_1):
+                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dlnav+dmuext
-        # omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        omega=(1-np.sum(wv,axis=0))/np.sum(wi0[immobiles],axis=0) if not allflux else np.ones(nz_1)
-        dv=wv*dmuv*omega/np.atleast_2d(ri).T #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
-        # if THFaktor[0,0,0,0]!=1 and allflux:
-        #     for i in range(nz_1): 
-        #          dv[-1,i]=-np.sum(dv[:-1,i])          
-        # print(wv)    
+        omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
+        dv=wv*dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega              
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
         djv=np.zeros((nTH,nz_1))
         for j in range(nTH):
@@ -139,9 +130,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     nf=int(np.sum(mobile))
     nt=len(tint)
     allflux=nc==nf
-    nTH=nf if not allflux else nc-1
-    mobiles=np.where(mobile)[0] if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] if not allflux else np.asarray([nc-1],dtype=np.int64)
+    nTH=nf #if not allflux else nc-1
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     wiinit=(wi0*np.ones((nz+1,nc))).T
     wiinit[:,-1]=wi8
