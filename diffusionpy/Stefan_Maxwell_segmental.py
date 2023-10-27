@@ -140,13 +140,17 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     #Construct TH Factor
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
+        if len(dlnai_dlnwi.shape)==2:
+            dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nc,nc))
         if len(dlnai_dlnwi.shape)==3:
-            dlnai_dlnwi=np.swapaxes(np.asarray([dlnai_dlnwi]*(nz+1)),0,1)
+            dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nc,nc))
         if len(dlnai_dlnwi.shape)==4:
             slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) 
             slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles)
             massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) 
             THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
+            # THFaktorave=np.average(np.average(THFaktor,axis=0),axis=0)
+            # THFaktor=THFaktorave[None,None,:,:]*np.ones((nt,nz+1,nTH,nTH))
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
     wiB=kwargs['witB'] if "witB" in kwargs else wi8[None,:]*np.ones((nt,nc))
@@ -281,8 +285,10 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_f
     _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
     _,_,nz_1=wt_old.shape
     def wt_fix(wtz):
-        wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
+        
+        
         print("------------- Start PC-SAFT modeling ----------------")
+        wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
         start=time.time_ns()
         dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
         end=time.time_ns()
