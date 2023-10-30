@@ -100,7 +100,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
         dlnav=np.zeros_like(dlnwv)
         for i in range(nz_1): 
-            dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+            dlnav[:,i]=THFaktor_[i,:,:]@dlnwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
         
         if allflux:
@@ -110,12 +110,15 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
         dv=wv*dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega              
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
+        jv[:,0]=0.
         djv=np.zeros((nTH,nz_1))
         for j in range(nTH):
             djv[j,:]=collocation(jv[j,:],nz_1,False)    
+        djv[:,-1]=0.
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
             dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
+        # print(dwvdt)
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -249,6 +252,48 @@ def D_Matrix(Dvec,nc):
         D=D.T # D wird transformiert
         D[np.triu_indices_from(D,k=1)]=Dvec #Dreiecksmatrix mit Werten aus Dvec wird erstellt
     return D # D wird zurückgegeben
+
+
+def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,ri,realtoideal=False):
+    nc=wi0.shape[0]
+    nTH=int(np.sum(mobile))
+    mobiles=np.where(mobile)[0] 
+    immobiles=np.where(~mobile)[0] 
+    wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
+    slc1=np.ix_(mobiles, mobiles) 
+    slc2=np.ix_(immobiles, mobiles)
+    massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[:,None],axis=0) 
+    THFaktor=(dlnai_dlnwi[slc1]-massbalancecorrection[None,:]).T
+    if realtoideal: THFaktor=np.linalg.inv(THFaktor)
+    def BIJ(D,wi,mobiles):
+        nc=wi.shape[0]
+        B=np.zeros((nc,nc))
+        for i in range(nc):
+            Dii=0
+            for j in range(nc):
+                if j!=i:
+                    Dij=-ri[j]*wi[i]/D[i,j] 
+                    B[i,j]=Dij
+                    Dii+=ri[i]*wi[j]/D[i,j]
+            B[i,i]=Dii
+        return B[mobiles,:][:,mobiles]
+    D=D_Matrix(Dvec,nc)
+    C=BIJ(D,wave,mobiles)
+    B=THFaktor@C
+    def Bopt(Dsoll):
+        D=D_Matrix(Dsoll,nc)
+        xist=BIJ(D,wave,mobiles).flatten()
+        xsoll=B.flatten()
+        return np.sum((1-xist/xsoll)**2)
+    from scipy.optimize import minimize
+    opt=minimize(Bopt,Dvec,method="Nelder-Mead")
+    print(opt)
+    print(np.linalg.det(THFaktor))
+    DMS=opt["x"]
+    DMS[DMS<0]=1E-5
+    return DMS
+
+
 
 def wegstein(fun,x):
     """Solving via wegsteins method"""
