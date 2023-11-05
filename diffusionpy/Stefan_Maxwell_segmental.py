@@ -5,7 +5,7 @@ from scipy.optimize import root
 from numba import njit,config,prange
 import time
 from .FEM_collocation import collocation,collocation_space
-
+from .PyCSAFT_nue import dlnai_dlnxi_loop,dlnai_dlnxi
 # config.DISABLE_JIT = True
 
 
@@ -51,21 +51,12 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[::1],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """change in the weight fraction with time"""
-        def vanishing_check(dwvdt,wv):# Realitätscheck gegen neg. Konz.
-            s1,s2=wv.shape
-            for i in range(s1):
-                for j in range(s2):
-                    if (dwvdt[i,j]<0 and wv[i,j]<0 ): dwvdt[i,j]=0
-                    if (dwvdt[i,j]>0 and wv[i,j]>1 ): dwvdt[i,j]=0  
-                return dwvdt
         def np_linalg_solve(A,b):
             """solve a Batch of linear system of equations"""
             ret = np.zeros_like(b)
             for i in range(b.shape[1]):
                 ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
             return ret
-        refsegment=np.argmin(Mi)
-        ri= Mi/Mi[refsegment]
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
@@ -81,7 +72,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
         wv=np.reshape(np.ascontiguousarray(x),(nTH,nz_1))    
-        nc=len(Mi)
+        nc=len(wi0)
         wi=np.zeros((nc,nz_1))
         wi[mobiles,:]=wv
         wi0_immobiles=np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),axis=1)
@@ -107,12 +98,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         if allflux:
             for i in range(nz_1):
                 B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
-        dmuv=dlnav+dmuext
+        dmuv=dlnav+dmuext*wv
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        # dv=dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
         dv=dmuv*omega 
-        # if allflux and THFaktor_[0,0,0]!=1:
-        #     dv[-1,:]=-np.sum(dv[:-1,:],axis=0)
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
         jv[:,0]=0.
         djv=np.zeros((nTH,nz_1))
@@ -122,7 +110,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
             dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
-        # print(np.sum(dv,axis=0))
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -144,7 +131,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     wiinit=(wi0*np.ones((nz+1,nc))).T
     wiinit[:,-1]=wi8
     wvinit=wiinit[mobiles,:]
-    ri=Mi/np.min(Mi)
     #Construct TH Factor
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
@@ -153,22 +139,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         if len(dlnai_dlnwi.shape)==3:
             dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nTH,nTH))
         if len(dlnai_dlnwi.shape)==4:
-            THFaktor=dlnai_dlnwi
-        # if len(dlnai_dlnwi.shape)==2:
-        #     dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nc,nc))
-        # if len(dlnai_dlnwi.shape)==3:
-        #     dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nc,nc))
-        # if len(dlnai_dlnwi.shape)==4:
-        #     dlnai_dlnwi=dlnai_dlnwi/ri[None,None,:,None]
-        #     slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) 
-        #     slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, immobiles)
-        #     massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,None,:],axis=3) 
-        #     THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,:,None]
+            THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
 
-
-            # THFaktor=THFaktor/ri[None,None,None,mobiles]
-            # THFaktorave=np.average(np.average(THFaktor,axis=0),axis=0)
-            # THFaktor=THFaktorave[None,None,:,:]*np.ones((nt,nz+1,nTH,nTH))
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
     wiB=kwargs['witB'] if "witB" in kwargs else wi8[None,:]*np.ones((nt,nc))
@@ -269,19 +241,23 @@ def D_Matrix(Dvec,nc):
     return D # D wird zurückgegeben
 
 
-def massbalancecorrection(dlnai_dlnwi,wi,wi0,Mi,mobile):
-    ri=Mi/np.min(Mi)
-    points=wi.shape[:-1] if len(wi.shape)>1 else []
+def massbalancecorrection(dlnai_dlnwi,wi0,mobile):
+    points=dlnai_dlnwi.shape[:-2] if len(dlnai_dlnwi.shape)>2 else []
     mobiles=np.where(mobile)[0] 
     immobiles=np.where(~mobile)[0]
-    dlnai_dwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
-    dlnai_dwi=dlnai_dwi/ri[...,:,None]
     slc1=np.ix_(*([np.arange(val) for val in  points]+[mobiles, mobiles]))
     slc2=np.ix_(*([np.arange(val) for val in  points]+[mobiles, immobiles]))
-    correction=np.sum(dlnai_dwi[slc2]*wi0_immobiles[...,None,:],axis=-1)  
-    THFaktor=(dlnai_dwi[slc1]-correction[...,:,None])#*wi[...,None,mobiles]
+    correction=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[...,None,:],axis=-1)  
+    THFaktor=(dlnai_dlnwi[slc1]-correction[...,:,None])#*wi[...,None,mobiles]
     return THFaktor
+
+def Gammaij(T,wi,par):
+    Mi=par["Mi"]
+    ri=Mi/np.min(Mi)
+    dlnai_dlnwi=dlnai_dlnxi_loop(T,np.ascontiguousarray(wi),**par) if len(wi.shape)==3 else dlnai_dlnxi(T,np.ascontiguousarray(wi),**par)
+    dlnai_dlnwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]/ri[...,:,None]
+    return dlnai_dlnwi
 
 
 def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
@@ -290,7 +266,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
     allflux=nc==nf
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] 
-    THFaktor=massbalancecorrection(dlnai_dlnwi,wave,wi0,Mi,mobile)
+    THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
     if realtoideal: THFaktor=np.linalg.inv(THFaktor)
     def BIJ(D,wi,mobiles):
         nc=wi.shape[0]
@@ -307,7 +283,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
     D=D_Matrix(Dvec,nc)
     C=BIJ(D,wave,mobiles)
     # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
-    B=(THFaktor*wave[mobiles,None]/wave[None,mobiles])@C #symmetric without correction
+    B=THFaktor@C #symmetric without correction
     # B=THFaktor@C
     def Bopt(Dsoll):
         D=D_Matrix(Dsoll,nc)
