@@ -101,7 +101,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
         dlnav=np.zeros_like(dlnwv)
         for i in range(nz_1): 
-            dlnav[:,i]=THFaktor_[i,:,:]@dlnwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+            dlnav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
         
         if allflux:
@@ -109,8 +109,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dlnav+dmuext
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        dv=wv*dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
-        # dv[-1,:]=-np.sum(dv[:-1,:],axis=0)     
+        # dv=dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega
+        dv=dmuv*omega 
+        # if allflux and THFaktor_[0,0,0]!=1:
+        #     dv[-1,:]=-np.sum(dv[:-1,:],axis=0)
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
         jv[:,0]=0.
         djv=np.zeros((nTH,nz_1))
@@ -120,7 +122,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
             dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
-        # print(dwvdt)
+        # print(np.sum(dv,axis=0))
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -272,13 +274,13 @@ def massbalancecorrection(dlnai_dlnwi,wi,wi0,Mi,mobile):
     points=wi.shape[:-1] if len(wi.shape)>1 else []
     mobiles=np.where(mobile)[0] 
     immobiles=np.where(~mobile)[0]
-    dlnai_dwi=dlnai_dlnwi/wi[...,None,:]
+    dlnai_dwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]
     wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
     dlnai_dwi=dlnai_dwi/ri[...,:,None]
     slc1=np.ix_(*([np.arange(val) for val in  points]+[mobiles, mobiles]))
     slc2=np.ix_(*([np.arange(val) for val in  points]+[mobiles, immobiles]))
     correction=np.sum(dlnai_dwi[slc2]*wi0_immobiles[...,None,:],axis=-1)  
-    THFaktor=(dlnai_dwi[slc1]-correction[...,:,None])*wi[...,None,mobiles]
+    THFaktor=(dlnai_dwi[slc1]-correction[...,:,None])#*wi[...,None,mobiles]
     return THFaktor
 
 
@@ -304,14 +306,16 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
         return B[mobiles,:][:,mobiles]#+1/np.max(D)*np.outer(wi,np.ones_like(wi))#[mobiles,:][:,mobiles]
     D=D_Matrix(Dvec,nc)
     C=BIJ(D,wave,mobiles)
-    B=THFaktor@C
+    # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
+    B=(THFaktor*wave[mobiles,None]/wave[None,mobiles])@C #symmetric without correction
+    # B=THFaktor@C
     def Bopt(Dsoll):
         D=D_Matrix(Dsoll,nc)
         xist=BIJ(D,wave,mobiles).flatten()
         xsoll=B.flatten()
         return np.sum((1-xist/xsoll)**2)
     from scipy.optimize import minimize
-    opt=minimize(Bopt,Dvec,method="Nelder-Mead")
+    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((1E-21,1E-5),)*len(Dvec)))
     print(opt)
     print(np.linalg.det(THFaktor))
     DMS=opt["x"]
@@ -336,8 +340,9 @@ def wegstein(fun,x):
             return xx 
         a = df/dx
         q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
-        q=0.
-        # q=0.5
+        # q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
+        # q=0.
+        # q=0.25
         # q=np.fmin(np.fmax(np.average(np.nan_to_num(a/(a-1))),0),0.9)
         print(f"iter {i+1}: q = {q}")
          # resort to fixed point iteration as it works best for this case
