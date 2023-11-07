@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
+from scipy.optimize import root
 from numba import njit,config,prange
 import time
 from .FEM_collocation import collocation,collocation_space
-
+from .PyCSAFT_nue import dlnai_dlnxi_loop,dlnai_dlnxi
 # config.DISABLE_JIT = True
 
 
@@ -50,21 +51,12 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[::1],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """change in the weight fraction with time"""
-        def vanishing_check(dwvdt,wv):# Realitätscheck gegen neg. Konz.
-            s1,s2=wv.shape
-            for i in range(s1):
-                for j in range(s2):
-                    if (dwvdt[i,j]<0 and wv[i,j]<0 ): dwvdt[i,j]=0
-                    if (dwvdt[i,j]>0 and wv[i,j]>1 ): dwvdt[i,j]=0  
-                return dwvdt
         def np_linalg_solve(A,b):
             """solve a Batch of linear system of equations"""
             ret = np.zeros_like(b)
             for i in range(b.shape[1]):
                 ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
             return ret
-        refsegment=np.argmin(Mi)
-        ri= Mi/Mi[refsegment]
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix which needs to be invertable"""
             nc,nz_1=wi.shape
@@ -73,14 +65,14 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 Dii=np.zeros(nz_1)
                 for j in range(nc):
                     if j!=i:
-                        Dij=-ri[j]*wi[i,:]/D[i,j] 
+                        Dij=-wi[i,:]/D[i,j] 
                         B[i,j,:]=Dij
-                        Dii+=ri[i]*wi[j,:]/D[i,j]
+                        Dii+=wi[j,:]/D[i,j]
                 B[i,i,:]=Dii
             return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
         wv=np.reshape(np.ascontiguousarray(x),(nTH,nz_1))    
-        nc=len(Mi)
+        nc=len(wi0)
         wi=np.zeros((nc,nz_1))
         wi[mobiles,:]=wv
         wi0_immobiles=np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),axis=1)
@@ -100,19 +92,21 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
         dlnav=np.zeros_like(dlnwv)
         for i in range(nz_1): 
-            dlnav[:,i]=THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]) #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+            dlnav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
         
         if allflux:
             for i in range(nz_1):
-                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.max(ri)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
-        dmuv=dlnav+dmuext
+                B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
+        dmuv=dlnav+dmuext*wv
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        dv=wv*dmuv*omega #if swelling else wv*dmuv/np.atleast_2d(ri).T*omega              
+        dv=dmuv*omega 
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
+        jv[:,0]=0.
         djv=np.zeros((nTH,nz_1))
         for j in range(nTH):
             djv[j,:]=collocation(jv[j,:],nz_1,False)    
+        djv[:,-1]=0.
         dwvdt=np.zeros_like(djv)
         for j in range(nTH):
             dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
@@ -140,13 +134,13 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     #Construct TH Factor
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
+        if len(dlnai_dlnwi.shape)==2:
+            dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nTH,nTH))
         if len(dlnai_dlnwi.shape)==3:
-            dlnai_dlnwi=np.swapaxes(np.asarray([dlnai_dlnwi]*(nz+1)),0,1)
+            dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nTH,nTH))
         if len(dlnai_dlnwi.shape)==4:
-            slc1=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),mobiles, mobiles) 
-            slc2=np.ix_(np.asarray(range(nt)),np.asarray(range(nz+1)),immobiles, mobiles)
-            massbalancecorrection=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[None,None,:,None],axis=2) 
-            THFaktor=dlnai_dlnwi[slc1]-massbalancecorrection[:,:,None,:]
+            THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
+
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
     wiB=kwargs['witB'] if "witB" in kwargs else wi8[None,:]*np.ones((nt,nc))
@@ -246,30 +240,95 @@ def D_Matrix(Dvec,nc):
         D[np.triu_indices_from(D,k=1)]=Dvec #Dreiecksmatrix mit Werten aus Dvec wird erstellt
     return D # D wird zurückgegeben
 
+
+def massbalancecorrection(dlnai_dlnwi,wi0,mobile):
+    points=dlnai_dlnwi.shape[:-2] if len(dlnai_dlnwi.shape)>2 else []
+    mobiles=np.where(mobile)[0] 
+    immobiles=np.where(~mobile)[0]
+    wi0_immobiles=wi0[immobiles]/np.sum(wi0[immobiles])
+    slc1=np.ix_(*([np.arange(val) for val in  points]+[mobiles, mobiles]))
+    slc2=np.ix_(*([np.arange(val) for val in  points]+[mobiles, immobiles]))
+    correction=np.sum(dlnai_dlnwi[slc2]*wi0_immobiles[...,None,:],axis=-1)  
+    THFaktor=(dlnai_dlnwi[slc1]-correction[...,:,None])#*wi[...,None,mobiles]
+    return THFaktor
+
+def Gammaij(T,wi,par):
+    Mi=par["Mi"]
+    ri=Mi/np.min(Mi)
+    dlnai_dlnwi=dlnai_dlnxi_loop(T,np.ascontiguousarray(wi),**par) if len(wi.shape)==3 else dlnai_dlnxi(T,np.ascontiguousarray(wi),**par)
+    dlnai_dlnwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]/ri[...,:,None]
+    return dlnai_dlnwi
+
+
+def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
+    nc=wi0.shape[0]
+    nf=int(np.sum(mobile))
+    allflux=nc==nf
+    nTH=nf if not allflux else nc-1
+    mobiles=np.where(mobile)[0] 
+    THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
+    if realtoideal: THFaktor=np.linalg.inv(THFaktor)
+    def BIJ(D,wi,mobiles):
+        nc=wi.shape[0]
+        B=np.zeros((nc,nc))
+        for i in range(nc):
+            Dii=0
+            for j in range(nc):
+                if j!=i:
+                    Dij=-wi[i]/D[i,j] 
+                    B[i,j]=Dij
+                    Dii+=wi[j]/D[i,j]
+            B[i,i]=Dii
+        return B[mobiles,:][:,mobiles]#+1/np.max(D)*np.outer(wi,np.ones_like(wi))#[mobiles,:][:,mobiles]
+    D=D_Matrix(Dvec,nc)
+    C=BIJ(D,wave,mobiles)
+    # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
+    B=THFaktor@C #symmetric without correction
+    # B=THFaktor@C
+    def Bopt(Dsoll):
+        D=D_Matrix(Dsoll,nc)
+        xist=BIJ(D,wave,mobiles).flatten()
+        xsoll=B.flatten()
+        return np.sum((1-xist/xsoll)**2)
+    from scipy.optimize import minimize
+    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((1E-21,1E-5),)*len(Dvec)))
+    print(opt)
+    print(np.linalg.det(THFaktor))
+    DMS=opt["x"]
+    DMS[DMS<0]=1E-5
+    return DMS
+
+
+
 def wegstein(fun,x):
     """Solving via wegsteins method"""
     tol=1E-6 #Toleranzbereich
-    maxiter=10 #Anzahl max. Iterationen
+    maxiter=20 #Anzahl max. Iterationen
     f = fun(x)
     xx=f    
-    dx = xx - x
+    dx = xx-x
     ff = fun(xx)
     df=ff-f
     for i in range(maxiter): #Iteration von 0 bis maxiter
-        e=np.linalg.norm(dx.flatten(),2)/np.prod(x.shape)
+        e=np.linalg.norm(df.flatten(),2)/np.prod(x.shape)
         print(f"iter {i+1}: ||F|| = {e}")
         if e<tol: 
             return xx 
         a = df/dx
+        q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
         # q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
-        q=0 # resort to fixed point iteration as it works best for this case
+        # q=0.
+        # q=0.25
+        # q=np.fmin(np.fmax(np.average(np.nan_to_num(a/(a-1))),0),0.9)
+        print(f"iter {i+1}: q = {q}")
+         # resort to fixed point iteration as it works best for this case
         x=xx
         xx = q * xx + (1-q) * ff
-        # xx[:,-1]=1-np.sum(xx[:,:-1],axis=1)
+        # xx[:,-1,:]=1-np.sum(xx[:,:-1,:],axis=1)
         f=ff
         ff = fun(xx)    
         df=ff-f
-        dx=xx-x
+        dx = xx - x
     return xx  
 
 def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_fun=None,**kwargs):
@@ -278,19 +337,44 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_f
         diffusionpy.Diffusion_MS
     
     """
+
     _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
-    _,_,nz_1=wt_old.shape
+    nt,nc,nz_1=wt_old.shape
     def wt_fix(wtz):
-        wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
+        
+        
         print("------------- Start PC-SAFT modeling ----------------")
+        wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
         start=time.time_ns()
         dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
         end=time.time_ns()
         print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
         return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,full_output=True,**kwargs)[1]
+    # def wt_res(wtz):
+    #     wtz=np.reshape(wtz,(nt,nc,nz_1))
+        
+    #     print("------------- Start PC-SAFT modeling ----------------")
+    #     start=time.time_ns()
+    #     dlnai_dlnwi=dlnai_dlnwi_fun(np.ascontiguousarray(np.swapaxes(wtz,1,2)))
+    #     end=time.time_ns()
+    #     print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
+    #     return (Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,full_output=True,**kwargs)[1]-wtz).flatten()
+
+    # wtopt=np.reshape(root(wt_res,wt_old.flatten(),method="df-sane",options={"disp":True}),(nt,nc,nz_1))
     wtopt=wegstein(wt_fix,wt_old)
     wtopt=np.ascontiguousarray(np.swapaxes(wtopt,1,2))
     dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
     return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,**kwargs)
 
 
+def Diffusion_MS_averageTH(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_fun=None,**kwargs):
+    """approximates
+    See also:
+        diffusionpy.Diffusion_MS
+    
+    """
+    wave=(wi0+wi8)/2
+    ri=Mi/np.min(Mi)
+    dlnai_dlnwi=dlnai_dlnwi_fun(wave[None,None,:])[0][0]
+    Dvec2=DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,ri,realtoideal=True)
+    return Diffusion_MS(t,L,Dvec2,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
