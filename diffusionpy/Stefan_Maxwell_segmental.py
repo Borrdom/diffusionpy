@@ -135,9 +135,9 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
     if dlnai_dlnwi is not None:
         if len(dlnai_dlnwi.shape)==2:
-            dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nTH,nTH))
+            dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nc,nc))
         if len(dlnai_dlnwi.shape)==3:
-            dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nTH,nTH))
+            dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nc,nc))
         if len(dlnai_dlnwi.shape)==4:
             THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
 
@@ -267,6 +267,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
     nTH=nf if not allflux else nc-1
     mobiles=np.where(mobile)[0] 
     THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
+    if allflux: THFaktor+=np.max(np.linalg.eig(THFaktor)[0])*np.outer(wave,np.ones_like(wave))   
     if realtoideal: THFaktor=np.linalg.inv(THFaktor)
     def BIJ(D,wi,mobiles):
         nc=wi.shape[0]
@@ -279,7 +280,8 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
                     B[i,j]=Dij
                     Dii+=wi[j]/D[i,j]
             B[i,i]=Dii
-        return B[mobiles,:][:,mobiles]#+1/np.max(D)*np.outer(wi,np.ones_like(wi))#[mobiles,:][:,mobiles]
+        if allflux: B+=1/np.max(D)*np.outer(wi,np.ones_like(wi))   
+        return B[mobiles,:][:,mobiles]
     D=D_Matrix(Dvec,nc)
     C=BIJ(D,wave,mobiles)
     # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
@@ -291,7 +293,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
         xsoll=B.flatten()
         return np.sum((1-xist/xsoll)**2)
     from scipy.optimize import minimize
-    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((1E-21,1E-5),)*len(Dvec)))
+    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((1E-21,1E-1),)*len(Dvec)))
     print(opt)
     print(np.linalg.det(THFaktor))
     DMS=opt["x"]
