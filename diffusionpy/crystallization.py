@@ -35,43 +35,18 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
             wvtemp=x[(nz_1)*(i):(nz_1)*(1+i)]
             wv[i,:]=wvtemp
         # wv=np.fmin(np.fmax(wv,1E-300),1.)
-        alpha=np.fmin(np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],1E-29),dl0)
+        alpha=x[(nz_1)*(nTH):(nz_1)*(nTH+1)]
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
         
         wv=np.ascontiguousarray(wv)
         for i in range(nTH):
             wv[i,-1]=np.interp(t,tint,wiB[:,mobiles[i]])
-
-        # omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
-        # omega=1
-        # omega[-1]=1.
-        # porosity= 1-Vcr/V
-        # Vcr=mcr/rhocr
-        # V=m/rho=(m0+mvoc)/rho=m0(1+Xvoc)/rho
-        # Annahme: rho=rhocr
-        # Vcr/V=1-mcr/m0/(1+Xvoc)*rho
-        # mvoc=Xvoc*m0
-        # Xvoc=wv/(1-wv)
-
-        # V0=m0/rhobar
-        # V/V0=m/m0*rhobar/rho
-        # m=m0+mvoc
-        # if t/60>30:
-        #     pass
-        Xv=np.sum(wv,axis=0)/(1-np.sum(wv,axis=0))
-        omega=1-1/(1+Xv)
-        omega=1.
-        omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
-        porosity=(1-alpha/omega)[None,:,None,None]
-        eta=1.5
-        # if np.any(porosity[:,:-2,:,:]<0.9):
-        #     pass
-        # wi0[crystallizes]=wi0[crystallizes]-alpha[-1]*np.sum(wi0[immobiles])
-        # wi0=wi0/np.sum(wi0)
-        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
-
+        # omega=(1-np.sum(wv,axis=0))/np.sum(wi0[immobiles])
+        # porosity=(1-alpha*omega)[None,:,None,None]
+        # eta=1.5
+        # dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
+        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
         dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
-
         fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten(),drdt.flatten()))
         return fvec
 
@@ -82,17 +57,13 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     kB=R/NA
     C0=rho/M*NA 
     temp=298.15
-    lnai=lngi_tz(0)[0]+np.log(wi0)
+    logwi0tz=np.ones(nz_1)*np.log(wi0[crystallizes])
+    logwi0tz[-1]=np.log(wi8[crystallizes])
+    lnai=lngi_tz(0)[:,crystallizes].flatten()+logwi0tz
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
-    dmu_sla0=lnai[crystallizes]-lnaiSLE 
+    dmu_sla0=lnai-lnaiSLE 
     r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
     alpha0=pre*(r0)**3
-    lnai=lngi_tz(0)[-1]+np.log(wi8)
-    lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
-    dmu_sla0=lnai[crystallizes]-lnaiSLE 
-    r0[-1]=2*sigma/(C0*dmu_sla0*kB*temp)
-    alpha0[-1]=pre*(r0[-1])**3   
-    
     xinit=np.hstack((wvinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
 @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
@@ -110,19 +81,22 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     rho=rho0i[crystallizes]
     pre=rho*np.pi/(4*AR**2)
     C0=rho/M*NA
-    dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
+    # dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
     # wv=np.fmax(wv,0)
-    X_la=dl0-alpha
+    X_la=1-alpha
     Xn_la=X_la/M
     nTH,nz_1=wv.shape
     nc=len(wi0)
     wi=np.zeros((nc,nz_1))
-    dl_la = (dl0-alpha)/(1-alpha)
+    dl_la = (1-alpha)/(1/wi0[crystallizes]-alpha)
 
     # wv=wv_fun(dl_la) if callable(wv_fun) else wv_fun
     wi[mobiles,:]=wv
-    wi[crystallizes,:]=(1-np.sum(wv,axis=0))*dl_la
-    wi[immobiles[crystallizes!=immobiles],:]=(1-np.sum(wv,axis=0))*(1-dl_la)
+    # wi[crystallizes,:]=(1-np.sum(wv,axis=0))*dl_la if immobiles.shape[0]>0. else (1-wi0[crystallizes])/(1-wv[crystallizes,:])*dl_la
+    # if immobiles.shape[0]>0.: wi[crystallizes,:]=(1-np.sum(wv,axis=0))*dl_la 
+    wi[crystallizes,:]=(1-np.sum(wv,axis=0))*dl_la  if immobiles.shape[0]>0. else dl_la
+    # if immobiles.shape[0]>0.: wi[immobiles[crystallizes!=immobiles],:]=(1-np.sum(wv,axis=0))*(1-dl_la)
+    wi[immobiles[crystallizes!=immobiles],:]=(1-np.sum(wv,axis=0))*(1-dl_la)  if immobiles.shape[0]>0. else (1-dl_la)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     lnai=lngi.T+np.log(wi)
     # lnaiSLE=np.log(0.03)
@@ -131,14 +105,10 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     rstar = ((2*sigma)/(C0*kB*temp*dmu_sla))
     deltaG=sigma**3*(16*np.pi)/(3*(C0*kB*temp*dmu_sla)**2)
     # wv=wi[mobiles]
-    wv0=wi0[mobiles]
-    wv8=wi8[mobiles]
-    beta=np.fmin((wv-wv0)/(wv8-wv0),1)[0,:]
-    beta=1
     ze=(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*dmu_sla**2
-    f=4*np.pi*rstar*DAPI*Xn_la*NA*np.fmax(beta,1E-4)
+    f=4*np.pi*rstar*DAPI*Xn_la*NA
     dNdt = np.fmax(ze*f*C0*np.exp(-deltaG/(kB*temp)),0)#*cs.exp(-NA)/NA**0.5
-    drdt = np.fmax(kt*np.fmax(beta,1E-4)*(dmu_sla)**g,0)
+    drdt = np.fmax(kt*(dmu_sla)**g,0)
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
     dalphadt=drdt*dalphadr+dNdt*dalphadN
