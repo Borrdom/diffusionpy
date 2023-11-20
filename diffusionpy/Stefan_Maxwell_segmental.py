@@ -84,21 +84,20 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         for j in range(nTH):
             dwv[j,:]=collocation(wv[j,:],nz_1,True)
         dwv[:,0]=0
-        dlnwv=dwv/wv
         THFaktor_=np.zeros((nz_1,nTH,nTH))
         for i in range(nz_1):
             for j in range(nTH):
                 for k in range(nTH):
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
-        dlnav=np.zeros_like(dlnwv)
+        dav=np.zeros_like(dwv)
         for i in range(nz_1): 
-            dlnav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+            dav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
         
         if allflux:
             for i in range(nz_1):
                 B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
-        dmuv=dlnav+dmuext*wv
+        dmuv=dav+dmuext*wv
         omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
         dv=dmuv*omega 
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])

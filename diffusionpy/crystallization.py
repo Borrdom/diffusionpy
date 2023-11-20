@@ -60,10 +60,14 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         #     pass
         Xv=np.sum(wv,axis=0)/(1-np.sum(wv,axis=0))
         omega=1-1/(1+Xv)
-        # omega[-1]=1.
-        porosity=(1-alpha*omega)[None,:,None,None]
+        omega=1.
+        omega=np.sum(wi0[immobiles])/(1-np.sum(wv,axis=0))
+        porosity=(1-alpha/omega)[None,:,None,None]
         eta=1.5
-
+        # if np.any(porosity[:,:-2,:,:]<0.9):
+        #     pass
+        # wi0[crystallizes]=wi0[crystallizes]-alpha[-1]*np.sum(wi0[immobiles])
+        # wi0=wi0/np.sum(wi0)
         dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
 
         dalphadt,drdt=CNT(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,lngi_tz(t),wv)
@@ -78,11 +82,16 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     kB=R/NA
     C0=rho/M*NA 
     temp=298.15
-    lnai=lngi_tz(0)[-1]+np.log(wi8)
+    lnai=lngi_tz(0)[0]+np.log(wi0)
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     dmu_sla0=lnai[crystallizes]-lnaiSLE 
     r0=2*sigma/(C0*dmu_sla0*kB*temp)*np.ones(nz_1)
     alpha0=pre*(r0)**3
+    lnai=lngi_tz(0)[-1]+np.log(wi8)
+    lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
+    dmu_sla0=lnai[crystallizes]-lnaiSLE 
+    r0[-1]=2*sigma/(C0*dmu_sla0*kB*temp)
+    alpha0[-1]=pre*(r0[-1])**3   
     
     xinit=np.hstack((wvinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
@@ -125,7 +134,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     wv0=wi0[mobiles]
     wv8=wi8[mobiles]
     beta=np.fmin((wv-wv0)/(wv8-wv0),1)[0,:]
-    # beta=1
+    beta=1
     ze=(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*dmu_sla**2
     f=4*np.pi*rstar*DAPI*Xn_la*NA*np.fmax(beta,1E-4)
     dNdt = np.fmax(ze*f*C0*np.exp(-deltaG/(kB*temp)),0)#*cs.exp(-NA)/NA**0.5

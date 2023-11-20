@@ -98,7 +98,7 @@ class origin_like:
     def set_xlabel(ax,xlabel1,xunit1=None):
         ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$ / $\mathrm{{{xunit1}}}$') if xunit1 is not None else ax.set_xlabel(f'$\mathrm{{{xlabel1}}}$') 
     def set_ylabel(ax,ylabel1,yunit1=None):
-        ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ \n / $\mathrm{{{yunit1}}}$',rotation=0,loc="top",linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
+        ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$ / $\mathrm{{{yunit1}}}$',linespacing=1.5) if yunit1 is not None else ax.set_ylabel(f'$\mathrm{{{ylabel1}}}$',linespacing=1.5)
     def plot(ax,x,y,Formatstring,label=None,order=1,yerr=None,z=None):
         
         if z is not None:
