@@ -5,7 +5,7 @@ from scipy.optimize import root
 from numba import njit,config,prange
 import time
 from .FEM_collocation import collocation,collocation_space
-from .PyCSAFT_nue import dlnai_dlnxi_loop,dlnai_dlnxi
+from .PyCSAFT_nue import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC
 # config.DISABLE_JIT = True
 
 
@@ -283,8 +283,10 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
         return B[mobiles,:][:,mobiles]
     D=D_Matrix(Dvec,nc)
     C=BIJ(D,wave,mobiles)
+    print(np.linalg.det(C))
     # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
     B=THFaktor@C #symmetric without correction
+    print(np.linalg.det(B))
     # B=THFaktor@C
     def Bopt(Dsoll):
         D=D_Matrix(Dsoll,nc)
@@ -292,7 +294,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
         xsoll=B.flatten()
         return np.sum((1-xist/xsoll)**2)
     from scipy.optimize import minimize
-    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((1E-21,1E-1),)*len(Dvec)))
+    opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((-1E-1,1E-1),)*len(Dvec)))
     print(opt)
     print(np.linalg.det(THFaktor))
     DMS=opt["x"]
@@ -379,3 +381,62 @@ def Diffusion_MS_averageTH(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dl
     dlnai_dlnwi=dlnai_dlnwi_fun(wave[None,None,:])[0][0]
     Dvec2=DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,ri,realtoideal=True)
     return Diffusion_MS(t,L,Dvec2,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+
+def TgGT(wi,Tg0i,q=0,Ki=None,rho0i=None):
+    """
+    Compute the glass transition temperature of a mixture  
+    
+    Args:
+        wi (array_like): 2D Array of weight fractions [ number of components,number of Points]
+        Tg0i (array_like): pure component glass transition temperature /K
+        q (array_like): Kwei parameter /-
+        rho0i (optional,array_like) : pure component densities /kg/m^3
+        Ki (optional,array_like): Gordon-Taylor parameters         /-
+    Returns:
+        ndarray:   
+        glass transition temperature of a mixture  /K 
+    """
+    nc=Tg0i.shape[0]
+    qmat=np.zeros((nc,nc))
+    qmat[np.triu_indices(nc, k=1)]=q
+    Excess=np.asarray([np.sum(np.outer(wi[:,i],wi[:,i])*qmat) for i,val in enumerate(wi[0,:])])
+    if Ki is None and rho0i is not None:
+        Ideal=np.sum(wi*1/rho0i[:,None],axis=0)/np.sum(wi*1/rho0i[:,None]/Tg0i[:,None],axis=0)
+    elif Ki is not None and rho0i is None:
+        Ideal=np.sum(wi*Ki[:,None]*Tg0i[:,None],axis=0)/np.sum(wi*Ki[:,None],axis=0)
+    elif Ki is None and rho0i is None:
+        Ideal=np.sum(wi*1/rho0i[:,None],axis=0)
+    else:
+        Ideal=np.sum(wi*Ki[:,None]*Tg0i[:,None],axis=0)/np.sum(wi*Ki[:,None],axis=0)
+    return Ideal+Excess
+
+
+def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA):
+    # vp=np.zeros(np.sum(polymers))
+    
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
+    widry=np.zeros_like(wi)
+    widry[immobiles]=wi[immobiles]/np.sum(wi[immobiles])
+    nc=len(Mi)
+    kswmat=np.zeros((nc,nc))
+    polymers=np.where(polymer)[0]
+    v0NET=vpures*1000./Mi
+    v0NET[polymers]=v0p
+    Mdry=(np.sum(widry/Mi))**-1
+    xidry=widry/Mi*Mdry
+    v0dry=np.sum(v0NET*widry)
+    kswmat[mobiles,polymers]=ksw
+    vidry=v0NET/v0dry*widry
+    ksws=(kswmat@vidry)[mobiles]
+    v0dry=v0dry*Mdry/1000.
+    def res(RS):
+        # RS=np.fmin(np.fmax(RS,1E-8),1)
+        xi=wi/Mi/np.sum(wi/Mi,axis=0)
+        xw=xi[mobiles]
+        vmol=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(xw))
+        vpures2=vpures.copy()
+        vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
+        lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
+        return np.nan_to_num(lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])-np.log(RS))
+    return root(res,wi[mobiles],method='broyden1')["x"]

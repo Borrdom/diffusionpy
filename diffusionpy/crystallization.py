@@ -104,10 +104,17 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     dmu_sla=lnai[crystallizes,:]-lnaiSLE
     rstar = ((2*sigma)/(C0*kB*temp*dmu_sla))
     deltaG=sigma**3*(16*np.pi)/(3*(C0*kB*temp*dmu_sla)**2)
+
+
     # wv=wi[mobiles]
     ze=(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*dmu_sla**2
     f=4*np.pi*rstar*DAPI*Xn_la*NA
     dNdt = np.fmax(ze*f*C0*np.exp(-deltaG/(kB*temp)),0)#*cs.exp(-NA)/NA**0.5
+    
+    # A=DAPI
+    # B=sigma
+    # dNdt = np.fmax(A*np.exp(-B/(kB*dmu_sla**2)),0)#*
+
     drdt = np.fmax(kt*(dmu_sla)**g,0)
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
