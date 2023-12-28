@@ -20,10 +20,12 @@ from .surface_activity import time_dep_surface
 #from epcsaftpy import pcsaft,component,mixture
 from .PyCSAFT_nue import lngi,vpure,dlnai_dlnxi
 import fnmatch
+from .plots import origin_like
+
 # mix=component()+component()
 # eos=pcsaft(mix)
 from matplotlib import pyplot
-
+from scipy.interpolate import Akima1DInterpolator,PchipInterpolator
 
 @xlo.func
 def Diffusion_MS_xloil(t:xlo.Array(float,dims=1),L:float,Dvec:xlo.Array(float,dims=1),w0:xlo.Array(float,dims=1),w8:xlo.Array(float,dims=1),Mi:xlo.Array(float,dims=1),
@@ -97,6 +99,19 @@ def gradient(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1)):
 @xlo.func
 def reduce_points(x,n:int):
     return x[::n]
+
+@xlo.func
+def origin_plot(x:xlo.Array(float,dims=1),y:xlo.Array(float,dims=1),xexp:xlo.Array(float,dims=1),yexp:xlo.Array(float,dims=1),xmin,xmax,ymin,ymax,xlabel,ylabel,xunit,yunit,spacing:int,fmt):
+    fig,ax=origin_like.subplots()
+    origin_like.plot(ax,x,y,fmt[0]+"-")
+    origin_like.plot(ax,xexp[::spacing],yexp[::spacing],fmt)
+    origin_like.set_ticks(ax,xmin,xmax,ymin,ymax)
+    origin_like.set_xlabel(ax,xlabel,xunit)
+    origin_like.set_ylabel(ax,ylabel,yunit)
+    fig.show()
+    return fig
+
+
 @xlo.func
 def crank_xl(t,L0,Ds,ws0,ws8):
     Xs0=ws0/(1-ws0)
@@ -107,7 +122,8 @@ def crank_xl(t,L0,Ds,ws0,ws8):
     return ws
 @xlo.func
 def interp1d(x,xp,fp):
-    return np.interp(x.flatten(),xp.flatten(),fp.flatten())
+    idx=np.argsort(xp.flatten())
+    return PchipInterpolator(xp.flatten()[idx],fp.flatten()[idx])(x.flatten())
 
 @xlo.func
 def BHX_xloil(t:xlo.Array(float,dims=1),kf:float,kr:float,ws0:float,ws8:float,mfinfty:float,mrinfty:float):

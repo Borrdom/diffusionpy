@@ -104,10 +104,11 @@ class origin_like:
         if z is not None:
             ax.plot(x,y,z,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,color=basic_colors(Formatstring)) 
         else:
-            ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,color=basic_colors(Formatstring))
             if yerr is not None:
                 if sum(yerr)==0 : yerr=None
-                ax.errorbar(x,y,yerr,None,"ko" , zorder=order-1,label=label,markersize=0, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
+                ax.errorbar(x,y,yerr,None,"ko" , zorder=order,label=label,markersize=0, markeredgecolor='k',markeredgewidth=0.5,capsize=5, elinewidth=0.5,ecolor="k")
+            ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5,color=basic_colors(Formatstring))
+
         
         # ax.plot(x,y,Formatstring , zorder=order,linewidth = 1.5,label=label,markersize=5, markeredgecolor='k',markeredgewidth=0.5)
     def set_ticks(ax,x0=None,x1=None,y0=None,y1=None):

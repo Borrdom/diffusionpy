@@ -156,8 +156,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
         from .crystallization import crystallization_mode
         lngi_tz=interp1d(tint,kwargs["lngi_tz"],axis=0,bounds_error=False)
-        rho0i=kwargs["rho0i"] if "rho0i" in kwargs else 1200.*np.ones(nc)
-        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        rho0i=kwargs["rho0i"] if "rho0i" in kwargs else 1320.*np.ones(nc)
+        tnuc=kwargs["tnuc"] if "tnuc" in kwargs else 0.
+        temp=kwargs["temp"] if "temp" in kwargs else 298.15
+        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],tnuc,temp,kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
         return_alpha=True
     if "kappaii" in kwargs:
         from .liquidseperation import liquidseperation_mode
