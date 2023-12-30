@@ -343,7 +343,8 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_f
     
     """
 
-    _,wt_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+    res_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+    wt_old=res_old[1]
     nt,nc,nz_1=wt_old.shape
     def wt_fix(wtz):
         

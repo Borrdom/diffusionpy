@@ -8,12 +8,37 @@ import time
 # config.DISABLE_JIT = True
 # @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
 def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngi,wv):
-    """Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model"""
-    
+    """Calculates the crystallization kinetics based on the classical nucleation  coupled with a simple crystal growth model
+    Args:
+        t (array_like): time /s
+        alpha (array_like) : crystal fraction /-
+        mobiles (array_like): stores index of mobile components
+        immobiles (array_like): stores index of immobile components
+        crystallizes (array_like): stores index of crystallizing components
+        wi0 (array_like): Mass fractions at t=0               /-
+        wi8 (array_like): Mass fraction at t=infinity         /-
+        rho0i (array_like): pure component densitys           /kg/m^3
+        Mi (array_like):   Molar mass of components nc         /g/mol
+        DAPI (float): diffusion coefficient of the API to the crystal m^2/s
+        sigma (float):  interfacial tension             /N/m
+        kt (float): growth rate constant                /m/s
+        g (float): growth order                         /-
+        deltaHSL (float): melting enthalpy           /J/mol
+        TSL(float): melting temperature           /K
+        cpSL(float): heat capacity difference solid and liquid           /J/mol/K
+        tnuc(float): nucleation onset           /s
+        temp(float): temperature                 /K
+        lngi(array_like): log of acticity coefficients for supersaturation calculations /-
+        wv(float): mobile component weight fraction           /-
+    Returns:
+        ndarray:   
+        recrystallization rate       /- \n
+        growth rate    /- \n
+    """
     R=8.31445
     NA=6.023E23
     kB=R/NA
-    AR=100
+    AR=100 #AR(float): Here Aspect Ratio of needle crystals. Can be used as factor to reflect the crystal geometry /- 
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
     pre=rho*np.pi/(4*AR**2)
@@ -25,12 +50,14 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     nc=len(wi0)
     wi=np.zeros((nc,nz_1))
     dl_la = (1-alpha)/(1/wi0[crystallizes]-alpha)
-    # wv=wvfun(dl_la) if np.shape(wvfun)[0]==0 else wvfun
     wi[mobiles,...]=wv
     if immobiles.shape[0]>0.:
         wi[crystallizes,...]=(1-np.sum(wv,axis=0))*dl_la
         wi[immobiles[crystallizes!=immobiles],...]=(1-np.sum(wv,axis=0))*(1-dl_la)
-        beta=np.fmin(np.fmax((wv[mobiles[0],:]-wi0[mobiles[0]])/(wi8[mobiles[0]]-wi0[mobiles[0]]),0),1)
+        Xi=wi/(1-wi)
+        Xi0=wi0/(1-wi0)
+        Xi8=wi8/(1-wi8)
+        beta=np.fmin(np.fmax((Xi[mobiles[0],...]-Xi0[mobiles[0]])/(Xi8[mobiles[0]]-Xi0[mobiles[0]]),1E-4),1)
     else:
         wi[crystallizes,...]=dl_la
         wi[mobiles,...]=wi[mobiles,...]/np.sum(wi[mobiles,...],axis=0)
@@ -49,8 +76,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
     dNdt = np.fmax(beta*ze*f*C0*np.exp(-deltaG/(kB*temp)),0) #*cs.exp(-NA)/NA**0.5
     r=np.fmax(r,rstar)
     drdt = np.fmax(beta*kt*(dmu_sla)**g,0) 
-    drdt=drdt if (t/60)>tnuc else np.zeros_like(drdt)
-    # drdt = np.fmax(kt*temp*(1-1/np.exp(dmu_sla)),0)
+    drdt=drdt if t>tnuc else np.zeros_like(drdt)
     dalphadr=3*alpha/r
     dalphadN=pre*(r)**3
     dalphadt=drdt*dalphadr+dNdt*dalphadN 
@@ -63,12 +89,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     Args:
         wvinit (array_like): vector of the mass fractions of the mobile components
         ode (array_like): ode fuinction which is modified by the function
-        deltaHSL (array_like): Melting Enthalpy
-        TSL (array_like): Melting temperature
-        DAPI (array_like) Diffusioncoefficient of the crystallizing substance in its surroundings
-        sigma (array_like): interfacial tension of crystal to its surrounding
-        kt (array_like): rate of crystal growth kinetics
-        g (array_like): order of crystal growth kinetics
+        for the rest see CNT
 
     Returns:
         array_like: new modified ode function with the same format as the input ode function
@@ -153,7 +174,7 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
-    AR=100
+    AR=100 #AR(float): Here Aspect Ratio of needle crystals. Can be used as factor to reflect the crystal geometry /- 
     pre=rho*np.pi/(4*AR**2)
     R=8.31445
     NA=6.023E23
