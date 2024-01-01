@@ -48,7 +48,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     See Also:
         diffusionpy.D_Matrix
     """
-    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[::1],f8[:,:],f8[:,::1])'],cache=True)
+    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
         """change in the weight fraction with time"""
         def np_linalg_solve(A,b):
@@ -72,10 +72,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             return B[mobiles,:,:][:,mobiles,:]
         nTH,nz_1=dmuext.shape
         wv=np.reshape(np.ascontiguousarray(x),(nTH,nz_1))    
-        nc=len(wi0)
+        nc,_=wi0.shape
         wi=np.zeros((nc,nz_1))
         wi[mobiles,:]=wv
-        wi0_immobiles=np.expand_dims(wi0[immobiles]/np.sum(wi0[immobiles]),axis=1)
+        wi0_immobiles=wi0[immobiles,:]/np.sum(wi0[immobiles,:],axis=0)
         wi[immobiles,:]=(1-np.expand_dims(np.sum(wv,axis=0),axis=0))*wi0_immobiles
         for j in range(nc):
             wi[j,-1]=np.interp(t,tint,wiB[:,j])
@@ -98,7 +98,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             for i in range(nz_1):
                 B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dav+dmuext*wv
-        omega=(np.sum(wi0[immobiles],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
+        omega=(np.sum(wi0[immobiles,:],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
         dv=dmuv*omega 
         jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
         jv[:,0]=0.
@@ -170,7 +170,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     start=time.time_ns()
     # sol=nbkode.BDF5(ode,tint[0],xinit,params=[tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB]).run(tint)
     # sol=nbrk_ode(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB),rk_method=0,t_eval=tint)#rtol=1E-2,atol=1E-3)
-    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
+    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
     if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
@@ -202,6 +202,16 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     elif return_alpha:
         alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
         r=x_sol[(nz+1)*(nTH+1):(nz+1)*(nTH+2),:]
+        crystallizes=np.where(kwargs["crystallize"])[0]
+        if immobiles.shape[0]>0.:
+            wi0_immobiles=wi0/np.sum(wi0[immobiles])
+            wi0_notcrystimmob=wi0_immobiles[immobiles[crystallizes!=immobiles]]/np.sum(wi0_immobiles[immobiles[crystallizes!=immobiles]])
+            for k in range(nt):
+                dl_la = (1-alpha[:,k])/(1/wi0[crystallizes]-alpha[:,k])
+                wik[k,crystallizes,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*dl_la
+                wik[k,immobiles[crystallizes!=immobiles],:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_notcrystimmob*(1-dl_la)
+                wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
+                
         return (wt.T,alpha,r) if not full_output else (wt.T,wik,zvec,Lt,alpha,r)
 
     else:

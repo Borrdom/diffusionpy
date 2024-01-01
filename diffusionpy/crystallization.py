@@ -3,7 +3,8 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from numba import njit,config,prange,jit
 import time
-
+from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion_MS_iter,wegstein
+from scipy.interpolate import interp1d
 
 # config.DISABLE_JIT = True
 # @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
@@ -58,6 +59,7 @@ def CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,
         Xi0=wi0/(1-wi0)
         Xi8=wi8/(1-wi8)
         beta=np.fmin(np.fmax((Xi[mobiles[0],...]-Xi0[mobiles[0]])/(Xi8[mobiles[0]]-Xi0[mobiles[0]]),1E-4),1)
+        beta=np.ones_like(alpha)
     else:
         wi[crystallizes,...]=dl_la
         wi[mobiles,...]=wi[mobiles,...]/np.sum(wi[mobiles,...],axis=0)
@@ -101,7 +103,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     rho=rho0i[crystallizes]
     dl0=wi0[crystallizes]/np.sum(wi0[immobiles])
     CNT1=njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8,f8,f8[:,::1],f8[:,::1])'],cache=True)(CNT)
-    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
+    def crystallization_ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0_cryst,dmuext,wiB):
         """solves the genralized Maxwell model for relaxation"""
         nTH,nz_1=dmuext.shape
         wv=np.zeros((nTH,nz_1))
@@ -111,7 +113,13 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         # wv=np.fmin(np.fmax(wv,1E-300),1.)
         alpha=np.fmax(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],1E-30)
         r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
-        # if immobiles.shape[0]==0.:
+        dl_la = (1-alpha)/(1/wi0[crystallizes]-alpha)
+        if immobiles.shape[0]>0.:
+            wi0_immobiles=wi0/np.sum(wi0[immobiles])
+            wi0_cryst[crystallizes,:]=(1-np.sum(wi0[mobiles]))*dl_la
+            wi0_notcrystimmob=wi0_immobiles[immobiles[crystallizes!=immobiles]]/np.sum(wi0_immobiles[immobiles[crystallizes!=immobiles]])
+            wi0_cryst[immobiles[crystallizes!=immobiles],:]=(1-np.sum(wi0[mobiles]))*wi0_notcrystimmob*(1-dl_la)
+        # else:
         #     dl_la = (1-alpha)/(1/wi0[crystallizes]-alpha) 
         #     wv[crystallizes,...]=(1-np.sum(wv,axis=0))*dl_la  if immobiles.shape[0]>0. else dl_la
         #     wv[mobiles,...]=wv[mobiles,...]/np.sum(wv[mobiles,...],axis=0)
@@ -123,7 +131,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         # porosity=(1-alpha*omega)[None,:,None,None]
         # eta=1.5
         # dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
-        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
+        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0_cryst,dmuext,wiB)
         
         dalphadt,drdt=CNT1(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngi_tz(t),wv)
         fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten(),drdt.flatten()))
@@ -145,16 +153,15 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
     xinit=np.hstack((wvinit.flatten(),alpha0.flatten(),r0.flatten()))
     return xinit,crystallization_ode
 
-def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc=0.,temp=298.15,lngi=None,wv_fun=None):
+def time_dep_surface_cryst(t,mobile,wi0,wi8,crystallize,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc=0.,temp=298.15,lngi=None,wv_fun=None):
     """calculate the time dependent surface concentration during crystallization
 
     Args:
         t (array_like): vector of time
-        mobiles (array_like): index array indicating the mobile components
-        immobiles (array_like): index array indicating the immobile component
-        crystallize (array_like): index array indicating the crystallizing components
+        mobile (array_like): boolean array indicating the mobile components
         wi0 (array_like): initial mass fractions
         wi8 (array_like): mass fractions at time equals infinity
+        crystallize (array_like): index array indicating the crystallizing components
         rho0i (array_like): pure component densities
         Mi (array_like): molar mass of components
         DAPI (array_like): crystallizing components diffusion coefficient in the vector
@@ -171,6 +178,8 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     Returns:
         array_like: vector of mass fractions at the surface as a function of time
     """
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
     crystallizes=np.where(crystallize)[0]
     M=Mi[crystallizes]/1000.
     rho=rho0i[crystallizes]
@@ -181,16 +190,18 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     kB=R/NA
     C0=rho/M*NA 
     logwi0tz=np.log(wi0[crystallizes])
-    lnai=lngi(0)[crystallizes].flatten()+logwi0tz
+    lngit=interp1d(t,lngi,axis=0,bounds_error=False)
+    lnai=lngit(0)[crystallizes].flatten()+logwi0tz
     lnaiSLE=-deltaHSL/(R*temp)*(1-temp/TSL)+cpSL/R*(TSL/temp-1-np.log(TSL/temp))
     dmu_sla0=lnai-lnaiSLE
     r0=2*sigma/(C0*dmu_sla0*kB*temp)
     alpha0=pre*(r0)**3
+    
     def dxdt(t,x):
         alpha,r=x[0],x[1]
         dl_la = (1-alpha)/(1/wi0[crystallizes]-alpha)
         wv=wv_fun(dl_la)
-        dalphadt,dalphadr=CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngi(t)[None,:],wv)
+        dalphadt,dalphadr=CNT(t,alpha,r,mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngit(t)[None,:],wv)
         return np.hstack((dalphadt[0],dalphadr[0]))
     x0=np.hstack((alpha0,r0))
     xsol=solve_ivp(dxdt,(t[0],t[-1]),x0,method="Radau",t_eval=t)["y"]
@@ -202,5 +213,34 @@ def time_dep_surface_cryst(t,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,DAPI
     wiB[mobiles,:]=wvB
     wiB[crystallizes,:]=(1-wvB)*dl_la
     wiB[immobiles[crystallizes!=immobiles],:]=(1-wvB)*(1-dl_la)
-    return wiB,alpha,r
+    return np.ascontiguousarray(wiB.T),alpha,r
 
+def Diffusion_MS_cryst(t,L,Dvec,wi0,wi8,Mi,mobile,crystpar,lngi_fun,**kwargs):
+        _,wtz_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+        def wtz_fun(wtz_old):
+            lngi_tz=np.asarray([[lngi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz_old])
+            if "dlnai_dlnwi_fun" in kwargs:
+                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
+            else:
+                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz) 
+            return wtz
+        wtz_new=wegstein(wtz_fun,wtz_old)
+        lngi_tz=np.asarray([[lngi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz_new])
+    #    wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
+        if "dlnai_dlnwi_fun" in kwargs:
+            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
+        else:
+            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz) 
+        return wt,wtz,zvec,Lt,alpha,r
+
+
+def cryst_iter(t,mobile,wi0,wi8,crystpar,Mi,lngi_fun,wv_fun):
+    witB_old=np.asarray([(wi0+wi8)/2]*len(t))
+    def witB_fun(witB_old):
+        lngit=np.asarray([lngi_fun(val) for val in witB_old])
+        witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,Mi=Mi,lngi=lngit,wv_fun=wv_fun)
+        return witB
+    witB_new=wegstein(witB_fun,witB_old)
+    lngit=np.asarray([lngi_fun(val) for val in witB_new])
+    witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,Mi=Mi,lngi=lngit,wv_fun=wv_fun)
+    return witB,alphaB,r
