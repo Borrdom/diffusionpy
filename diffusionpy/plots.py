@@ -61,10 +61,12 @@ def basic_colors(Formatstring):
     if "c" in Formatstring: return "#99CDE9" #cyan
     if "b" in Formatstring: return "#246FE2" #blue
     if "r" in Formatstring: return "#FF8500" #orange
-    if "m" in Formatstring: return "#FFCCCC" #magenta
-    if "y" in Formatstring: return "#FFD67E" #yellow
+    # if "m" in Formatstring: return "#FFCCCC" #magenta
+    # if "y" in Formatstring: return "#FFD67E" #yellow
     if "a" in Formatstring: return "#666666" #gray
     if "k" in Formatstring: return "#000000" #black
+    if "y" in Formatstring: return "#BCB300" #green and a bit of orange
+    if "m" in Formatstring: return "#D7A400" #orange and a bit of green
     return "#000000"
 class origin_like:
 

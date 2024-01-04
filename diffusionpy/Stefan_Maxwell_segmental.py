@@ -442,14 +442,23 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
     kswmat[mobiles,polymers]=ksw
     vidry=v0NET/v0dry*widry
     ksws=(kswmat@vidry)[mobiles]
-    v0dry=v0dry*Mdry/1000.
+    v0moldry=v0dry*Mdry/1000.
     def res(RS):
         # RS=np.fmin(np.fmax(RS,1E-8),1)
         xi=wi/Mi/np.sum(wi/Mi,axis=0)
         xw=xi[mobiles]
-        vmol=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(xw))
+        ww=wi[mobiles]
+        vmol=v0moldry/(1-np.sum(ksws*RS**2))*(1-np.sum(xw))
+        vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
+        # v=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(ww))
+        # vtr=(v-np.sum(ww*v0NET[mobiles]))/(1-np.sum(ww))*widry[immobiles]
         vpures2=vpures.copy()
-        vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
+        vpures2[immobiles]=vmoltrick
+        # vpures2[immobiles]=vtr*Mi[immobiles]/1000.
+        # vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
-        return np.nan_to_num(lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])-np.log(RS))
-    return root(res,wi[mobiles],method='broyden1')["x"]
+        logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
+        return np.nan_to_num((logRS-np.log(RS)))
+    re=root(res,wi[mobiles],method='hybr')
+    RS=re["x"]
+    return RS
