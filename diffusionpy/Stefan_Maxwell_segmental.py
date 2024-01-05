@@ -424,7 +424,7 @@ def TgGT(wi,Tg0i,q=0,Ki=None,rho0i=None):
     return Ideal+Excess
 
 
-def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA):
+def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA,n=2):
     # vp=np.zeros(np.sum(polymers))
     
     mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
@@ -448,17 +448,17 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
         xi=wi/Mi/np.sum(wi/Mi,axis=0)
         xw=xi[mobiles]
         ww=wi[mobiles]
-        vmol=v0moldry/(1-np.sum(ksws*RS**2))*(1-np.sum(xw))
+        vmol=v0moldry/(1-np.sum(ksws*RS**n))*(1-np.sum(xw))
         vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
         # v=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(ww))
         # vtr=(v-np.sum(ww*v0NET[mobiles]))/(1-np.sum(ww))*widry[immobiles]
         vpures2=vpures.copy()
-        vpures2[immobiles]=vmoltrick
+        vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
         # vpures2[immobiles]=vtr*Mi[immobiles]/1000.
         # vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
-        return np.nan_to_num((logRS-np.log(RS)))
+        return logRS-np.log(RS)
     re=root(res,wi[mobiles],method='hybr')
     RS=re["x"]
     return RS
