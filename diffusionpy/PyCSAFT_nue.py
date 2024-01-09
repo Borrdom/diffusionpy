@@ -374,6 +374,6 @@ def initialize():
     lngiammai=np.asarray([lngi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
     Gammai=np.asarray([dlnai_dlnxi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
 
-initialize()
+# initialize()
 
 

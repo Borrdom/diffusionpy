@@ -459,6 +459,6 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
         return logRS-np.log(RS)
-    re=root(res,wi[mobiles],method='hybr')
+    re=root(res,wi[mobiles]/2,method='hybr')
     RS=re["x"]
     return RS
