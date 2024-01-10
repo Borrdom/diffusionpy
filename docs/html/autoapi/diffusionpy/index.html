@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>diffusionpy &#8212; diffusionpy 2023 documentation</title>
+    <title>diffusionpy &#8212; diffusionpy 2024 documentation</title>
   
   
   
@@ -127,7 +127,7 @@
   
   
   
-    <p class="title logo__title">diffusionpy 2023 documentation</p>
+    <p class="title logo__title">diffusionpy 2024 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -137,11 +137,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -305,6 +307,12 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DIdeal2DReal"><code class="docutils literal notranslate"><span class="pre">DIdeal2DReal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_averageTH"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Gammaij"><code class="docutils literal notranslate"><span class="pre">Gammaij()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.TgGT"><code class="docutils literal notranslate"><span class="pre">TgGT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.NETVLE"><code class="docutils literal notranslate"><span class="pre">NETVLE()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.wegstein"><code class="docutils literal notranslate"><span class="pre">wegstein()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface"><code class="docutils literal notranslate"><span class="pre">time_dep_surface()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_xloil()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
@@ -320,6 +328,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi_loop"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi_loop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.SAFTSAC"><code class="docutils literal notranslate"><span class="pre">SAFTSAC()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.circular"><code class="docutils literal notranslate"><span class="pre">circular()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.origin_like"><code class="docutils literal notranslate"><span class="pre">origin_like</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.origin_like.subplots"><code class="docutils literal notranslate"><span class="pre">origin_like.subplots()</span></code></a></li>
@@ -334,6 +343,16 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface_cryst"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_cryst"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.cryst_iter"><code class="docutils literal notranslate"><span class="pre">cryst_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement"><code class="docutils literal notranslate"><span class="pre">Measurement</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.FasterXlrdRead"><code class="docutils literal notranslate"><span class="pre">Measurement.FasterXlrdRead()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.read_excel_file"><code class="docutils literal notranslate"><span class="pre">Measurement.read_excel_file()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.FitDiffusionData"><code class="docutils literal notranslate"><span class="pre">Measurement.FitDiffusionData()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.Cranc"><code class="docutils literal notranslate"><span class="pre">Measurement.Cranc()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.interparc"><code class="docutils literal notranslate"><span class="pre">Measurement.interparc()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -356,11 +375,13 @@ document.write(`
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -379,6 +400,9 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.origin_like" title="diffusionpy.origin_like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">origin_like</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Measurement" title="diffusionpy.Measurement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Measurement</span></code></a></p></td>
+<td><p>The class Measurement inherits methods to read and process the DVS excel files from the Apparatus of Surface Measurement Systems.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -394,6 +418,24 @@ document.write(`
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Diffusion_MS_iter" title="diffusionpy.Diffusion_MS_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
 <td><p>iterates dlnai_dlnwi as a function of the concentration wi</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.DIdeal2DReal" title="diffusionpy.DIdeal2DReal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIdeal2DReal</span></code></a>(Dvec, wave, wi0, dlnai_dlnwi, mobile, Mi)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Diffusion_MS_averageTH" title="diffusionpy.Diffusion_MS_averageTH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile)</p></td>
+<td><p>approximates</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Gammaij" title="diffusionpy.Gammaij"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gammaij</span></code></a>(T, wi, par)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.TgGT" title="diffusionpy.TgGT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TgGT</span></code></a>(wi, Tg0i[, q, Ki, rho0i])</p></td>
+<td><p>Compute the glass transition temperature of a mixture</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.NETVLE" title="diffusionpy.NETVLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NETVLE</span></code></a>(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.wegstein" title="diffusionpy.wegstein"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wegstein</span></code></a>(fun, x)</p></td>
+<td><p>Solving via wegsteins method</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.time_dep_surface" title="diffusionpy.time_dep_surface"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface</span></code></a>(t, wi0, wi8, mobile, taui[, lngi_t])</p></td>
 <td><p>_summary_</p></td>
@@ -420,7 +462,7 @@ document.write(`
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.lngi" title="diffusionpy.lngi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lngi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, ...)</p></td>
-<td><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.eta_iter" title="diffusionpy.eta_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta_iter</span></code></a>(p, T, xi, mi, si, ui, eAi, kAi, NAi[, kij, kijA])</p></td>
 <td><p>solve the density mich yiels a given pressure p</p></td>
@@ -440,11 +482,20 @@ document.write(`
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.dlnai_dlnxi_loop" title="diffusionpy.dlnai_dlnxi_loop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi_loop</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, ...)</p></td>
 <td><p>Generate the derivatives of the mole fraction with concentration</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.circular" title="diffusionpy.circular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">circular</span></code></a>(t, zvec, wtz[, Lt, instances, comp, cmap, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.SAFTSAC" title="diffusionpy.SAFTSAC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SAFTSAC</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, ...)</p></td>
+<td><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.circular" title="diffusionpy.circular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">circular</span></code></a>(t, zvec, wtz[, Lt, instances, comp, cmap, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.time_dep_surface_cryst" title="diffusionpy.time_dep_surface_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface_cryst</span></code></a>(t, mobiles, immobiles, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.time_dep_surface_cryst" title="diffusionpy.time_dep_surface_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface_cryst</span></code></a>(t, mobile, wi0, wi8, ...[, ...])</p></td>
 <td><p>calculate the time dependent surface concentration during crystallization</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Diffusion_MS_cryst" title="diffusionpy.Diffusion_MS_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_cryst</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.cryst_iter" title="diffusionpy.cryst_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cryst_iter</span></code></a>(t, mobile, wi0, wi8, crystpar, Mi, ...)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -539,6 +590,57 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.DIdeal2DReal">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">DIdeal2DReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wave</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realtoideal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.DIdeal2DReal" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Diffusion_MS_averageTH">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_averageTH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_averageTH" title="Permalink to this definition">#</a></dt>
+<dd><p>approximates
+.. seealso:: diffusionpy.Diffusion_MS</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Gammaij">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Gammaij</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Gammaij" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.TgGT">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">TgGT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tg0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ki</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.TgGT" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the glass transition temperature of a mixture</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wi</strong> (<em>array_like</em>) – 2D Array of weight fractions [ number of components,number of Points]</p></li>
+<li><p><strong>Tg0i</strong> (<em>array_like</em>) – pure component glass transition temperature /K</p></li>
+<li><p><strong>q</strong> (<em>array_like</em>) – Kwei parameter /-</p></li>
+<li><p><strong>rho0i</strong> (<em>optional</em><em>,</em><em>array_like</em>) – pure component densities /kg/m^3</p></li>
+<li><p><strong>Ki</strong> (<em>optional</em><em>,</em><em>array_like</em>) – Gordon-Taylor parameters         /-</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>glass transition temperature of a mixture  /K</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.NETVLE">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">NETVLE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v0p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polymer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ksw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsAiBi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kapi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.NETVLE" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.wegstein">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">wegstein</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.wegstein" title="Permalink to this definition">#</a></dt>
+<dd><p>Solving via wegsteins method</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.time_dep_surface">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">taui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.time_dep_surface" title="Permalink to this definition">#</a></dt>
 <dd><p>_summary_</p>
@@ -600,32 +702,7 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.lngi">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.lngi" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>T</strong> (<em>float</em>) – temperature</p></li>
-<li><p><strong>xi</strong> (<em>array_like</em>) – mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None</p></li>
-<li><p><strong>mi</strong> (<em>array_like</em>) – segment number</p></li>
-<li><p><strong>si</strong> (<em>array_like</em>) – segment diameter</p></li>
-<li><p><strong>ui</strong> (<em>array_like</em>) – dispersion energy</p></li>
-<li><p><strong>eAi</strong> (<em>array_like</em>) – association energy</p></li>
-<li><p><strong>kAi</strong> (<em>array_like</em>) – association volume</p></li>
-<li><p><strong>NAi</strong> (<em>array_like</em>) – association sites (only symmetric)</p></li>
-<li><p><strong>vpure</strong> (<em>array_like</em>) – pure component molar volumes</p></li>
-<li><p><strong>Mi</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Molar mass. Calculates properties on a mass basis when given. Defaults to None.</p></li>
-<li><p><strong>kij</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).</p></li>
-<li><p><strong>kijA</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>vector of activity coefficients</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array_like</p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.eta_iter">
@@ -738,6 +815,36 @@ Zres (aaray_like): real gas factor</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.SAFTSAC">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">SAFTSAC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.SAFTSAC" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>float</em>) – temperature</p></li>
+<li><p><strong>xi</strong> (<em>array_like</em>) – mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None</p></li>
+<li><p><strong>mi</strong> (<em>array_like</em>) – segment number</p></li>
+<li><p><strong>si</strong> (<em>array_like</em>) – segment diameter</p></li>
+<li><p><strong>ui</strong> (<em>array_like</em>) – dispersion energy</p></li>
+<li><p><strong>eAi</strong> (<em>array_like</em>) – association energy</p></li>
+<li><p><strong>kAi</strong> (<em>array_like</em>) – association volume</p></li>
+<li><p><strong>NAi</strong> (<em>array_like</em>) – association sites (only symmetric)</p></li>
+<li><p><strong>vpure</strong> (<em>array_like</em>) – pure component molar volumes</p></li>
+<li><p><strong>Mi</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Molar mass. Calculates properties on a mass basis when given. Defaults to None.</p></li>
+<li><p><strong>kij</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).</p></li>
+<li><p><strong>kijA</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>vector of activity coefficients</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.circular">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">circular</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wtz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Blues'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tinterp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.circular" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
@@ -794,17 +901,16 @@ Zres (aaray_like): real gas factor</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.time_dep_surface_cryst">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.time_dep_surface_cryst" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tnuc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">298.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.time_dep_surface_cryst" title="Permalink to this definition">#</a></dt>
 <dd><p>calculate the time dependent surface concentration during crystallization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>t</strong> (<em>array_like</em>) – vector of time</p></li>
-<li><p><strong>mobiles</strong> (<em>array_like</em>) – index array indicating the mobile components</p></li>
-<li><p><strong>immobiles</strong> (<em>array_like</em>) – index array indicating the immobile component</p></li>
-<li><p><strong>crystallize</strong> (<em>array_like</em>) – index array indicating the crystallizing components</p></li>
+<li><p><strong>mobile</strong> (<em>array_like</em>) – boolean array indicating the mobile components</p></li>
 <li><p><strong>wi0</strong> (<em>array_like</em>) – initial mass fractions</p></li>
 <li><p><strong>wi8</strong> (<em>array_like</em>) – mass fractions at time equals infinity</p></li>
+<li><p><strong>crystallize</strong> (<em>array_like</em>) – index array indicating the crystallizing components</p></li>
 <li><p><strong>rho0i</strong> (<em>array_like</em>) – pure component densities</p></li>
 <li><p><strong>Mi</strong> (<em>array_like</em>) – molar mass of components</p></li>
 <li><p><strong>DAPI</strong> (<em>array_like</em>) – crystallizing components diffusion coefficient in the vector</p></li>
@@ -826,6 +932,56 @@ Zres (aaray_like): real gas factor</p>
 <dd class="field-odd"><p>array_like</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Diffusion_MS_cryst">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystpar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Diffusion_MS_cryst" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.cryst_iter">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">cryst_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystpar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.cryst_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="diffusionpy.Measurement">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">diffusionpy.</span></span><span class="sig-name descname"><span class="pre">Measurement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DATA_FILE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desorption</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement" title="Permalink to this definition">#</a></dt>
+<dd><p>The class Measurement inherits methods to read and process the DVS excel files from the Apparatus of Surface Measurement Systems.
+The endpoints of each RH step and their kinetics are extracted and the crank equation is fitted to the kinetics.
+The extracted data is added via two new sheets to all selected .xls files. The reading functions are specialized for the format of the .xls files.
+There is little robustness so large changes cause the methids not to work .
+The class accepts more than one excel file and then performs averaging of the kinetics. For that purpose, it is assumed that the all excel sheets are
+replicates of each other, meaning that their RH steps must match</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="diffusionpy.Measurement.FasterXlrdRead">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FasterXlrdRead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement.FasterXlrdRead" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffusionpy.Measurement.read_excel_file">
+<span class="sig-name descname"><span class="pre">read_excel_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement.read_excel_file" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffusionpy.Measurement.FitDiffusionData">
+<span class="sig-name descname"><span class="pre">FitDiffusionData</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement.FitDiffusionData" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffusionpy.Measurement.Cranc">
+<span class="sig-name descname"><span class="pre">Cranc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement.Cranc" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffusionpy.Measurement.interparc">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interparc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Measurement.interparc" title="Permalink to this definition">#</a></dt>
+<dd><p>function that interpolates between a given data series to provide datapoints that are equidistant along the arc of the data.
+Hence the name interp(olate)arc. This is quite handy for kinetic data as the most change in concentration is at earlier times and the least
+change is observed at later times. As a result, usually more data points are in the later stages where nothing happens, since measurements are
+usually performed at equidistant time point</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -883,6 +1039,12 @@ Zres (aaray_like): real gas factor</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.DIdeal2DReal"><code class="docutils literal notranslate"><span class="pre">DIdeal2DReal()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_averageTH"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Gammaij"><code class="docutils literal notranslate"><span class="pre">Gammaij()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.TgGT"><code class="docutils literal notranslate"><span class="pre">TgGT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.NETVLE"><code class="docutils literal notranslate"><span class="pre">NETVLE()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.wegstein"><code class="docutils literal notranslate"><span class="pre">wegstein()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface"><code class="docutils literal notranslate"><span class="pre">time_dep_surface()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_xloil"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_xloil()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
@@ -898,6 +1060,7 @@ Zres (aaray_like): real gas factor</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.dlnai_dlnxi_loop"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi_loop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.SAFTSAC"><code class="docutils literal notranslate"><span class="pre">SAFTSAC()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.circular"><code class="docutils literal notranslate"><span class="pre">circular()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.origin_like"><code class="docutils literal notranslate"><span class="pre">origin_like</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.origin_like.subplots"><code class="docutils literal notranslate"><span class="pre">origin_like.subplots()</span></code></a></li>
@@ -912,6 +1075,16 @@ Zres (aaray_like): real gas factor</p>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.time_dep_surface_cryst"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Diffusion_MS_cryst"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.cryst_iter"><code class="docutils literal notranslate"><span class="pre">cryst_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement"><code class="docutils literal notranslate"><span class="pre">Measurement</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.FasterXlrdRead"><code class="docutils literal notranslate"><span class="pre">Measurement.FasterXlrdRead()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.read_excel_file"><code class="docutils literal notranslate"><span class="pre">Measurement.read_excel_file()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.FitDiffusionData"><code class="docutils literal notranslate"><span class="pre">Measurement.FitDiffusionData()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.Cranc"><code class="docutils literal notranslate"><span class="pre">Measurement.Cranc()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Measurement.interparc"><code class="docutils literal notranslate"><span class="pre">Measurement.interparc()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -939,7 +1112,7 @@ By Borrdom
     
   <p class="copyright">
     
-      © Copyright 2023, Borrdom.
+      © Copyright 2024, Borrdom.
       <br/>
     
   </p>

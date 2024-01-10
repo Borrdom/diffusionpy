@@ -18,7 +18,7 @@ Functions
 
 
 
-.. py:function:: liquidseperation_mode(wvinit, ode, kappaii, tint, THFaktor, mobiles, immobiles, Mi, D, allflux, wi0, dmuext, wiB)
+.. py:function:: liquidseperation_mode(wvinit, ode, kappaii, tint, THFaktor, mobiles, immobiles, Mi, D, allflux, wi0_liq, dmuext, wiB)
 
 
 .. py:function:: DGT(wv, kappaii)

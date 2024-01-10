@@ -16,6 +16,7 @@ Functions
    diffusionpy.PyCSAFT_nue.ares
    diffusionpy.PyCSAFT_nue.eta_iter
    diffusionpy.PyCSAFT_nue.vpure
+   diffusionpy.PyCSAFT_nue.SAFTSAC
    diffusionpy.PyCSAFT_nue.lngi
    diffusionpy.PyCSAFT_nue.lnphi_TP
    diffusionpy.PyCSAFT_nue.dlnai_dlnxi
@@ -65,7 +66,7 @@ Functions
    solve the density mich yiels a given pressure p
 
 
-.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
+.. py:function:: SAFTSAC(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
 
    Calculate the log of the activity coefficients via the SAFT-SAC approximation
 
@@ -96,6 +97,9 @@ Functions
 
    :returns: vector of activity coefficients
    :rtype: array_like
+
+
+.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
 
 
 .. py:function:: lnphi_TP(p, T, xi, mi, si, ui, eAi, kAi, NAi, Mi=None, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]), **kwargs)

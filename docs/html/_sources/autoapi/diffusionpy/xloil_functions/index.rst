@@ -26,6 +26,7 @@ Functions
    diffusionpy.xloil_functions.time_dep_surface_xloil
    diffusionpy.xloil_functions.gradient
    diffusionpy.xloil_functions.reduce_points
+   diffusionpy.xloil_functions.origin_plot
    diffusionpy.xloil_functions.crank_xl
    diffusionpy.xloil_functions.interp1d
    diffusionpy.xloil_functions.BHX_xloil
@@ -70,6 +71,9 @@ Attributes
 
 
 .. py:function:: reduce_points(x, n: int)
+
+
+.. py:function:: origin_plot(x: xlo.Array(float, dims=1), y: xlo.Array(float, dims=1), xexp: xlo.Array(float, dims=1), yexp: xlo.Array(float, dims=1), xmin, xmax, ymin, ymax, xlabel, ylabel, xunit, yunit, spacing: int, fmt)
 
 
 .. py:function:: crank_xl(t, L0, Ds, ws0, ws8)
