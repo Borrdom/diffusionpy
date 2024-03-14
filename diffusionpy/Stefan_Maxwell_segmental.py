@@ -91,7 +91,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
         dav=np.zeros_like(dwv)
         for i in range(nz_1): 
-            dav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,...])>0.001 else dlnwv[:,i]#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+            dav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,:-1,:-1])>0.001 else np.zeros_like(dwv[:,i])#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
         B=BIJ_Matrix(D,wi,mobiles)
         
         if allflux:
