@@ -131,6 +131,8 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         # porosity=(1-alpha*omega)[None,:,None,None]
         # eta=1.5
         # dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
+        # for i in range(nTH):
+        #     dmuext[i,:]=alpha*1
         dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0_cryst,dmuext,wiB)
         
         dalphadt,drdt=CNT1(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngi_tz(t),wv)
