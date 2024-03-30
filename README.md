@@ -6,7 +6,7 @@ Provides the most 1D Stefan-Maxwell Diffusion with a PC-SAFT implementation
 
 # Installation
 ```console
-git clone https://github.com/Borrdom/diffusiony
+git clone https://github.com/Borrdom/diffusionpy
 cd diffusionpy
 pip install .
 ```
