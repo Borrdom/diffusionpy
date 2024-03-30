@@ -16,7 +16,7 @@ check out the jupyter notebooks in the [examples](https://github.com/Borrdom/dif
 
 
 # Documentation
-can be found [here]([https://borrdom.github.io](https://github.com/Borrdom/diffusionpy/tree/main/docs/html/index.html).
+can be found [here](https://github.com/Borrdom/diffusionpy/tree/main/docs/html/index.html).
 
 # License information
 
