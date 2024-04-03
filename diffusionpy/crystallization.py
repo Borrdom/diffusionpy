@@ -1,9 +1,8 @@
 import numpy as np
-# from numba import njit
 from scipy.integrate import solve_ivp
 from numba import njit,config,prange,jit
 import time
-from .Stefan_Maxwell_segmental import Diffusion_MS,Diffusion_MS_iter,wegstein
+from .diffusion import Diffusion_MS,Diffusion_MS_iter,wegstein
 from scipy.interpolate import interp1d
 
 # config.DISABLE_JIT = True
@@ -133,7 +132,7 @@ def crystallization_mode(wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,
         # dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor*porosity**eta,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
         # for i in range(nTH):
         #     dmuext[i,:]=alpha*1
-        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0_cryst,dmuext,wiB)
+        dwvdt=ode(t,np.ascontiguousarray(wv.flatten()),tint,THFaktor,mobiles,immobiles,D,allflux,wi0_cryst,dmuext,wiB)
         
         dalphadt,drdt=CNT1(t,np.ascontiguousarray(alpha),np.ascontiguousarray(r),mobiles,immobiles,crystallizes,wi0,wi8,rho0i,Mi,DAPI,sigma,kt,g,deltaHSL,TSL,cpSL,tnuc,temp,lngi_tz(t),wv)
         fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten(),drdt.flatten()))
@@ -217,32 +216,32 @@ def time_dep_surface_cryst(t,mobile,wi0,wi8,crystallize,rho0i,Mi,DAPI,sigma,kt,g
     wiB[immobiles[crystallizes!=immobiles],:]=(1-wvB)*(1-dl_la)
     return np.ascontiguousarray(wiB.T),alpha,r
 
-def Diffusion_MS_cryst(t,L,Dvec,wi0,wi8,Mi,mobile,crystpar,lngi_fun,**kwargs):
-        _,wtz_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+def Diffusion_MS_cryst(t,L,Dvec,wi0,wi8,mobile,crystpar,lngi_fun,**kwargs):
+        _,wtz_old,_,_=Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,**kwargs)
         def wtz_fun(wtz_old):
             lngi_tz=np.asarray([[lngi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz_old])
             if "dlnai_dlnwi_fun" in kwargs:
-                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
+                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,mobile,**crystpar,**kwargs,lngi_tz=lngi_tz)
             else:
-                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz) 
+                wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,**crystpar,**kwargs,lngi_tz=lngi_tz) 
             return wtz
         wtz_new=wegstein(wtz_fun,wtz_old)
         lngi_tz=np.asarray([[lngi_fun(np.ascontiguousarray(col)) for col in row.T] for row in wtz_new])
     #    wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
         if "dlnai_dlnwi_fun" in kwargs:
-            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz)
+            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS_iter(t,L,Dvec,wi0,wi8,mobile,**crystpar,**kwargs,lngi_tz=lngi_tz)
         else:
-            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**crystpar,**kwargs,full_output=True,lngi_tz=lngi_tz) 
+            wt,wtz,zvec,Lt,alpha,r=Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,**crystpar,**kwargs,lngi_tz=lngi_tz) 
         return wt,wtz,zvec,Lt,alpha,r
 
 
-def cryst_iter(t,mobile,wi0,wi8,crystpar,Mi,lngi_fun,wv_fun):
+def cryst_iter(t,mobile,wi0,wi8,crystpar,lngi_fun,wv_fun):
     witB_old=np.asarray([(wi0+wi8)/2]*len(t))
     def witB_fun(witB_old):
         lngit=np.asarray([lngi_fun(val) for val in witB_old])
-        witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,Mi=Mi,lngi=lngit,wv_fun=wv_fun)
+        witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,lngi=lngit,wv_fun=wv_fun)
         return witB
     witB_new=wegstein(witB_fun,witB_old)
     lngit=np.asarray([lngi_fun(val) for val in witB_new])
-    witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,Mi=Mi,lngi=lngit,wv_fun=wv_fun)
+    witB,alphaB,r=time_dep_surface_cryst(t,mobile,wi0,wi8,**crystpar,lngi=lngit,wv_fun=wv_fun)
     return witB,alphaB,r

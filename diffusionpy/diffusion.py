@@ -4,15 +4,10 @@ from scipy.interpolate import interp1d
 from scipy.optimize import root
 from numba import njit,config,prange
 import time
-from .FEM_collocation import collocation,collocation_space
-from .PyCSAFT_nue import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC
-# config.DISABLE_JIT = True
+from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC
 
 
-
-
-
-def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=None,**kwargs):
+def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
     
@@ -22,18 +17,11 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         Dvec (array_like): Vector of diffusion coefficients. See diffusionpy.D_Matrix                       /m^2/s
         wi0 (array_like): Mass fractions at t=0               /-
         wi8 (array_like): Mass fraction at t=infinity         /-
-        Mi (array_like):   Molar mass of components nc         /g/mol
         mobile(array_like): boolean vector indicating the mobility of a component
         dlnai_dlnwi (array_like): estimate for DlnaiDlnx at t          /-
         Keyword Arguments:
-            wiB (array_like): Hello \n
-            rho0iB (array_like): Hello \n
+            wiB (array_like): weight fraction at z=L \n
     Returns:
-        ndarray:   
-        if ``full_output=False``: \n
-        Matrix ``wt`` of mass fractions at t /- \n
-
-        if ``full_output=True``: \n 
         Matrix of mass fractions at t       /- \n
         Matrix of mass fractions at t,z     /- \n
     Examples:
@@ -44,21 +32,14 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         >>> L=1E-6
         >>> Mi=np.asarray([18.,72.])
         >>> mobile=np.asarray([True,False])
-        >>> wt=Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile)
+        >>> wt=Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile)
     See Also:
         diffusionpy.D_Matrix
     """
-    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
-    def ode(t,x,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB):
-        """change in the weight fraction with time"""
-        def np_linalg_solve(A,b):
-            """solve a Batch of linear system of equations"""
-            ret = np.zeros_like(b)
-            for i in range(b.shape[1]):
-                ret[:, i] = np.linalg.solve(A[:,:,i],b[:,i])
-            return ret
+    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
+    def ode(t,x,tint,THFaktor,mobiles,immobiles,D,allflux,wi0,dmuext,wiB):
         def BIJ_Matrix(D,wi,mobiles):
-            """create the friction matrix which needs to be invertable"""
+            """create the friction matrix containning the diffusion coefficients"""
             nc,nz_1=wi.shape
             B=np.zeros((nc,nc,nz_1))
             for i in range(nc):
@@ -77,12 +58,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         wi[mobiles,:]=wv
         wi0_immobiles=wi0[immobiles,:]/np.sum(wi0[immobiles,:],axis=0)
         wi[immobiles,:]=(1-np.expand_dims(np.sum(wv,axis=0),axis=0))*wi0_immobiles
-        for j in range(nc):
-            wi[j,-1]=np.interp(t,tint,wiB[:,j])
+        for j in range(nc): wi[j,-1]=np.interp(t,tint,wiB[:,j])
         wv[:,-1]=wi[mobiles,-1]
         dwv=np.zeros((nTH,nz_1))
-        for j in range(nTH):
-            dwv[j,:]=collocation(wv[j,:],nz_1,True)
+        for j in range(nTH): dwv[j,1:]=np.diff(wv[j,:])
         dwv[:,0]=0
         THFaktor_=np.zeros((nz_1,nTH,nTH))
         for i in range(nz_1):
@@ -90,25 +69,23 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 for k in range(nTH):
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
         dav=np.zeros_like(dwv)
-        for i in range(nz_1): 
-            dav[:,i]=THFaktor_[i,:,:]@dwv[:,i] #if np.linalg.det(THFaktor_[i,:-1,:-1])>0.001 else np.zeros_like(dwv[:,i])#-(THFaktor_[i,...]@np.ascontiguousarray(dlnwv[:,i]))
+        for i in range(nz_1): dav[:,i]=THFaktor_[i,:,:]@dwv[:,i]
         B=BIJ_Matrix(D,wi,mobiles)
-        
         if allflux:
             for i in range(nz_1):
                 B[:,:,i]=B[:,:,i]+1/np.max(D)*np.outer(wv[:,i],np.ones_like(wv[:,i]))
         dmuv=dav+dmuext*wv
         omega=(np.sum(wi0[immobiles,:],axis=0)/(1-np.sum(wv,axis=0)))**-1 if not allflux else np.ones(nz_1)
-        dv=dmuv*omega 
-        jv=np_linalg_solve(B,dv) #if not allflux else np_linalg_solve(B,dv[:-1,:])
+        dv=dmuv*omega
+        jv = np.zeros_like(dv)
+        for i in range(jv.shape[1]):  jv[:, i] = np.linalg.solve(B[:,:,i],dv[:,i]) 
         jv[:,0]=0.
         djv=np.zeros((nTH,nz_1))
         for j in range(nTH):
-            djv[j,:]=collocation(jv[j,:],nz_1,False)    
+            djv[j,:-1]=np.diff(jv[j,:])   
         djv[:,-1]=0.
         dwvdt=np.zeros_like(djv)
-        for j in range(nTH):
-            dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
+        for j in range(nTH): dwvdt[j,:]=djv[j,:]-np.sum(djv,axis=0)*wv[j,:] if not allflux else djv[j,:]
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
@@ -116,8 +93,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     start1=time.time_ns()
     nc=len(wi0)
     nz=kwargs["nz"] if "nz" in kwargs else 20
-    z,nE=collocation_space(nz+1)
-    dz=L/(nE)
+    z=np.linspace(0,L,nz+1)
+    dz=L/(nz)
     D=D_Matrix(Dvec/dz**2,nc)    
     zvec=z*L
     nf=int(np.sum(mobile))
@@ -149,8 +126,12 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
             
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import relaxation_mode
-        rho0i=kwargs["rho0i"] if "rho0i" in kwargs else 1200.*np.ones(nc)
-        xinit,ode=relaxation_mode(wvinit,ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"],Mi[mobiles],1/rho0i[mobiles],tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
+        ode=relaxation_mode(ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"])
+        nJ=len(kwargs["EJ"])
+        sigmaJ0=np.zeros((nz+1,nJ))
+        sigmaJB=np.zeros((nJ))
+        sigmaJ0[-1,:]=sigmaJB
+        xinit=np.hstack((wvinit.flatten(),sigmaJ0.flatten()))
         return_stress=True
 
     if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
@@ -159,29 +140,18 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
         rho0i=kwargs["rho0i"] if "rho0i" in kwargs else 1320.*np.ones(nc)
         tnuc=kwargs["tnuc"] if "tnuc" in kwargs else 0.
         temp=kwargs["temp"] if "temp" in kwargs else 298.15
-        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,Mi,kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],tnuc,temp,kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,kwargs['Mi'],kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],tnuc,temp,kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
         return_alpha=True
-    if "kappaii" in kwargs:
-        from .liquidseperation import liquidseperation_mode
-        kappaii=kwargs["kappaii"]/dz**2
-        xinit,ode=liquidseperation_mode(wvinit,ode,kappaii,tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0,dmuext,wiB)
-
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
-    # sol=nbkode.BDF5(ode,tint[0],xinit,params=[tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB]).run(tint)
-    # sol=nbrk_ode(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,swelling,rho,wi0,dmuext,rhoiB,drhovdtB),rk_method=0,t_eval=tint)#rtol=1E-2,atol=1E-3)
-    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,Mi,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
+    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
     end=time.time_ns()
     print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T 
-    # x_sol=np.exp(sol["y"] ) if "EJ" not in kwargs else sol["y"] 
+    if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T  
     x_sol=sol["y"]
-    # rhoend=x_sol[:(nz+1)*nTH,-1]
-    
     nt=len(tint)
     wt=np.zeros((nc,nt))
     wik=np.zeros((nt,nc,nz+1))
-
     for k in range(nt):
         wvk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
         wik[k,:,:]= wiinit
@@ -197,7 +167,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
     if return_stress:
         nJ=len(kwargs["EJ"])
         sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
-        return(wt.T,sigmaJ) if not full_output else (wt.T,wik,zvec,Lt,sigmaJ)
+        return (wt.T,wik,zvec,Lt,sigmaJ)
 
     elif return_alpha:
         alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
@@ -211,11 +181,10 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi=Non
                 wik[k,crystallizes,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*dl_la
                 wik[k,immobiles[crystallizes!=immobiles],:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_notcrystimmob*(1-dl_la)
                 wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
-                
-        return (wt.T,alpha,r) if not full_output else (wt.T,wik,zvec,Lt,alpha,r)
+        return (wt.T,wik,zvec,Lt,alpha,r)
 
     else:
-        return wt.T if not full_output else (wt.T,wik,zvec,Lt)
+        return (wt.T,wik,zvec,Lt)
 
 
 def D_Matrix(Dvec,nc):
@@ -271,7 +240,7 @@ def Gammaij(T,wi,par):
     return dlnai_dlnwi
 
 
-def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,Mi,realtoideal=False):
+def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,realtoideal=False):
     nc=wi0.shape[0]
     nf=int(np.sum(mobile))
     allflux=nc==nf
@@ -331,29 +300,23 @@ def wegstein(fun,x):
             return xx 
         a = df/dx
         q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
-        # q= np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0)
-        # q=0.
-        # q=0.25
-        # q=np.fmin(np.fmax(np.average(np.nan_to_num(a/(a-1))),0),0.9)
         print(f"iter {i+1}: q = {q}")
-         # resort to fixed point iteration as it works best for this case
         x=xx
         xx = q * xx + (1-q) * ff
-        # xx[:,-1,:]=1-np.sum(xx[:,:-1,:],axis=1)
         f=ff
         ff = fun(xx)    
         df=ff-f
         dx = xx - x
     return xx  
 
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_fun=None,**kwargs):
+def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi_fun=None,**kwargs):
     """iterates dlnai_dlnwi as a function of the concentration wi
     See also:
         diffusionpy.Diffusion_MS
     
     """
 
-    res_old=Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
+    res_old=Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,**kwargs)
     wt_old=res_old[1]
     nt,nc,nz_1=wt_old.shape
     def wt_fix(wtz):
@@ -365,7 +328,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_f
         dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
         end=time.time_ns()
         print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,full_output=True,**kwargs)[1]
+        return Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=dlnai_dlnwi,**kwargs)[1]
     # def wt_res(wtz):
     #     wtz=np.reshape(wtz,(nt,nc,nz_1))
         
@@ -380,85 +343,7 @@ def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_f
     wtopt=wegstein(wt_fix,wt_old)
     wtopt=np.ascontiguousarray(np.swapaxes(wtopt,1,2))
     dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
-    return Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=full_output,dlnai_dlnwi=dlnai_dlnwiopt,**kwargs)
+    return Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=dlnai_dlnwiopt,**kwargs)
 
 
-def Diffusion_MS_averageTH(t,L,Dvec,wi0,wi8,Mi,mobile,full_output=False,dlnai_dlnwi_fun=None,**kwargs):
-    """approximates
-    See also:
-        diffusionpy.Diffusion_MS
-    
-    """
-    wave=(wi0+wi8)/2
-    ri=Mi/np.min(Mi)
-    dlnai_dlnwi=dlnai_dlnwi_fun(wave[None,None,:])[0][0]
-    Dvec2=DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,ri,realtoideal=True)
-    return Diffusion_MS(t,L,Dvec2,wi0,wi8,Mi,mobile,**kwargs,full_output=True)
 
-def TgGT(wi,Tg0i,q=0,Ki=None,rho0i=None):
-    """
-    Compute the glass transition temperature of a mixture  
-    
-    Args:
-        wi (array_like): 2D Array of weight fractions [ number of components,number of Points]
-        Tg0i (array_like): pure component glass transition temperature /K
-        q (array_like): Kwei parameter /-
-        rho0i (optional,array_like) : pure component densities /kg/m^3
-        Ki (optional,array_like): Gordon-Taylor parameters         /-
-    Returns:
-        ndarray:   
-        glass transition temperature of a mixture  /K 
-    """
-    nc=Tg0i.shape[0]
-    qmat=np.zeros((nc,nc))
-    qmat[np.triu_indices(nc, k=1)]=q
-    Excess=np.asarray([np.sum(np.outer(wi[:,i],wi[:,i])*qmat) for i,val in enumerate(wi[0,:])])
-    if Ki is None and rho0i is not None:
-        Ideal=np.sum(wi*1/rho0i[:,None],axis=0)/np.sum(wi*1/rho0i[:,None]/Tg0i[:,None],axis=0)
-    elif Ki is not None and rho0i is None:
-        Ideal=np.sum(wi*Ki[:,None]*Tg0i[:,None],axis=0)/np.sum(wi*Ki[:,None],axis=0)
-    elif Ki is None and rho0i is None:
-        Ideal=np.sum(wi*1/rho0i[:,None],axis=0)
-    else:
-        Ideal=np.sum(wi*Ki[:,None]*Tg0i[:,None],axis=0)/np.sum(wi*Ki[:,None],axis=0)
-    return Ideal+Excess
-
-
-def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA,n=2):
-    # vp=np.zeros(np.sum(polymers))
-    
-    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
-    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
-    widry=np.zeros_like(wi)
-    widry[immobiles]=wi[immobiles]/np.sum(wi[immobiles])
-    nc=len(Mi)
-    kswmat=np.zeros((nc,nc))
-    polymers=np.where(polymer)[0]
-    v0NET=vpures*1000./Mi
-    v0NET[polymers]=v0p
-    Mdry=(np.sum(widry/Mi))**-1
-    xidry=widry/Mi*Mdry
-    v0dry=np.sum(v0NET*widry)
-    kswmat[mobiles,polymers]=ksw
-    vidry=v0NET/v0dry*widry
-    ksws=(kswmat@vidry)[mobiles]
-    v0moldry=v0dry*Mdry/1000.
-    def res(RS):
-        # RS=np.fmin(np.fmax(RS,1E-8),1)
-        xi=wi/Mi/np.sum(wi/Mi,axis=0)
-        xw=xi[mobiles]
-        ww=wi[mobiles]
-        vmol=v0moldry/(1-np.sum(ksws*RS**n))*(1-np.sum(xw))
-        vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
-        # v=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(ww))
-        # vtr=(v-np.sum(ww*v0NET[mobiles]))/(1-np.sum(ww))*widry[immobiles]
-        vpures2=vpures.copy()
-        vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
-        # vpures2[immobiles]=vtr*Mi[immobiles]/1000.
-        # vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
-        lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
-        logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
-        return logRS-np.log(RS)
-    re=root(res,wi[mobiles]/2,method='hybr')
-    RS=re["x"]
-    return RS

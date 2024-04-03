@@ -5,7 +5,7 @@ import matplotlib
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 import mpltern
 from scipy.interpolate import interp1d
-
+from cycler import cycler
 
 def circular(t,zvec,wtz,Lt=None,instances=6,comp=0,cmap="Blues",vmin=None,vmax=None,label=None,tinterp=None):
     matplotlib.rcParams['mathtext.fontset'] = 'custom'
@@ -79,6 +79,11 @@ class origin_like:
         matplotlib.rcParams['ytick.major.pad']='5'
         matplotlib.rcParams['axes.linewidth'] = 0.5
         matplotlib.rcParams['axes.axisbelow'] = True
+        # matplotlib.rcParams['figure.figsize'] = (4 , 4)
+        # matplotlib.rcParams['axes.set_position'] = [0.2667,1-0.2042-0.5017,0.5908,0.5017]
+        # matplotlib.rcParams['figure.dpi'] = 250
+        # matplotlib.rcParams['lines.linewidth'] = 2
+    
         # matplotlib.rcParams["toolbar"] = "toolmanager"
         # plt.rcParams['axes.autolimit_mode'] = 'round_numbers'
         
