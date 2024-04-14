@@ -396,6 +396,8 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
     RS=re["x"]
     return RS
 
-# initialize()
-
-
+def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpSL):
+    R=8.3145
+    lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
+    lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
+    return lnai-lnaiSLE

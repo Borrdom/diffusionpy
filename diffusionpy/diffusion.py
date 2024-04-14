@@ -7,7 +7,7 @@ import time
 from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC
 
 
-def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,**kwargs):
+def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
     
@@ -123,25 +123,27 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,**kwargs):
     drhovdtB=np.zeros(nTH)
     return_stress=False
     return_alpha=False
-            
+
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import relaxation_mode
-        ode=relaxation_mode(ode,kwargs["EJ"],kwargs["etaJ"],kwargs["exponent"])
+        ode=relaxation_mode(ode,**kwargs)
         nJ=len(kwargs["EJ"])
         sigmaJ0=np.zeros((nz+1,nJ))
         sigmaJB=np.zeros((nJ))
         sigmaJ0[-1,:]=sigmaJB
         xinit=np.hstack((wvinit.flatten(),sigmaJ0.flatten()))
         return_stress=True
-
-    if "deltHSL" in kwargs or "TSL" in kwargs or "cpSL" in kwargs  or "DAPI" in kwargs  or "sigma" in kwargs  or "kt" in kwargs or "g" in kwargs or "crystallize" in kwargs: 
+    if "A" in kwargs or "B" in kwargs or "C" in kwargs  or "n" in kwargs or 'T' in kwargs: 
         from .crystallization import crystallization_mode
-        lngi_tz=interp1d(tint,kwargs["lngi_tz"],axis=0,bounds_error=False)
-        rho0i=kwargs["rho0i"] if "rho0i" in kwargs else 1320.*np.ones(nc)
-        tnuc=kwargs["tnuc"] if "tnuc" in kwargs else 0.
-        temp=kwargs["temp"] if "temp" in kwargs else 298.15
-        xinit,ode=crystallization_mode(wvinit,ode,mobiles,immobiles,kwargs["crystallize"],wi0,wi8,rho0i,kwargs['Mi'],kwargs["deltaHSL"],kwargs["TSL"],kwargs["cpSL"],tnuc,temp,kwargs["DAPI"],kwargs["sigma"],kwargs["kt"],kwargs["g"],lngi_tz)
+        alpha0=np.zeros(nz+1)
+        # r0=1E-20*np.ones(nz+1)
+        # xinit=np.hstack((wvinit.flatten(),alpha0.flatten(),r0.flatten()))
+        xinit=np.hstack((wvinit.flatten(),alpha0.flatten()))
+        # kwargs["lnS"]=interp1d(tint,kwargs["lnS"],axis=0,bounds_error=False)
+        wv_fun=kwargs['wv_fun'] if 'wv_fun' in kwargs else None
+        ode=crystallization_mode(ode,kwargs['A'],kwargs['B'],kwargs['n'],kwargs['T'],saftpar,wv_fun)
         return_alpha=True
+
     print("------------- Start diffusion modeling ----------------")
     start=time.time_ns()
     sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
@@ -171,17 +173,16 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,**kwargs):
 
     elif return_alpha:
         alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
-        r=x_sol[(nz+1)*(nTH+1):(nz+1)*(nTH+2),:]
-        crystallizes=np.where(kwargs["crystallize"])[0]
-        if immobiles.shape[0]>0.:
-            wi0_immobiles=wi0/np.sum(wi0[immobiles])
-            wi0_notcrystimmob=wi0_immobiles[immobiles[crystallizes!=immobiles]]/np.sum(wi0_immobiles[immobiles[crystallizes!=immobiles]])
-            for k in range(nt):
-                dl_la = (1-alpha[:,k])/(1/wi0[crystallizes]-alpha[:,k])
-                wik[k,crystallizes,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*dl_la
-                wik[k,immobiles[crystallizes!=immobiles],:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_notcrystimmob*(1-dl_la)
-                wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
-        return (wt.T,wik,zvec,Lt,alpha,r)
+        # crystallizes=np.where(kwargs["crystallize"])[0]
+        # if immobiles.shape[0]>0.:
+        #     wi0_immobiles=wi0/np.sum(wi0[immobiles])
+        #     wi0_notcrystimmob=wi0_immobiles[immobiles[crystallizes!=immobiles]]/np.sum(wi0_immobiles[immobiles[crystallizes!=immobiles]])
+        #     for k in range(nt):
+        #         dl_la = (1-alpha[:,k])/(1/wi0[crystallizes]-alpha[:,k])
+        #         wik[k,crystallizes,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*dl_la
+        #         wik[k,immobiles[crystallizes!=immobiles],:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_notcrystimmob*(1-dl_la)
+        #         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
+        return (wt.T,wik,zvec,Lt,alpha)
 
     else:
         return (wt.T,wik,zvec,Lt)
