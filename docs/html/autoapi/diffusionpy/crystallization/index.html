@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>diffusionpy.crystallization &#8212; diffusionpy 2023 documentation</title>
+    <title>diffusionpy.crystallization &#8212; diffusionpy 2024 documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/diffusionpy/crystallization/index';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="diffusionpy.liquidseperation" href="../liquidseperation/index.html" />
+    <link rel="next" title="diffusionpy.distillation" href="../distillation/index.html" />
     <link rel="prev" title="diffusionpy.crank_and_other" href="../crank_and_other/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -127,7 +127,7 @@
   
   
   
-    <p class="title logo__title">diffusionpy 2023 documentation</p>
+    <p class="title logo__title">diffusionpy 2024 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -137,11 +137,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -300,10 +302,11 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.crystallization_mode"><code class="docutils literal notranslate"><span class="pre">crystallization_mode()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.CNT"><code class="docutils literal notranslate"><span class="pre">CNT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.crystallization_mode"><code class="docutils literal notranslate"><span class="pre">crystallization_mode()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.time_dep_surface_cryst"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_cryst()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.CNT_surf"><code class="docutils literal notranslate"><span class="pre">CNT_surf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.Diffusion_MS_cryst"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.cryst_iter"><code class="docutils literal notranslate"><span class="pre">cryst_iter()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -327,35 +330,89 @@ document.write(`
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">#</a></h3>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.crystallization.crystallization_mode" title="diffusionpy.crystallization.crystallization_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crystallization_mode</span></code></a>(wvinit, ode, mobiles, immobiles, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.crystallization.CNT" title="diffusionpy.crystallization.CNT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CNT</span></code></a>(t, alpha, r, mobiles, immobiles, crystallizes, ...)</p></td>
+<td><p>Calculates the crystallization kinetics based on the classical nucleation  coupled with a simple crystal growth model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.crystallization.crystallization_mode" title="diffusionpy.crystallization.crystallization_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crystallization_mode</span></code></a>(wvinit, ode, mobiles, immobiles, ...)</p></td>
 <td><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.crystallization.CNT" title="diffusionpy.crystallization.CNT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CNT</span></code></a>(t, alpha, r, mobiles, immobiles, crystallizes, ...)</p></td>
-<td><p>Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.crystallization.time_dep_surface_cryst" title="diffusionpy.crystallization.time_dep_surface_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface_cryst</span></code></a>(t, mobiles, immobiles, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.crystallization.time_dep_surface_cryst" title="diffusionpy.crystallization.time_dep_surface_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_dep_surface_cryst</span></code></a>(t, mobile, wi0, wi8, ...[, ...])</p></td>
 <td><p>calculate the time dependent surface concentration during crystallization</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.crystallization.CNT_surf" title="diffusionpy.crystallization.CNT_surf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CNT_surf</span></code></a>(t, alpha, r, mobiles, immobiles, crystallize, ...)</p></td>
-<td><p>Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.crystallization.Diffusion_MS_cryst" title="diffusionpy.crystallization.Diffusion_MS_cryst"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_cryst</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.crystallization.cryst_iter" title="diffusionpy.crystallization.cryst_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cryst_iter</span></code></a>(t, mobile, wi0, wi8, crystpar, Mi, ...)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.crystallization.CNT">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">CNT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tnuc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.CNT" title="Permalink to this definition">#</a></dt>
+<dd><p>Calculates the crystallization kinetics based on the classical nucleation  coupled with a simple crystal growth model
+:param t: time /s
+:type t: array_like
+:param alpha: crystal fraction /-
+:type alpha: array_like
+:param mobiles: stores index of mobile components
+:type mobiles: array_like
+:param immobiles: stores index of immobile components
+:type immobiles: array_like
+:param crystallizes: stores index of crystallizing components
+:type crystallizes: array_like
+:param wi0: Mass fractions at t=0               /-
+:type wi0: array_like
+:param wi8: Mass fraction at t=infinity         /-
+:type wi8: array_like
+:param rho0i: pure component densitys           /kg/m^3
+:type rho0i: array_like
+:param Mi: Molar mass of components nc         /g/mol
+:type Mi: array_like
+:param DAPI: diffusion coefficient of the API to the crystal m^2/s
+:type DAPI: float
+:param sigma: interfacial tension             /N/m
+:type sigma: float
+:param kt: growth rate constant                /m/s
+:type kt: float
+:param g: growth order                         /-
+:type g: float
+:param deltaHSL: melting enthalpy           /J/mol
+:type deltaHSL: float
+:param TSL: melting temperature           /K
+:type TSL: float
+:param cpSL: heat capacity difference solid and liquid           /J/mol/K
+:type cpSL: float
+:param tnuc: nucleation onset           /s
+:type tnuc: float
+:param temp: temperature                 /K
+:type temp: float
+:param lngi: log of acticity coefficients for supersaturation calculations /-
+:type lngi: array_like
+:param wv: mobile component weight fraction           /-
+:type wv: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>recrystallization rate       /-</p>
+<p>growth rate    /-</p>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.crystallization.crystallization_mode">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">crystallization_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wvinit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_tz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.crystallization_mode" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">crystallization_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wvinit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tnuc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_tz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.crystallization_mode" title="Permalink to this definition">#</a></dt>
 <dd><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>wvinit</strong> (<em>array_like</em>) – vector of the mass fractions of the mobile components</p></li>
 <li><p><strong>ode</strong> (<em>array_like</em>) – ode fuinction which is modified by the function</p></li>
-<li><p><strong>deltaHSL</strong> (<em>array_like</em>) – Melting Enthalpy</p></li>
-<li><p><strong>TSL</strong> (<em>array_like</em>) – Melting temperature</p></li>
-<li><p><strong>DAPI</strong> (<em>array_like</em>) – </p></li>
-<li><p><strong>sigma</strong> (<em>array_like</em>) – interfacial tension of crystal to its surrounding</p></li>
-<li><p><strong>kt</strong> (<em>array_like</em>) – rate of crystal growth kinetics</p></li>
-<li><p><strong>g</strong> (<em>array_like</em>) – order of crystal growth kinetics</p></li>
+<li><p><strong>CNT</strong> (<em>for the rest see</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -368,24 +425,17 @@ document.write(`
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.crystallization.CNT">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">CNT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallizes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.CNT" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.crystallization.time_dep_surface_cryst">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.time_dep_surface_cryst" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">time_dep_surface_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tnuc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">298.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.time_dep_surface_cryst" title="Permalink to this definition">#</a></dt>
 <dd><p>calculate the time dependent surface concentration during crystallization</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>t</strong> (<em>array_like</em>) – vector of time</p></li>
-<li><p><strong>mobiles</strong> (<em>array_like</em>) – index array indicating the mobile components</p></li>
-<li><p><strong>immobiles</strong> (<em>array_like</em>) – index array indicating the immobile component</p></li>
-<li><p><strong>crystallize</strong> (<em>array_like</em>) – index array indicating the crystallizing components</p></li>
+<li><p><strong>mobile</strong> (<em>array_like</em>) – boolean array indicating the mobile components</p></li>
 <li><p><strong>wi0</strong> (<em>array_like</em>) – initial mass fractions</p></li>
 <li><p><strong>wi8</strong> (<em>array_like</em>) – mass fractions at time equals infinity</p></li>
+<li><p><strong>crystallize</strong> (<em>array_like</em>) – index array indicating the crystallizing components</p></li>
 <li><p><strong>rho0i</strong> (<em>array_like</em>) – pure component densities</p></li>
 <li><p><strong>Mi</strong> (<em>array_like</em>) – molar mass of components</p></li>
 <li><p><strong>DAPI</strong> (<em>array_like</em>) – crystallizing components diffusion coefficient in the vector</p></li>
@@ -410,10 +460,14 @@ document.write(`
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.crystallization.CNT_surf">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">CNT_surf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystallize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAPI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaHSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpSL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.CNT_surf" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculates the crystallization kinetics based on the classical nucleation theory for nucleation and a simple crystal growth model</p>
-</dd></dl>
+<dt class="sig sig-object py" id="diffusionpy.crystallization.Diffusion_MS_cryst">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_cryst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystpar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.Diffusion_MS_cryst" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.crystallization.cryst_iter">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.crystallization.</span></span><span class="sig-name descname"><span class="pre">cryst_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crystpar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lngi_fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wv_fun</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.crystallization.cryst_iter" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 </section>
@@ -440,11 +494,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="../liquidseperation/index.html"
+       href="../distillation/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -465,10 +519,11 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.crystallization_mode"><code class="docutils literal notranslate"><span class="pre">crystallization_mode()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.CNT"><code class="docutils literal notranslate"><span class="pre">CNT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.crystallization_mode"><code class="docutils literal notranslate"><span class="pre">crystallization_mode()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.time_dep_surface_cryst"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_cryst()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.CNT_surf"><code class="docutils literal notranslate"><span class="pre">CNT_surf()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.Diffusion_MS_cryst"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_cryst()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.crystallization.cryst_iter"><code class="docutils literal notranslate"><span class="pre">cryst_iter()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -496,7 +551,7 @@ By Borrdom
     
   <p class="copyright">
     
-      © Copyright 2023, Borrdom.
+      © Copyright 2024, Borrdom.
       <br/>
     
   </p>

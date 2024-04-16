@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>diffusionpy.liquidseperation &#8212; diffusionpy 2023 documentation</title>
+    <title>diffusionpy.liquidseperation &#8212; diffusionpy 2024 documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="diffusionpy.plots" href="../plots/index.html" />
-    <link rel="prev" title="diffusionpy.crystallization" href="../crystallization/index.html" />
+    <link rel="prev" title="diffusionpy.distillation" href="../distillation/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -127,7 +127,7 @@
   
   
   
-    <p class="title logo__title">diffusionpy 2023 documentation</p>
+    <p class="title logo__title">diffusionpy 2024 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -137,11 +137,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -335,7 +337,7 @@ document.write(`
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.liquidseperation.liquidseperation_mode">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.liquidseperation.</span></span><span class="sig-name descname"><span class="pre">liquidseperation_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wvinit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappaii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THFaktor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allflux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmuext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wiB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.liquidseperation.liquidseperation_mode" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.liquidseperation.</span></span><span class="sig-name descname"><span class="pre">liquidseperation_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wvinit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappaii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THFaktor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allflux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0_liq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmuext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wiB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.liquidseperation.liquidseperation_mode" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -360,12 +362,12 @@ document.write(`
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../crystallization/index.html"
+       href="../distillation/index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></p>
       </div>
     </a>
     <a class="right-next"
@@ -423,7 +425,7 @@ By Borrdom
     
   <p class="copyright">
     
-      © Copyright 2023, Borrdom.
+      © Copyright 2024, Borrdom.
       <br/>
     
   </p>

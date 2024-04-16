@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>diffusionpy.Stefan_Maxwell_segmental &#8212; diffusionpy 2023 documentation</title>
+    <title>diffusionpy.Stefan_Maxwell_segmental &#8212; diffusionpy 2024 documentation</title>
   
   
   
@@ -127,7 +127,7 @@
   
   
   
-    <p class="title logo__title">diffusionpy 2023 documentation</p>
+    <p class="title logo__title">diffusionpy 2024 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -137,11 +137,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -302,8 +304,14 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection"><code class="docutils literal notranslate"><span class="pre">massbalancecorrection()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Gammaij"><code class="docutils literal notranslate"><span class="pre">Gammaij()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal"><code class="docutils literal notranslate"><span class="pre">DIdeal2DReal()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.wegstein"><code class="docutils literal notranslate"><span class="pre">wegstein()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.TgGT"><code class="docutils literal notranslate"><span class="pre">TgGT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.NETVLE"><code class="docutils literal notranslate"><span class="pre">NETVLE()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -333,11 +341,29 @@ document.write(`
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.D_Matrix" title="diffusionpy.Stefan_Maxwell_segmental.D_Matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">D_Matrix</span></code></a>(Dvec, nc)</p></td>
 <td><p>Creates a symmetric square Matrix <code class="docutils literal notranslate"><span class="pre">Dmat</span></code> of dimension <code class="docutils literal notranslate"><span class="pre">nc</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.wegstein" title="diffusionpy.Stefan_Maxwell_segmental.wegstein"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wegstein</span></code></a>(fun, x)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection" title="diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">massbalancecorrection</span></code></a>(dlnai_dlnwi, wi0, mobile)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Gammaij" title="diffusionpy.Stefan_Maxwell_segmental.Gammaij"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Gammaij</span></code></a>(T, wi, par)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal" title="diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIdeal2DReal</span></code></a>(Dvec, wave, wi0, dlnai_dlnwi, mobile, Mi)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.wegstein" title="diffusionpy.Stefan_Maxwell_segmental.wegstein"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wegstein</span></code></a>(fun, x)</p></td>
 <td><p>Solving via wegsteins method</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_iter</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile[, ...])</p></td>
 <td><p>iterates dlnai_dlnwi as a function of the concentration wi</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH" title="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH</span></code></a>(t, L, Dvec, wi0, wi8, Mi, mobile)</p></td>
+<td><p>approximates</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.TgGT" title="diffusionpy.Stefan_Maxwell_segmental.TgGT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TgGT</span></code></a>(wi, Tg0i[, q, Ki, rho0i])</p></td>
+<td><p>Compute the glass transition temperature of a mixture</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.Stefan_Maxwell_segmental.NETVLE" title="diffusionpy.Stefan_Maxwell_segmental.NETVLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NETVLE</span></code></a>(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, ...)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -425,6 +451,21 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">massbalancecorrection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.Gammaij">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">Gammaij</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">par</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.Gammaij" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">DIdeal2DReal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wave</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realtoideal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.wegstein">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">wegstein</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.wegstein" title="Permalink to this definition">#</a></dt>
 <dd><p>Solving via wegsteins method</p>
@@ -436,6 +477,41 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 <dd><p>iterates dlnai_dlnwi as a function of the concentration wi
 .. seealso:: diffusionpy.Diffusion_MS</p>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">Diffusion_MS_averageTH</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dvec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlnai_dlnwi_fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH" title="Permalink to this definition">#</a></dt>
+<dd><p>approximates
+.. seealso:: diffusionpy.Diffusion_MS</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.TgGT">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">TgGT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tg0i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ki</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho0i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.TgGT" title="Permalink to this definition">#</a></dt>
+<dd><p>Compute the glass transition temperature of a mixture</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wi</strong> (<em>array_like</em>) – 2D Array of weight fractions [ number of components,number of Points]</p></li>
+<li><p><strong>Tg0i</strong> (<em>array_like</em>) – pure component glass transition temperature /K</p></li>
+<li><p><strong>q</strong> (<em>array_like</em>) – Kwei parameter /-</p></li>
+<li><p><strong>rho0i</strong> (<em>optional</em><em>,</em><em>array_like</em>) – pure component densities /kg/m^3</p></li>
+<li><p><strong>Ki</strong> (<em>optional</em><em>,</em><em>array_like</em>) – Gordon-Taylor parameters         /-</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>glass transition temperature of a mixture  /K</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.Stefan_Maxwell_segmental.NETVLE">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.Stefan_Maxwell_segmental.</span></span><span class="sig-name descname"><span class="pre">NETVLE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v0p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polymer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ksw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsAiBi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kapi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.Stefan_Maxwell_segmental.NETVLE" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </section>
 </section>
@@ -489,8 +565,14 @@ in the upper and lower triangular entries of <code class="docutils literal notra
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.D_Matrix"><code class="docutils literal notranslate"><span class="pre">D_Matrix()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection"><code class="docutils literal notranslate"><span class="pre">massbalancecorrection()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Gammaij"><code class="docutils literal notranslate"><span class="pre">Gammaij()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal"><code class="docutils literal notranslate"><span class="pre">DIdeal2DReal()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.wegstein"><code class="docutils literal notranslate"><span class="pre">wegstein()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_iter()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH"><code class="docutils literal notranslate"><span class="pre">Diffusion_MS_averageTH()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.TgGT"><code class="docutils literal notranslate"><span class="pre">TgGT()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.Stefan_Maxwell_segmental.NETVLE"><code class="docutils literal notranslate"><span class="pre">NETVLE()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -518,7 +600,7 @@ By Borrdom
     
   <p class="copyright">
     
-      © Copyright 2023, Borrdom.
+      © Copyright 2024, Borrdom.
       <br/>
     
   </p>

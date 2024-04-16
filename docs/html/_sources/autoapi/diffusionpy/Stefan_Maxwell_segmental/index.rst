@@ -15,8 +15,14 @@ Functions
 
    diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS
    diffusionpy.Stefan_Maxwell_segmental.D_Matrix
+   diffusionpy.Stefan_Maxwell_segmental.massbalancecorrection
+   diffusionpy.Stefan_Maxwell_segmental.Gammaij
+   diffusionpy.Stefan_Maxwell_segmental.DIdeal2DReal
    diffusionpy.Stefan_Maxwell_segmental.wegstein
    diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_iter
+   diffusionpy.Stefan_Maxwell_segmental.Diffusion_MS_averageTH
+   diffusionpy.Stefan_Maxwell_segmental.TgGT
+   diffusionpy.Stefan_Maxwell_segmental.NETVLE
 
 
 
@@ -97,6 +103,15 @@ Functions
           [2.e-13, 3.e-13, 0.e+00]])
 
 
+.. py:function:: massbalancecorrection(dlnai_dlnwi, wi0, mobile)
+
+
+.. py:function:: Gammaij(T, wi, par)
+
+
+.. py:function:: DIdeal2DReal(Dvec, wave, wi0, dlnai_dlnwi, mobile, Mi, realtoideal=False)
+
+
 .. py:function:: wegstein(fun, x)
 
    Solving via wegsteins method
@@ -106,5 +121,33 @@ Functions
 
    iterates dlnai_dlnwi as a function of the concentration wi
    .. seealso:: diffusionpy.Diffusion_MS
+
+
+.. py:function:: Diffusion_MS_averageTH(t, L, Dvec, wi0, wi8, Mi, mobile, full_output=False, dlnai_dlnwi_fun=None, **kwargs)
+
+   approximates
+   .. seealso:: diffusionpy.Diffusion_MS
+
+
+.. py:function:: TgGT(wi, Tg0i, q=0, Ki=None, rho0i=None)
+
+   Compute the glass transition temperature of a mixture
+
+   :param wi: 2D Array of weight fractions [ number of components,number of Points]
+   :type wi: array_like
+   :param Tg0i: pure component glass transition temperature /K
+   :type Tg0i: array_like
+   :param q: Kwei parameter /-
+   :type q: array_like
+   :param rho0i: pure component densities /kg/m^3
+   :type rho0i: optional,array_like
+   :param Ki: Gordon-Taylor parameters         /-
+   :type Ki: optional,array_like
+
+   :returns: glass transition temperature of a mixture  /K
+   :rtype: ndarray
+
+
+.. py:function:: NETVLE(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, epsAiBi, kapi, N, vpures, Mi, kij, kijA, n=2)
 
 

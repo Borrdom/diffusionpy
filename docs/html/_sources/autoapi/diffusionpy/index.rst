@@ -11,11 +11,13 @@ Submodules
    :maxdepth: 1
 
    DasDennisSpacing/index.rst
+   Extract_DVS/index.rst
    FEM_collocation/index.rst
    PyCSAFT_nue/index.rst
    Stefan_Maxwell_segmental/index.rst
    crank_and_other/index.rst
    crystallization/index.rst
+   distillation/index.rst
    liquidseperation/index.rst
    plots/index.rst
    read_componentdatabase/index.rst
@@ -33,6 +35,7 @@ Classes
 .. autoapisummary::
 
    diffusionpy.origin_like
+   diffusionpy.Measurement
 
 
 
@@ -44,6 +47,12 @@ Functions
    diffusionpy.Diffusion_MS
    diffusionpy.D_Matrix
    diffusionpy.Diffusion_MS_iter
+   diffusionpy.DIdeal2DReal
+   diffusionpy.Diffusion_MS_averageTH
+   diffusionpy.Gammaij
+   diffusionpy.TgGT
+   diffusionpy.NETVLE
+   diffusionpy.wegstein
    diffusionpy.time_dep_surface
    diffusionpy.Diffusion_MS_xloil
    diffusionpy.reduce_points
@@ -59,8 +68,11 @@ Functions
    diffusionpy.vpure
    diffusionpy.dlnai_dlnxi
    diffusionpy.dlnai_dlnxi_loop
+   diffusionpy.SAFTSAC
    diffusionpy.circular
    diffusionpy.time_dep_surface_cryst
+   diffusionpy.Diffusion_MS_cryst
+   diffusionpy.cryst_iter
 
 
 
@@ -147,6 +159,45 @@ Functions
    .. seealso:: diffusionpy.Diffusion_MS
 
 
+.. py:function:: DIdeal2DReal(Dvec, wave, wi0, dlnai_dlnwi, mobile, Mi, realtoideal=False)
+
+
+.. py:function:: Diffusion_MS_averageTH(t, L, Dvec, wi0, wi8, Mi, mobile, full_output=False, dlnai_dlnwi_fun=None, **kwargs)
+
+   approximates
+   .. seealso:: diffusionpy.Diffusion_MS
+
+
+.. py:function:: Gammaij(T, wi, par)
+
+
+.. py:function:: TgGT(wi, Tg0i, q=0, Ki=None, rho0i=None)
+
+   Compute the glass transition temperature of a mixture
+
+   :param wi: 2D Array of weight fractions [ number of components,number of Points]
+   :type wi: array_like
+   :param Tg0i: pure component glass transition temperature /K
+   :type Tg0i: array_like
+   :param q: Kwei parameter /-
+   :type q: array_like
+   :param rho0i: pure component densities /kg/m^3
+   :type rho0i: optional,array_like
+   :param Ki: Gordon-Taylor parameters         /-
+   :type Ki: optional,array_like
+
+   :returns: glass transition temperature of a mixture  /K
+   :rtype: ndarray
+
+
+.. py:function:: NETVLE(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, epsAiBi, kapi, N, vpures, Mi, kij, kijA, n=2)
+
+
+.. py:function:: wegstein(fun, x)
+
+   Solving via wegsteins method
+
+
 .. py:function:: time_dep_surface(t, wi0, wi8, mobile, taui, lngi_t=None)
 
    _summary_
@@ -190,36 +241,6 @@ Functions
 
 
 .. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
-
-   Calculate the log of the activity coefficients via the SAFT-SAC approximation
-
-   :param T: temperature
-   :type T: float
-   :param xi: mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
-   :type xi: array_like
-   :param mi: segment number
-   :type mi: array_like
-   :param si: segment diameter
-   :type si: array_like
-   :param ui: dispersion energy
-   :type ui: array_like
-   :param eAi: association energy
-   :type eAi: array_like
-   :param kAi: association volume
-   :type kAi: array_like
-   :param NAi: association sites (only symmetric)
-   :type NAi: array_like
-   :param vpure: pure component molar volumes
-   :type vpure: array_like
-   :param Mi: Molar mass. Calculates properties on a mass basis when given. Defaults to None.
-   :type Mi: array_like, optional
-   :param kij: Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).
-   :type kij: array_like, optional
-   :param kijA: Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).
-   :type kijA: array_like, optional
-
-   :returns: vector of activity coefficients
-   :rtype: array_like
 
 
 .. py:function:: eta_iter(p, T, xi, mi, si, ui, eAi, kAi, NAi, kij=np.asarray([[0.0]]), kijA=np.asarray([[0.0]]))
@@ -338,6 +359,39 @@ Functions
    :rtype: array_like
 
 
+.. py:function:: SAFTSAC(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
+
+   Calculate the log of the activity coefficients via the SAFT-SAC approximation
+
+   :param T: temperature
+   :type T: float
+   :param xi: mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
+   :type xi: array_like
+   :param mi: segment number
+   :type mi: array_like
+   :param si: segment diameter
+   :type si: array_like
+   :param ui: dispersion energy
+   :type ui: array_like
+   :param eAi: association energy
+   :type eAi: array_like
+   :param kAi: association volume
+   :type kAi: array_like
+   :param NAi: association sites (only symmetric)
+   :type NAi: array_like
+   :param vpure: pure component molar volumes
+   :type vpure: array_like
+   :param Mi: Molar mass. Calculates properties on a mass basis when given. Defaults to None.
+   :type Mi: array_like, optional
+   :param kij: Matrix of binary interaction parameters for dispersion . Defaults to np.asarray([[0.]]).
+   :type kij: array_like, optional
+   :param kijA: Matrix of binary interaction parameters for association Defaults to np.asarray([[0.]]).
+   :type kijA: array_like, optional
+
+   :returns: vector of activity coefficients
+   :rtype: array_like
+
+
 .. py:function:: circular(t, zvec, wtz, Lt=None, instances=6, comp=0, cmap='Blues', vmin=None, vmax=None, label=None, tinterp=None)
 
 
@@ -372,22 +426,20 @@ Functions
 
 
 
-.. py:function:: time_dep_surface_cryst(t, mobiles, immobiles, crystallize, wi0, wi8, rho0i, Mi, DAPI, sigma, kt, g, deltaHSL, TSL, cpSL, lngi_fun=None, wv_fun=None)
+.. py:function:: time_dep_surface_cryst(t, mobile, wi0, wi8, crystallize, rho0i, Mi, DAPI, sigma, kt, g, deltaHSL, TSL, cpSL, tnuc=0.0, temp=298.15, lngi=None, wv_fun=None)
 
    calculate the time dependent surface concentration during crystallization
 
    :param t: vector of time
    :type t: array_like
-   :param mobiles: index array indicating the mobile components
-   :type mobiles: array_like
-   :param immobiles: index array indicating the immobile component
-   :type immobiles: array_like
-   :param crystallize: index array indicating the crystallizing components
-   :type crystallize: array_like
+   :param mobile: boolean array indicating the mobile components
+   :type mobile: array_like
    :param wi0: initial mass fractions
    :type wi0: array_like
    :param wi8: mass fractions at time equals infinity
    :type wi8: array_like
+   :param crystallize: index array indicating the crystallizing components
+   :type crystallize: array_like
    :param rho0i: pure component densities
    :type rho0i: array_like
    :param Mi: molar mass of components
@@ -414,5 +466,44 @@ Functions
 
    :returns: vector of mass fractions at the surface as a function of time
    :rtype: array_like
+
+
+.. py:function:: Diffusion_MS_cryst(t, L, Dvec, wi0, wi8, Mi, mobile, crystpar, lngi_fun, **kwargs)
+
+
+.. py:function:: cryst_iter(t, mobile, wi0, wi8, crystpar, Mi, lngi_fun, wv_fun)
+
+
+.. py:class:: Measurement(DATA_FILE, desorption=False, actual=False, tend=-1, arc=True, nt=15)
+
+
+   The class Measurement inherits methods to read and process the DVS excel files from the Apparatus of Surface Measurement Systems.
+   The endpoints of each RH step and their kinetics are extracted and the crank equation is fitted to the kinetics.
+   The extracted data is added via two new sheets to all selected .xls files. The reading functions are specialized for the format of the .xls files.
+   There is little robustness so large changes cause the methids not to work .
+   The class accepts more than one excel file and then performs averaging of the kinetics. For that purpose, it is assumed that the all excel sheets are
+   replicates of each other, meaning that their RH steps must match
+
+   .. py:method:: FasterXlrdRead(filename)
+      :staticmethod:
+
+
+   .. py:method:: read_excel_file(filename)
+
+
+   .. py:method:: FitDiffusionData()
+
+
+   .. py:method:: Cranc()
+
+
+   .. py:method:: interparc(x, y, N)
+      :staticmethod:
+
+      function that interpolates between a given data series to provide datapoints that are equidistant along the arc of the data.
+      Hence the name interp(olate)arc. This is quite handy for kinetic data as the most change in concentration is at earlier times and the least
+      change is observed at later times. As a result, usually more data points are in the later stages where nothing happens, since measurements are
+      usually performed at equidistant time point
+
 
 

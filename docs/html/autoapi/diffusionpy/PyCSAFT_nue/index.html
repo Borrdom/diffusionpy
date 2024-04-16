@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>diffusionpy.PyCSAFT_nue &#8212; diffusionpy 2023 documentation</title>
+    <title>diffusionpy.PyCSAFT_nue &#8212; diffusionpy 2024 documentation</title>
   
   
   
@@ -127,7 +127,7 @@
   
   
   
-    <p class="title logo__title">diffusionpy 2023 documentation</p>
+    <p class="title logo__title">diffusionpy 2024 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -137,11 +137,13 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
@@ -303,6 +305,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.ares"><code class="docutils literal notranslate"><span class="pre">ares()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.eta_iter"><code class="docutils literal notranslate"><span class="pre">eta_iter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.SAFTSAC"><code class="docutils literal notranslate"><span class="pre">SAFTSAC()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.lngi"><code class="docutils literal notranslate"><span class="pre">lngi()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.lnphi_TP"><code class="docutils literal notranslate"><span class="pre">lnphi_TP()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
@@ -340,19 +343,22 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.vpure" title="diffusionpy.PyCSAFT_nue.vpure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vpure</span></code></a>(p, T, mi, si, ui, eAi, kAi, NAi, **kwargs)</p></td>
 <td><p>solve the density mich yiels a given pressure p</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.lngi" title="diffusionpy.PyCSAFT_nue.lngi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lngi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.SAFTSAC" title="diffusionpy.PyCSAFT_nue.SAFTSAC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SAFTSAC</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, ...)</p></td>
 <td><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.lnphi_TP" title="diffusionpy.PyCSAFT_nue.lnphi_TP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lnphi_TP</span></code></a>(p, T, xi, mi, si, ui, eAi, kAi, NAi[, Mi, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.lngi" title="diffusionpy.PyCSAFT_nue.lngi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lngi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.lnphi_TP" title="diffusionpy.PyCSAFT_nue.lnphi_TP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lnphi_TP</span></code></a>(p, T, xi, mi, si, ui, eAi, kAi, NAi[, Mi, ...])</p></td>
 <td><p>calculate the log of the fugacity coeffficients</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi" title="diffusionpy.PyCSAFT_nue.dlnai_dlnxi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi" title="diffusionpy.PyCSAFT_nue.dlnai_dlnxi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, ...)</p></td>
 <td><p>Generate the derivatives of the mole fraction with concentration</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi_loop" title="diffusionpy.PyCSAFT_nue.dlnai_dlnxi_loop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi_loop</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi_loop" title="diffusionpy.PyCSAFT_nue.dlnai_dlnxi_loop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dlnai_dlnxi_loop</span></code></a>(T, xi, mi, si, ui, eAi, kAi, NAi, ...)</p></td>
 <td><p>Generate the derivatives of the mole fraction with concentration</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.initialize" title="diffusionpy.PyCSAFT_nue.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.PyCSAFT_nue.initialize" title="diffusionpy.PyCSAFT_nue.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -400,8 +406,8 @@ Zres (aaray_like): real gas factor</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.lngi">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.PyCSAFT_nue.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.PyCSAFT_nue.lngi" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.SAFTSAC">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.PyCSAFT_nue.</span></span><span class="sig-name descname"><span class="pre">SAFTSAC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.PyCSAFT_nue.SAFTSAC" title="Permalink to this definition">#</a></dt>
 <dd><p>Calculate the log of the activity coefficients via the SAFT-SAC approximation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -428,6 +434,11 @@ Zres (aaray_like): real gas factor</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.lngi">
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.PyCSAFT_nue.</span></span><span class="sig-name descname"><span class="pre">lngi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">si</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vpure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kijA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.PyCSAFT_nue.lngi" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.PyCSAFT_nue.lnphi_TP">
@@ -555,6 +566,7 @@ Zres (aaray_like): real gas factor</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.ares"><code class="docutils literal notranslate"><span class="pre">ares()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.eta_iter"><code class="docutils literal notranslate"><span class="pre">eta_iter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.vpure"><code class="docutils literal notranslate"><span class="pre">vpure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.SAFTSAC"><code class="docutils literal notranslate"><span class="pre">SAFTSAC()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.lngi"><code class="docutils literal notranslate"><span class="pre">lngi()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.lnphi_TP"><code class="docutils literal notranslate"><span class="pre">lnphi_TP()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.PyCSAFT_nue.dlnai_dlnxi"><code class="docutils literal notranslate"><span class="pre">dlnai_dlnxi()</span></code></a></li>
@@ -587,7 +599,7 @@ By Borrdom
     
   <p class="copyright">
     
-      © Copyright 2023, Borrdom.
+      © Copyright 2024, Borrdom.
       <br/>
     
   </p>

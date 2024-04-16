@@ -1,23 +1,6 @@
 import numpy as np
 from numba import njit,config,prange
-# config.DISABLE_JIT=True
-# import os
-# os.environ['NUMBA_DEBUG_CACHE'] = "1"
-
-# def logging_jit(func):
-    
-#     def inner(*args, **kwargs):
-#         origsigs = set(func.signatures)
-#         result = func(*args, **kwargs)
-#         newsigs = set(func.signatures)
-#         if newsigs != origsigs:
-#             new = (newsigs ^ origsigs).pop()
-#              # PUT YOUR LOGGER HERE!
-#             print("Numba compiled for signature: {}".format(new))
-#         return result
-#     return inner
-
-# @logging_jit
+from scipy.optimize import root
 @njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
         'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
@@ -230,8 +213,8 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
     return vmol
 
 #@njit(cache=True)
-@njit(['Tuple((f8[::1], f8[::1], f8[::1],f8[::1]))(f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
-'Tuple((c16[::1], c16[::1], c16[::1],c16[::1]))(f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
+# @njit(['Tuple((f8[::1], f8[::1], f8[::1],f8[::1]))(f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+# 'Tuple((c16[::1], c16[::1], c16[::1],c16[::1]))(f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Calculate the log of the activity coefficients via the SAFT-SAC approximation
 
@@ -273,8 +256,8 @@ def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
     return lngi_id,lngi_res,lngi_p,lngi_wx
 
-@njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
-'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
+# @njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
+# 'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     lngi_id,lngi_res,lngi_p,lngi_wx=SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
     return lngi_id+lngi_res+lngi_p+lngi_wx
@@ -288,7 +271,7 @@ def lnphi_TP(p,T,xi,mi,si,ui,eAi,kAi,NAi,Mi=None,kij=np.asarray([[0.]]),kijA=np.
     lnphi=np.asarray([ares(T,val,np.ascontiguousarray(xi[:,i]),mi,si,ui,eAi,kAi,NAi,kij,kijA)[1].flatten() for i,val in enumerate(etamix)])
     return lnphi
 
-@njit('f8[:,::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',cache=True)
+# @njit('f8[:,::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',cache=True)
 def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Generate the derivatives of the mole fraction with concentration
 
@@ -322,7 +305,7 @@ def dlnai_dlnxi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
         df[i] = out.imag/h
     return df.T*xi+np.eye(nc)
 
-@njit('f8[:,:,:,::1](f8,f8[:,:,::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',parallel=True,cache=True)
+# @njit('f8[:,:,:,::1](f8,f8[:,:,::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',cache=True)
 def dlnai_dlnxi_loop(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     """Generate the derivatives of the mole fraction with concentration
 
@@ -374,6 +357,47 @@ def initialize():
     lngiammai=np.asarray([lngi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
     Gammai=np.asarray([dlnai_dlnxi(T,np.ascontiguousarray(xi[:,i]),**par).flatten() for i,val in enumerate(xi[0,:])])
 
-# initialize()
+def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA,n=2):
+    # vp=np.zeros(np.sum(polymers))
+    
+    mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
+    immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
+    widry=np.zeros_like(wi)
+    widry[immobiles]=wi[immobiles]/np.sum(wi[immobiles])
+    nc=len(Mi)
+    kswmat=np.zeros((nc,nc))
+    polymers=np.where(polymer)[0]
+    v0NET=vpures*1000./Mi
+    v0NET[polymers]=v0p
+    Mdry=(np.sum(widry/Mi))**-1
+    xidry=widry/Mi*Mdry
+    v0dry=np.sum(v0NET*widry)
+    kswmat[mobiles,polymers]=ksw
+    vidry=v0NET/v0dry*widry
+    ksws=(kswmat@vidry)[mobiles]
+    v0moldry=v0dry*Mdry/1000.
+    def res(RS):
+        # RS=np.fmin(np.fmax(RS,1E-8),1)
+        xi=wi/Mi/np.sum(wi/Mi,axis=0)
+        xw=xi[mobiles]
+        ww=wi[mobiles]
+        vmol=v0moldry/(1-np.sum(ksws*RS**n))*(1-np.sum(xw))
+        vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
+        # v=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(ww))
+        # vtr=(v-np.sum(ww*v0NET[mobiles]))/(1-np.sum(ww))*widry[immobiles]
+        vpures2=vpures.copy()
+        vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
+        # vpures2[immobiles]=vtr*Mi[immobiles]/1000.
+        # vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
+        lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
+        logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
+        return logRS-np.log(RS)
+    re=root(res,wi[mobiles]/2,method='hybr')
+    RS=re["x"]
+    return RS
 
-
+def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpSL):
+    R=8.3145
+    lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
+    lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
+    return lnai-lnaiSLE

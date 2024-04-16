@@ -32,7 +32,6 @@ def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_t=None):
     if lngi_t is not None:
         lnai8=lngi_t[-1,:] +  np.log(wi8)
         lnai0=lngi_t[0,:]  +  np.log(wi0)
-        
         av0=np.exp(lnai0[mobiles])
         av8=np.exp(lnai8[mobiles])
         avt=av0*(1-lam)+av8*lam
