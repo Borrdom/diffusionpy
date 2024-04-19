@@ -30,10 +30,10 @@ Just copy the https://github.com/Borrdom/diffusionpy/tree/main/.matplotlib folde
 
 Moreover, Matplotlib will recognize the following formatstrings as these colors.
 
-$${\color{#99CC00}C0}$$ 
-C1: #99CDE9
-C2: #246FE2
-C3: #FF8500
-C4: #FFCCCC
-C5: #FFD67E
-C6: #666666
+$${\color{#99CC00} lime green as 'C0'}$$
+$${\color{#99CDE9} sky blue as 'C1'}$$ 
+$${\color{#246FE2} aquamarine blue as 'C2'}$$ 
+$${\color{#FF8500} dark orange as 'C3'}$$ 
+$${\color{#FFCCCC} light pink as 'C4'}$$
+$${\color{#FFD67E} dark yellow as 'C5'}$$ 
+$${\color{#666666} grey suit orange as 'C6'}$$ 
