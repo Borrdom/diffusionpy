@@ -30,13 +30,11 @@ Just copy the https://github.com/Borrdom/diffusionpy/tree/main/.matplotlib folde
 
 Moreover, Matplotlib will recognize the following formatstrings as these colors.
 
-C0: $${\color{#99CC00} green ■}$$ C1: $${\color{#99CDE9} cyan ■}$$  C2: $${\color{#246FE2} blue ■}$$  C3: $${\color{#FF8500} orange ■}$$  C4: $${\color{#FFCCCC} pink ■}$$ C5: $${\color{#FFD67E} yellow ■}$$  C6: $${\color{#666666} grey ■}$$ 
-### Color palette
 
-- ![#ff1778](https://via.placeholder.com/15/99CC00/000000?text=+) `#99CC00`
-- ![#00dbb2](https://via.placeholder.com/15/99CDE9/000000?text=+) `#99CDE9`
-- ![#69adff](https://via.placeholder.com/15/246FE2/000000?text=+) `#246FE2`
-- ![#9ece6a](https://via.placeholder.com/15/FF8500/000000?text=+) `#FF8500`
-- ![#c7ccd4](https://via.placeholder.com/15/FFCCCC/000000?text=+) `#FFCCCC`
-- ![#666b88](https://via.placeholder.com/15/FFD67E/000000?text=+) `#FFD67E`
-- ![#0c0d12](https://via.placeholder.com/15/666666/000000?text=+) `#666666`
+- C0 : ![#ff1778](https://via.placeholder.com/15/99CC00/000000?text=+) `#99CC00`
+- C1 : ![#00dbb2](https://via.placeholder.com/15/99CDE9/000000?text=+) `#99CDE9`
+- C2 : ![#69adff](https://via.placeholder.com/15/246FE2/000000?text=+) `#246FE2`
+- C3 : ![#9ece6a](https://via.placeholder.com/15/FF8500/000000?text=+) `#FF8500`
+- C4 : ![#c7ccd4](https://via.placeholder.com/15/FFCCCC/000000?text=+) `#FFCCCC`
+- C5 : ![#666b88](https://via.placeholder.com/15/FFD67E/000000?text=+) `#FFD67E`
+- C6 : ![#0c0d12](https://via.placeholder.com/15/666666/000000?text=+) `#666666`
