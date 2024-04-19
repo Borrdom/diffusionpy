@@ -21,3 +21,7 @@ can be found [here](https://github.com/Borrdom/diffusionpy/tree/main/docs/html/i
 # License information
 
 BSD-3
+
+# Originlab-like plot format 
+
+![alt text](https://github.com/Borrdom/diffusionpy/blob/main/originlike.png?raw=true)
