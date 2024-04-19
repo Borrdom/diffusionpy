@@ -24,4 +24,16 @@ BSD-3
 
 # Originlab-like plot format 
 
+Just copy the https://github.com/Borrdom/diffusionpy/tree/main/.matplotlib folder into your %USERPROFILE%. This will alter the matplotlib rc permantly so that the format below will be your new default. 
+
 ![alt text](https://github.com/Borrdom/diffusionpy/blob/main/originlike.png?raw=true)
+
+Moreover, Matplotlib will recognize the following formatstrings as these colors.
+
+C0: #99CC00
+C1: #99CDE9
+C2: #246FE2
+C3: #FF8500
+C4: #FFCCCC
+C5: #FFD67E
+C6: #666666
