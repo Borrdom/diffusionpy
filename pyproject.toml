@@ -1,7 +1,7 @@
 
 [project]
 name = "diffusionpy"
-version = "0.0.7"
+version = "0.0.8"
 authors = [
     {name = "Dominik Borrmann", email = "dominik.borrmann@tu-dortmund.de"},
 ]
@@ -11,16 +11,10 @@ license = {text = "BSD-3-Clause"}
 
 dependencies = [
     "numpy",
-    "pyodbc",
-    "textdistance",
     "scipy",
-    "pandas",
     "matplotlib",
     "mpltern",
-    "xloil",
-    "numba",
-    "xlrd",
-    "xlwings"]
+    "numba",]
 
 [build-system]
 requires = [

@@ -61,15 +61,19 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
         for j in range(nc): wi[j,-1]=np.interp(t,tint,wiB[:,j])
         wv[:,-1]=wi[mobiles,-1]
         dwv=np.zeros((nTH,nz_1))
+        dwi=np.zeros((nc,nz_1))
         for j in range(nTH): dwv[j,1:]=np.diff(wv[j,:])
         dwv[:,0]=0
-        THFaktor_=np.zeros((nz_1,nTH,nTH))
+        dwi[mobiles,:]=dwv
+        dwi[immobiles,:]=-np.sum(dwv,axis=0)*wi0_immobiles
+        THFaktor_=np.zeros((nz_1,nc,nc))
         for i in range(nz_1):
-            for j in range(nTH):
-                for k in range(nTH):
+            for j in range(nc):
+                for k in range(nc):
                     THFaktor_[i,j,k]=np.interp(t,tint,THFaktor[:,i,j,k])
-        dav=np.zeros_like(dwv)
-        for i in range(nz_1): dav[:,i]=THFaktor_[i,:,:]@dwv[:,i]
+        dai=np.zeros_like(dwi)
+        for i in range(nz_1): dai[:,i]=THFaktor_[i,:,:]@dwi[:,i]
+        dav=dai[mobiles,:]
         B=BIJ_Matrix(D,wi,mobiles)
         if allflux:
             for i in range(nz_1):
@@ -108,14 +112,15 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
     wiinit[:,-1]=wi8
     wvinit=wiinit[mobiles,:]
     #Construct TH Factor
-    THFaktor=np.asarray([[np.eye(nTH)]*(nz+1)]*nt)
+    THFaktor=np.asarray([[np.eye(nc)]*(nz+1)]*nt)
+    # dlnai_dlnwi=Gammaij(T,wi,**saftpar)
     if dlnai_dlnwi is not None:
         if len(dlnai_dlnwi.shape)==2:
             dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nc,nc))
         if len(dlnai_dlnwi.shape)==3:
             dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nc,nc))
         if len(dlnai_dlnwi.shape)==4:
-            THFaktor=massbalancecorrection(dlnai_dlnwi,wi0,mobile)
+            THFaktor=dlnai_dlnwi
 
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))

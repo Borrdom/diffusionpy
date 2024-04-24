@@ -1,14 +1,12 @@
 import numpy as np
 from math import comb
 import itertools
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
-import mpltern
 from matplotlib.pyplot import Axes
 import matplotlib.projections as proj
+import mpltern
 from mpltern.ternary import TernaryAxes
 
 def DasDennis(p,dim):
