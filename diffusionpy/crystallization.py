@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from numba import njit,config,prange,jit
 import time
-from .diffusion import Diffusion_MS,Diffusion_MS_iter,wegstein
+from .diffusion import Diffusion_MS,wegstein
 from scipy.interpolate import interp1d
 from .PCSAFT import supersaturation
 

@@ -4,10 +4,11 @@ from scipy.interpolate import interp1d
 from scipy.optimize import root
 from numba import njit,config,prange
 import time
-from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC
+from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC,vpure
+from .surface import time_dep_surface
 
 
-def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwargs):
+def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs):
     """
     Method that computes the multi-component diffusion kinetics 
     
@@ -93,7 +94,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
         return  (dwvdt*omega).flatten()#vanishing_check(djv,rhov).flatten()
 
 
-    print("------------- Initialization and postprocessing ----------------")
     start1=time.time_ns()
     nc=len(wi0)
     nz=kwargs["nz"] if "nz" in kwargs else 20
@@ -112,19 +112,12 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
     wiinit[:,-1]=wi8
     wvinit=wiinit[mobiles,:]
     #Construct TH Factor
-    THFaktor=np.asarray([[np.eye(nc)]*(nz+1)]*nt)
-    # dlnai_dlnwi=Gammaij(T,wi,**saftpar)
-    if dlnai_dlnwi is not None:
-        if len(dlnai_dlnwi.shape)==2:
-            dlnai_dlnwi=dlnai_dlnwi[None,:,:]*np.ones((nt,nc,nc))
-        if len(dlnai_dlnwi.shape)==3:
-            dlnai_dlnwi=dlnai_dlnwi[:,None,:,:]*np.ones((nt,nz+1,nc,nc))
-        if len(dlnai_dlnwi.shape)==4:
-            THFaktor=dlnai_dlnwi
+    
+
 
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
-    wiB=kwargs['witB'] if "witB" in kwargs else wi8[None,:]*np.ones((nt,nc))
+    wiB=time_dep_surface(tint,wi0,wi8,mobile,kwargs['taui']) if "taui" in kwargs else wi8[None,:]*np.ones((nt,nc))
     drhovdtB=np.zeros(nTH)
     return_stress=False
     return_alpha=False
@@ -138,7 +131,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
         sigmaJ0[-1,:]=sigmaJB
         xinit=np.hstack((wvinit.flatten(),sigmaJ0.flatten()))
         return_stress=True
-    if "A" in kwargs or "B" in kwargs or "C" in kwargs  or "n" in kwargs or 'T' in kwargs: 
+    if "A" in kwargs or "B" in kwargs or "C" in kwargs  or "n" in kwargs: 
         from .crystallization import crystallization_mode
         alpha0=np.zeros(nz+1)
         # r0=1E-20*np.ones(nz+1)
@@ -146,51 +139,49 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=None,saftpar=None,**kwar
         xinit=np.hstack((wvinit.flatten(),alpha0.flatten()))
         # kwargs["lnS"]=interp1d(tint,kwargs["lnS"],axis=0,bounds_error=False)
         wv_fun=kwargs['wv_fun'] if 'wv_fun' in kwargs else None
-        ode=crystallization_mode(ode,kwargs['A'],kwargs['B'],kwargs['n'],kwargs['T'],saftpar,wv_fun)
+        ode=crystallization_mode(ode,kwargs['A'],kwargs['B'],kwargs['n'],T,saftpar,wv_fun)
         return_alpha=True
-
-    print("------------- Start diffusion modeling ----------------")
-    start=time.time_ns()
-    sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint,atol=1E-3)#rtol=1E-2,atol=1E-3)
-    end=time.time_ns()
-    print("------------- Diffusion modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T  
-    x_sol=sol["y"]
-    nt=len(tint)
-    wt=np.zeros((nc,nt))
-    wik=np.zeros((nt,nc,nz+1))
-    for k in range(nt):
-        wvk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
-        wik[k,:,:]= wiinit
-        wik[k,mobiles,:]=wvk
-        wik[k,immobiles,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_immobiles[:,None]
-        wik[k,:,-1]=wiB[k,:]
-        wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
-    Lt=np.sum(wi0[immobiles])/(1-np.sum(wt[mobiles,:],axis=0))*L
-    # plt.plot(t,rhoik[:,1,-1])
-    end1=time.time_ns()
-    print(f"------------- Initialization and postprocessing took {((end1-start1)-(end-start))/1E9} seconds----------------")
     
-    if return_stress:
-        nJ=len(kwargs["EJ"])
-        sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
-        return (wt.T,wik,zvec,Lt,sigmaJ)
+    def getsol(sol):
+        if not sol["success"]: raise Exception(sol["message"]+f" The time step of failing was {tint[len(sol['y'])]} seconds")# the initial conditions are returned instead ----------------"); #return wi0*np.ones((nc,nt)).T  
+        x_sol=sol["y"]
+        nt=len(tint)
+        wt=np.zeros((nc,nt))
+        wik=np.zeros((nt,nc,nz+1))
+        for k in range(nt):
+            wvk=np.reshape(x_sol[:(nz+1)*nTH,k],(nTH,nz+1))
+            wik[k,:,:]= wiinit
+            wik[k,mobiles,:]=wvk
+            wik[k,immobiles,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_immobiles[:,None]
+            wik[k,:,-1]=wiB[k,:]
+            wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
+        Lt=np.sum(wi0[immobiles])/(1-np.sum(wt[mobiles,:],axis=0))*L
+        if return_stress:
+            nJ=len(kwargs["EJ"])
+            sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
+            return (wt.T,wik,zvec,Lt,sigmaJ)
+        elif return_alpha:
+            alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
+            return (wt.T,wik,zvec,Lt,alpha)
+        else:    
+            return (wt.T,wik,zvec,Lt)
+    
+    def solveodes(wik=None):
+        THFaktor=np.asarray([[np.eye(nc)]*(nz+1)]*nt) 
+        if saftpar is not None:
+            if wik is not None:
+                wik=np.ascontiguousarray(np.swapaxes(wik,1,2))
+                if 'vpure' not in saftpar: saftpar['vpure']=vpure(p,T,**saftpar)
+                THFaktor=Gammaij(T,wik,saftpar)
+        sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint)#rtol=1E-2,atol=1E-3)
 
-    elif return_alpha:
-        alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
-        # crystallizes=np.where(kwargs["crystallize"])[0]
-        # if immobiles.shape[0]>0.:
-        #     wi0_immobiles=wi0/np.sum(wi0[immobiles])
-        #     wi0_notcrystimmob=wi0_immobiles[immobiles[crystallizes!=immobiles]]/np.sum(wi0_immobiles[immobiles[crystallizes!=immobiles]])
-        #     for k in range(nt):
-        #         dl_la = (1-alpha[:,k])/(1/wi0[crystallizes]-alpha[:,k])
-        #         wik[k,crystallizes,:]=(1-np.sum(wik[k,mobiles,:],axis=0))*dl_la
-        #         wik[k,immobiles[crystallizes!=immobiles],:]=(1-np.sum(wik[k,mobiles,:],axis=0))*wi0_notcrystimmob*(1-dl_la)
-        #         wt[:,k]=np.sum(wik[k,:,:-1]/nz,axis=1)
-        return (wt.T,wik,zvec,Lt,alpha)
 
-    else:
-        return (wt.T,wik,zvec,Lt)
+        # plt.plot(t,rhoik[:,1,-1])
+
+        return getsol(sol)
+
+    solopt=wegstein(solveodes,solveodes()[1]) if (saftpar is not None) and ('A' not in kwargs)  else solveodes()
+    return solopt
 
 
 def D_Matrix(Dvec,nc):
@@ -270,10 +261,9 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,realtoideal=False):
         return B[mobiles,:][:,mobiles]
     D=D_Matrix(Dvec,nc)
     C=BIJ(D,wave,mobiles)
-    print(np.linalg.det(C))
+
     # B=(THFaktor/wave[None,mobiles])@C #somehow in codrying almost identical
     B=THFaktor@C #symmetric without correction
-    print(np.linalg.det(B))
     # B=THFaktor@C
     def Bopt(Dsoll):
         D=D_Matrix(Dsoll,nc)
@@ -282,8 +272,7 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,realtoideal=False):
         return np.sum((1-xist/xsoll)**2)
     from scipy.optimize import minimize
     opt=minimize(Bopt,Dvec,method="Nelder-Mead",bounds=(((-1E-1,1E-1),)*len(Dvec)))
-    print(opt)
-    print(np.linalg.det(THFaktor))
+
     DMS=opt["x"]
     DMS[DMS<0]=1E-5
     return DMS
@@ -294,62 +283,27 @@ def wegstein(fun,x):
     """Solving via wegsteins method"""
     tol=1E-6 #Toleranzbereich
     maxiter=20 #Anzahl max. Iterationen
-    f = fun(x)
+    sol = fun(x)
+    f=sol[1]
     xx=f    
     dx = xx-x
-    ff = fun(xx)
+    ssol = fun(xx)
+    ff=ssol[1]
     df=ff-f
     for i in range(maxiter): #Iteration von 0 bis maxiter
         e=np.linalg.norm(df.flatten(),2)/np.prod(x.shape)
-        print(f"iter {i+1}: ||F|| = {e}")
+        # print(f"iter {i+1}: ||F|| = {e}")
         if e<tol: 
-            return xx 
+            return ssol
         a = df/dx
         q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
-        print(f"iter {i+1}: q = {q}")
+        # print(f"iter {i+1}: q = {q}")
         x=xx
         xx = q * xx + (1-q) * ff
         f=ff
-        ff = fun(xx)    
+        ssol = fun(xx)
+        ff=ssol[1]    
         df=ff-f
         dx = xx - x
-    return xx  
-
-def Diffusion_MS_iter(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi_fun=None,**kwargs):
-    """iterates dlnai_dlnwi as a function of the concentration wi
-    See also:
-        diffusionpy.Diffusion_MS
-    
-    """
-
-    res_old=Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,**kwargs)
-    wt_old=res_old[1]
-    nt,nc,nz_1=wt_old.shape
-    def wt_fix(wtz):
-        
-        
-        print("------------- Start PC-SAFT modeling ----------------")
-        wtz=np.ascontiguousarray(np.swapaxes(wtz,1,2))
-        start=time.time_ns()
-        dlnai_dlnwi=dlnai_dlnwi_fun(wtz)
-        end=time.time_ns()
-        print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
-        return Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=dlnai_dlnwi,**kwargs)[1]
-    # def wt_res(wtz):
-    #     wtz=np.reshape(wtz,(nt,nc,nz_1))
-        
-    #     print("------------- Start PC-SAFT modeling ----------------")
-    #     start=time.time_ns()
-    #     dlnai_dlnwi=dlnai_dlnwi_fun(np.ascontiguousarray(np.swapaxes(wtz,1,2)))
-    #     end=time.time_ns()
-    #     print("------------- PC-SAFT modeling took "+str((end-start)/1E9)+" seconds ----------------")
-    #     return (Diffusion_MS(t,L,Dvec,wi0,wi8,Mi,mobile,dlnai_dlnwi=dlnai_dlnwi,full_output=True,**kwargs)[1]-wtz).flatten()
-
-    # wtopt=np.reshape(root(wt_res,wt_old.flatten(),method="df-sane",options={"disp":True}),(nt,nc,nz_1))
-    wtopt=wegstein(wt_fix,wt_old)
-    wtopt=np.ascontiguousarray(np.swapaxes(wtopt,1,2))
-    dlnai_dlnwiopt=dlnai_dlnwi_fun(wtopt)
-    return Diffusion_MS(t,L,Dvec,wi0,wi8,mobile,dlnai_dlnwi=dlnai_dlnwiopt,**kwargs)
-
-
+    return ssol  
 
