@@ -76,12 +76,9 @@ def ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA):
     ncomp=len(mi)
     ntype=2
     def mat(vec):
-        mat=np.zeros((ncomp,ncomp))
-        for i,j,k in zip(*np.triu_indices(ncomp,k=1),range(ncomp)): 
-            mat[i,j]=vec[k] 
-        mat+=mat.T-np.diag(mat)
-        return mat
-
+        m=np.zeros((ncomp,ncomp))
+        for i,j,k in zip(*np.triu_indices(ncomp,k=1),range(len(vec)+1)): m[i,j]=vec[k];m[j,i]=vec[k]
+        return m
     #Initializeki
     # for i,j,k in zip(*np.triu_indices(ncomp,k=1),range(ncomp)): kijmat[i,j]=kij[k]
     # kijAmat+=kijAmat.T-np.diag(kijAmat)

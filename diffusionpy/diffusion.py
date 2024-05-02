@@ -37,7 +37,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
     See Also:
         diffusionpy.D_Matrix
     """
-    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
+    # @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,D,allflux,wi0,dmuext,wiB):
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix containning the diffusion coefficients"""
@@ -172,7 +172,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
             if wik is not None:
                 wik=np.ascontiguousarray(np.swapaxes(wik,1,2))
                 if 'vpure' not in saftpar: saftpar['vpure']=vpure(p,T,**saftpar)
-                THFaktor=Gammaij(T,wik,saftpar)
+                THFaktor=np.nan_to_num(Gammaij(T,wik,saftpar))
         sol=solve_ivp(ode,(tint[0],tint[-1]),xinit,args=(tint,THFaktor,mobiles,immobiles,D,allflux,wi0[:,None]*np.ones((nc,nz+1)),dmuext,wiB),method="Radau",t_eval=tint)#rtol=1E-2,atol=1E-3)
 
 
@@ -233,7 +233,8 @@ def Gammaij(T,wi,par):
     Mi=par["Mi"]
     ri=Mi/np.min(Mi)
     dlnai_dlnwi=dlnai_dlnxi_loop(T,np.ascontiguousarray(wi),**par) if len(wi.shape)==3 else dlnai_dlnxi(T,np.ascontiguousarray(wi),**par)
-    dlnai_dlnwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]/ri[...,:,None]
+    with np.errstate(divide='ignore',invalid='print'):
+        dlnai_dlnwi=dlnai_dlnwi/wi[...,None,:]*wi[...,:,None]/ri[...,:,None]
     return dlnai_dlnwi
 
 
@@ -295,8 +296,10 @@ def wegstein(fun,x):
         # print(f"iter {i+1}: ||F|| = {e}")
         if e<tol: 
             return ssol
-        a = df/dx
-        q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
+        with np.errstate(divide='ignore',invalid='print'):    
+            a = df/dx
+            q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
+        # q=0
         # print(f"iter {i+1}: q = {q}")
         x=xx
         xx = q * xx + (1-q) * ff

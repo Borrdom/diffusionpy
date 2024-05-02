@@ -92,7 +92,8 @@ def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     lngi_res=mures-arespures
     lngi_p=-vpfrac*(Z1-1) #if "NETGP" not in kwargs else 0
     #with np.errstate(divide='ignore',invalid='ignore'):
-    lngi_wx=np.nan_to_num(np.log(np.divide(xi,wi)),0)
+    with np.errstate(divide='ignore',invalid='print'):
+        lngi_wx=np.nan_to_num(np.log(xi/wi),0)
     return lngi_id,lngi_res,lngi_p,lngi_wx
 
 # @njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
@@ -177,15 +178,15 @@ def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpS
     return lnai-lnaiSLE
 
 
-class mixture:
-    def __init__(self,p,T,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA):
-        self.mi=mi
-        self.si=si
-        self.ui=ui
-        self.eAi=eAi
-        self.kAi=kAi
-        self.NAi=NAi
-        self.Mi=Mi
-        self.kij=kij
-        self.kijA=kijA
-        self.vpure=vpure(p,T, **vars(self))
+# class mixture:
+#     def __init__(self,p,T,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA):
+#         self.mi=mi
+#         self.si=si
+#         self.ui=ui
+#         self.eAi=eAi
+#         self.kAi=kAi
+#         self.NAi=NAi
+#         self.Mi=Mi
+#         self.kij=kij
+#         self.kijA=kijA
+#         self.vpure=vpure(p,T, **vars(self))
