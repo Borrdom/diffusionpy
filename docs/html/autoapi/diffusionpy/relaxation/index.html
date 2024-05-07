@@ -45,8 +45,8 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/diffusionpy/relaxation/index';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="diffusionpy.surface_activity" href="../surface_activity/index.html" />
-    <link rel="prev" title="diffusionpy.read_componentdatabase" href="../read_componentdatabase/index.html" />
+    <link rel="next" title="diffusionpy.surface" href="../surface/index.html" />
+    <link rel="prev" title="diffusionpy.diffusion" href="../diffusion/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -136,20 +136,13 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../PCSAFT/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PCSAFT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ares/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.ares</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../diffusion/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.diffusion</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.relaxation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../surface_activity/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../xloil_functions/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.xloil_functions</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../surface/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utilities/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.utilities</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -328,38 +321,41 @@ document.write(`
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">#</a></h3>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.relaxation.relaxation_mode" title="diffusionpy.relaxation.relaxation_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">relaxation_mode</span></code></a>(wvinit, ode, EJ, etaJ, exponent, M2, ...)</p></td>
-<td><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.relaxation.relaxation_mode" title="diffusionpy.relaxation.relaxation_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">relaxation_mode</span></code></a>(ode, EJ, etaJ, exponent[, T, Mv, vv])</p></td>
+<td><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation of a component</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.relaxation.MDF" title="diffusionpy.relaxation.MDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MDF</span></code></a>(sigmaJ, EJ, RV)</p></td>
 <td><p>the mechanical driving force for the stress gradient</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.relaxation.stress" title="diffusionpy.relaxation.stress"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stress</span></code></a>(etaWL, EJ, sigmaJ, drhodtNF, v2)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.relaxation.stress" title="diffusionpy.relaxation.stress"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stress</span></code></a>(etaWL, EJ, sigmaJ, drhodtNF, vv)</p></td>
 <td><p>calculate the change in the stresses of the maxwell elements</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.relaxation.relaxation_mode">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.relaxation.</span></span><span class="sig-name descname"><span class="pre">relaxation_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wvinit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">etaJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">THFaktor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">immobiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allflux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wi0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmuext</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wiB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.relaxation.relaxation_mode" title="Permalink to this definition">#</a></dt>
-<dd><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation</p>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.relaxation.</span></span><span class="sig-name descname"><span class="pre">relaxation_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">etaJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">298.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18.015</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.relaxation.relaxation_mode" title="Permalink to this definition">#</a></dt>
+<dd><p>alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation of a component
+:param ode: ode function which is modified by this function
+:type ode: array_like
+:param EJ: Elasticity Moduli
+:type EJ: array_like
+:param etaJ: Damper constants
+:type etaJ: array_like
+:param exponent: Plasticization factors
+:type exponent: array_like
+:param T: temperature /K
+:type T: float, optional
+:param Mv: solvent molar mass g/mol
+:type Mv: float, optional
+:param vv: solvent specific volume kg/m3
+:type vv: float, optional</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>wvinit</strong> (<em>array_like</em>) – vector of the mass fractions of the mobile components</p></li>
-<li><p><strong>ode</strong> (<em>array_like</em>) – ode fuinction which is modified by the function</p></li>
-<li><p><strong>EJ</strong> (<em>array_like</em>) – Elasticity Moduli</p></li>
-<li><p><strong>etaJ</strong> (<em>array_like</em>) – Damper constants</p></li>
-<li><p><strong>exponent</strong> (<em>array_like</em>) – Plasticization factors</p></li>
-<li><p><strong>M2</strong> (<em>array_like</em>) – Molar masses of mobile compnents</p></li>
-<li><p><strong>v2</strong> (<em>array_like</em>) – specific volumes of mobile compnents</p></li>
-</ul>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>new modified ode function with the same format as the input ode function</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>new modified ode function with the same format as the input ode function</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>array_like</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array_like</p>
 </dd>
 </dl>
 </dd></dl>
@@ -372,7 +368,7 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.relaxation.stress">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.relaxation.</span></span><span class="sig-name descname"><span class="pre">stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etaWL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmaJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drhodtNF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.relaxation.stress" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">diffusionpy.relaxation.</span></span><span class="sig-name descname"><span class="pre">stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etaWL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmaJ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drhodtNF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vv</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.relaxation.stress" title="Permalink to this definition">#</a></dt>
 <dd><p>calculate the change in the stresses of the maxwell elements</p>
 </dd></dl>
 
@@ -392,20 +388,20 @@ document.write(`
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../read_componentdatabase/index.html"
+       href="../diffusion/index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.diffusion</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="../surface_activity/index.html"
+       href="../surface/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

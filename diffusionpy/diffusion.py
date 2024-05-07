@@ -179,8 +179,8 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
         # plt.plot(t,rhoik[:,1,-1])
 
         return getsol(sol)
-
-    solopt=wegstein(solveodes,solveodes()[1]) if (saftpar is not None) and ('A' not in kwargs)  else solveodes()
+    maxiter=kwargs['maxiter'] if 'maxiter' in kwargs else 20
+    solopt=wegstein(solveodes,solveodes()[1],maxiter) if (saftpar is not None) and (maxiter is not None) else solveodes()
     return solopt
 
 
@@ -280,10 +280,10 @@ def DIdeal2DReal(Dvec,wave,wi0,dlnai_dlnwi,mobile,realtoideal=False):
 
 
 
-def wegstein(fun,x):
+def wegstein(fun,x,maxiter):
     """Solving via wegsteins method"""
     tol=1E-6 #Toleranzbereich
-    maxiter=20 #Anzahl max. Iterationen
+    # maxiter=20 #Anzahl max. Iterationen
     sol = fun(x)
     f=sol[1]
     xx=f    

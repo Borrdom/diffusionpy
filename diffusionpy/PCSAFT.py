@@ -158,12 +158,8 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
         ww=wi[mobiles]
         vmol=v0moldry/(1-np.sum(ksws*RS**n))*(1-np.sum(xw))
         vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
-        # v=v0dry/(1-np.sum(ksws*RS**2))*(1-np.sum(ww))
-        # vtr=(v-np.sum(ww*v0NET[mobiles]))/(1-np.sum(ww))*widry[immobiles]
         vpures2=vpures.copy()
         vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
-        # vpures2[immobiles]=vtr*Mi[immobiles]/1000.
-        # vpures2[immobiles]=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))*xidry[immobiles]
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
         return logRS-np.log(RS)
@@ -173,7 +169,8 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
 
 def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpSL):
     R=8.3145
-    lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
+    with np.errstate(divide='ignore',invalid='print'):
+        lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
     lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
     return lnai-lnaiSLE
 
