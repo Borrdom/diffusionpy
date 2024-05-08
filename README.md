@@ -5,11 +5,14 @@
 Provides a one-dimensional Stefan-Maxwell diffusion model with a PC-SAFT implementation
 
 # Installation
+if you have git just open a console and type
 ```console
 git clone https://github.com/Borrdom/diffusionpy
 cd diffusionpy
 pip install .
 ```
+alternatively you can download the zip archive and unzip it. Then open your console, cd in the unziped directory and run the pip install  
+
 # Minimal working example
 
 If no errors occoured during installation, the following lines will model the diffusion kinetics of three substances from a starting mass fraction of wi0 to the mass fraction wi8

@@ -132,22 +132,26 @@ def dlnai_dlnxi_loop(T,xi,**kwargs):
             dlnai_dlnxi_vec[i,j,:,:]=dlnai_dlnxi(T,np.ascontiguousarray(xi[i,j,:]),**kwargs)
     return dlnai_dlnxi_vec
 
-def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,kijA,n=2):
+def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
     # vp=np.zeros(np.sum(polymers))
-    
+    mobile=v0p==-1.
+    polymer=v0p>0.
     mobiles=np.where(mobile)[0] #if not allflux else np.arange(0,nc-1,dtype=np.int64)
     immobiles=np.where(~mobile)[0] #if not allflux else np.asarray([nc-1],dtype=np.int64)
     widry=np.zeros_like(wi)
     widry[immobiles]=wi[immobiles]/np.sum(wi[immobiles])
     nc=len(Mi)
-    kswmat=np.zeros((nc,nc))
     polymers=np.where(polymer)[0]
-    v0NET=vpures*1000./Mi
-    v0NET[polymers]=v0p
+    v0NET=vpure*1000./Mi
+    v0NET[polymers]=v0p[polymers]
     Mdry=(np.sum(widry/Mi))**-1
     xidry=widry/Mi*Mdry
     v0dry=np.sum(v0NET*widry)
-    kswmat[mobiles,polymers]=ksw
+    def mat(vec):
+        m=np.zeros((nc,nc))
+        for i,j,k in zip(*np.triu_indices(nc,k=1),range(len(vec)+1)): m[i,j]=vec[k]
+        return m
+    kswmat=mat(ksw)
     vidry=v0NET/v0dry*widry
     ksws=(kswmat@vidry)[mobiles]
     v0moldry=v0dry*Mdry/1000.
@@ -157,10 +161,10 @@ def NETVLE(T,wi,v0p,mobile,polymer,ksw,mi,sigi,ui,epsAiBi,kapi,N,vpures,Mi,kij,k
         xw=xi[mobiles]
         ww=wi[mobiles]
         vmol=v0moldry/(1-np.sum(ksws*RS**n))*(1-np.sum(xw))
-        vmoltrick=(vmol-np.sum(xw*vpures[mobiles]))/(1-np.sum(xw))
-        vpures2=vpures.copy()
+        vmoltrick=(vmol-np.sum(xw*vpure[mobiles]))/(1-np.sum(xw))
+        vpures2=vpure.copy()
         vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
-        lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,sigi,ui,epsAiBi,kapi,N,vpures2,Mi,kij,kijA)
+        lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
         return logRS-np.log(RS)
     re=root(res,wi[mobiles]/2,method='hybr')
@@ -174,7 +178,7 @@ def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpS
     lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
     return lnai-lnaiSLE
 
-
+# def calc_isotherm(): 
 # class mixture:
 #     def __init__(self,p,T,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA):
 #         self.mi=mi
