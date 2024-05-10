@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import root
-from  .ares import ares 
+from  .ares import ares
 #@njit(cache=True)
 def eta_iter(p,T,xi,**kwargs):
     """solve the density mich yiels a given pressure p"""
@@ -86,11 +86,11 @@ def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
     di=si*(1.-0.12*np.exp(-3*ui/T))
     eta=np.pi/6*np.sum(mi*xi.real*di**3)/vmol/(10.**10)**3*NA
     etapure=np.pi/6*mi*di**3/vpure/(10.**10)**3*NA
-    lngi_id=np.log(vpfrac)+1.-vpfrac
+    lngi_id=np.log(vpfrac)+1.
     arespures=np.asarray([ares(T,val,np.asarray([1.]),np.asarray([mi[i]]),np.asarray([si[i]]),np.asarray([ui[i]]),np.asarray([eAi[i]]),np.asarray([kAi[i]]),np.asarray([NAi[i]]),np.zeros(10),np.zeros(10))[0] for i,val in enumerate(etapure)])
     _,mures,Z1=ares(T,eta,xi,mi,si,ui,eAi,kAi,NAi,kij,kijA)
     lngi_res=mures-arespures
-    lngi_p=-vpfrac*(Z1-1) #if "NETGP" not in kwargs else 0
+    lngi_p=-vpfrac*Z1 #if "NETGP" not in kwargs else 0
     #with np.errstate(divide='ignore',invalid='ignore'):
     with np.errstate(divide='ignore',invalid='print'):
         lngi_wx=np.nan_to_num(np.log(xi/wi),0)
@@ -132,6 +132,10 @@ def dlnai_dlnxi_loop(T,xi,**kwargs):
             dlnai_dlnxi_vec[i,j,:,:]=dlnai_dlnxi(T,np.ascontiguousarray(xi[i,j,:]),**kwargs)
     return dlnai_dlnxi_vec
 
+
+# def lngi2(T,wi,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA):
+
+
 def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
     # vp=np.zeros(np.sum(polymers))
     mobile=v0p==-1.
@@ -166,6 +170,8 @@ def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
         vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
+        # lngi[mobiles]=lngi2(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
+        # logRS=lngi[mobiles]+np.log(wi[mobiles])
         return logRS-np.log(RS)
     re=root(res,wi[mobiles]/2,method='hybr')
     RS=re["x"]

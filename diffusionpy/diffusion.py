@@ -300,7 +300,7 @@ def wegstein(fun,x,maxiter):
             a = df/dx
             q= np.average(np.fmin(np.fmax(np.nan_to_num(a/(a-1),nan=0,posinf=0,neginf=0),0),1))
         # q=0
-        print(f"iter {i+1}: q = {q}")
+        # print(f"iter {i+1}: q = {q}")
         x=xx
         xx = q * xx + (1-q) * ff
         f=ff
