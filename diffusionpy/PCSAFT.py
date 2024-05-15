@@ -33,7 +33,7 @@ def eta_iter(p,T,xi,**kwargs):
     return eta_roots(Z_obj,p,T,eta0,xi,**kwargs)
 
 def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
-    """solve the density mich yiels a given pressure p"""
+    """solve the density mich yields a given pressure p"""
     etapures=[]
     for i in range(len(mi)):
         purepar={'mi':np.asarray([mi[i]]),
@@ -120,8 +120,8 @@ def dlnai_dlnxi(T,xi,**kwargs):
         dx = np.zeros(nc, dtype = 'c16')
         dx[i] = h * 1j
         out =  lngi(T,xi+dx,**kwargs)
-        df[i] = out.imag/h
-    return df.T*xi+np.eye(nc)
+        df[:,i] = out.imag/h
+    return df*xi[None,:]+np.eye(nc)
 
 # @njit('f8[:,:,:,::1](f8,f8[:,:,::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',cache=True)
 def dlnai_dlnxi_loop(T,xi,**kwargs):

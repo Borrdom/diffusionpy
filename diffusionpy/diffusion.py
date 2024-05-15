@@ -4,7 +4,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import root
 from numba import njit,config,prange
 import time
-from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC,vpure
+from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC,vpure,lngi
 from .surface import time_dep_surface
 
 
@@ -37,7 +37,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
     See Also:
         diffusionpy.D_Matrix
     """
-    # @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
+    @njit(['f8[::1](f8, f8[:],f8[:], f8[:,:,::1,::1], i8[::1], i8[::1], f8[:,:], b1, f8[:,:],f8[:,:],f8[:,::1])'],cache=True)
     def ode(t,x,tint,THFaktor,mobiles,immobiles,D,allflux,wi0,dmuext,wiB):
         def BIJ_Matrix(D,wi,mobiles):
             """create the friction matrix containning the diffusion coefficients"""
@@ -117,7 +117,16 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
 
     xinit=wvinit.flatten()
     dmuext=np.zeros((nTH,nz+1))
-    wiB=time_dep_surface(tint,wi0,wi8,mobile,kwargs['taui']) if "taui" in kwargs else wi8[None,:]*np.ones((nt,nc))
+    
+    if "taui" in kwargs:
+        wiB=time_dep_surface(tint,wi0,wi8,mobile,kwargs['taui'])
+        # if 'vpure' not in saftpar: saftpar['vpure']=vpure(p,T,**saftpar)
+        # wiB=time_dep_surface(tint,wi0,wi8,mobile,kwargs['taui'],np.asarray([lngi(T,val,**saftpar) for val in wiB]))
+    elif 'witB' in kwargs:
+        wiB=kwargs['witB']
+    else:
+        wiB=wi8[None,:]*np.ones((nt,nc))
+
     drhovdtB=np.zeros(nTH)
     return_stress=False
     return_alpha=False
