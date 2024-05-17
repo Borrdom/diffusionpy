@@ -170,9 +170,11 @@ def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
         vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
         logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
+        res=logRS-np.log(RS)
+        res[wi[mobiles]==0.]=0.
+        return res
         # lngi[mobiles]=lngi2(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
         # logRS=lngi[mobiles]+np.log(wi[mobiles])
-        return logRS-np.log(RS)
     re=root(res,wi[mobiles]/2,method='hybr')
     RS=re["x"]
     return RS
