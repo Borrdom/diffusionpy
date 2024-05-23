@@ -631,4 +631,4 @@ class window3:
 
 if __name__=="__main__":
     filenames=askopenfilenames()
-    Measurement(filenames,tend=-1,nt=15,arc=False)
+    Measurement(filenames,tend=-1,nt=50,arc=False)
