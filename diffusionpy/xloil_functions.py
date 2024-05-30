@@ -32,9 +32,9 @@ mobile:xlo.Array(bool,dims=1),swelling:bool=False,witB:xlo.Array(float,dims=2)=N
         _,wtz,zvec,Lt=Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),mobile,True,None,swelling,**kwargs)
         nz=len(zvec)
         zt=Lt[None,:]*zvec[:,None]/L
-        res=zt.flatten()[::-1,None]
+        res=zt.flatten()[:,None]
         for i in range(len(w0)):
-            res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
+            res=np.hstack((res,wtz[:,i,:].T.flatten()[:,None]))
         return res
     else: 
         return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),mobile,**kwargs)[0]
@@ -74,9 +74,9 @@ pure:xlo.Array(object,dims=2)=np.asarray([[]]),kij:xlo.Array(object,dims=2)=np.a
         _,wtz,zvec,Lt=Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),mobile,saftpar=par,**kwargs)
         nz=len(zvec)
         zt=Lt[None,:]*zvec[:,None]/L
-        res=zt.flatten()[::-1,None]
+        res=zt.flatten()[:,None]
         for i in range(len(w0)):
-            res=np.hstack((res,wtz[:,i,:].flatten()[:,None]))
+            res=np.hstack((res,wtz[:,i,:].T.flatten()[:,None]))
         return res
     else: 
         return Diffusion_MS(t.copy(),L,Dvec.copy(),w0.copy(),w8.copy(),mobile,saftpar=par,**kwargs)[0]
