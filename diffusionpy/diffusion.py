@@ -129,7 +129,6 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
     drhovdtB=np.zeros(nTH)
     return_stress=False
     return_alpha=False
-    event=None
 
     if "EJ" in kwargs or "etaJ" in kwargs or "exponent" in kwargs: 
         from .relaxation import relaxation_mode
@@ -148,10 +147,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
         xinit=np.hstack((wvinit.flatten(),alpha0.flatten()))
         # kwargs["lnS"]=interp1d(tint,kwargs["lnS"],axis=0,bounds_error=False)
         wv_fun=kwargs['wv_fun'] if 'wv_fun' in kwargs else None
-        eta_fun=kwargs['eta_fun'] if 'eta_fun' in kwargs else None
-        ode,event=crystallization_mode(ode,kwargs['A'],kwargs['B'],kwargs['n'],T,saftpar,wv_fun,eta_fun)
-        event.terminal = False
-        event.direction = -1
+        ode=crystallization_mode(ode,kwargs['A'],kwargs['B'],kwargs['n'],T,saftpar,wv_fun)
         return_alpha=True
     
     def getsol(sol):
@@ -173,7 +169,7 @@ def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs
             sigmaJ=np.reshape(x_sol[(nz+1)*nTH:(nz+1)*(nTH+nJ),:],(nz+1,nJ,nt))
             return (wt.T,wik,zvec,Lt,sigmaJ)
         elif return_alpha:
-            alpha=alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
+            alpha=x_sol[(nz+1)*nTH:(nz+1)*(nTH+1),:]
             return (wt.T,wik,zvec,Lt,alpha)
         else:    
             return (wt.T,wik,zvec,Lt)

@@ -23,25 +23,18 @@ def CNT(t,alpha,A,B,n,T,lnS):
         recrystallization rate       /- \n
         growth rate    /- \n
     """
-    # A=((2*sigma)/(C0*kB*temp))*4*np.pi*((2*sigma)/(C0*kB*temp))*DAPI*NA*(kB*temp/sigma)**(1.5)*C0/(8*np.pi)*C0
-    # B=(16*np.pi)/(3*(C0)**2)*(sigma/(kB))**3
-    # dNdt = np.fmax(A*T*lnS*np.exp(-B/lnS**2/T**3),0) #*cs.exp(-NA)/NA**0.5
-    # drdt = np.fmax(C*T*(lnS)**n,0) 
-    # dalphadr=alpha/(r*1E6)
-    # dalphadN=(1-alpha)*(r*1E6)**3
-    # dalphadt=drdt*dalphadr+dNdt*dalphadN 
-    # return dalphadt,drdt*1E-6
     N = T*np.exp(-B/lnS**2/T**3)
     G = T*(1-1/np.exp(lnS))
+    # G=T*lnS
     k=A*N*G
     dalphadt=k*(t)**(n-1)*(1-alpha)
-    # alpha=1-np.exp(-k*t**n)
+    dalphadt[alpha>1]=0
+    dalphadt[alpha<0]=0
     return dalphadt
 
 
 # config.DISABLE_JIT = True
-# wvinit,ode,mobiles,immobiles,crystallize,wi0,wi8,rho0i,Mi,deltaHSL,TSL,cpSL,tnuc,T,DAPI,sigma,kt,g,lngi_tz
-def crystallization_mode(ode,A,B,n,T,saftpar,wv_fun=None,eta_fun=None):
+def crystallization_mode(ode,A,B,n,T,saftpar,wv_fun=None):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the crystallization
     Args:
         wvinit (array_like): vector of the mass fractions of the mobile components
@@ -64,11 +57,8 @@ def crystallization_mode(ode,A,B,n,T,saftpar,wv_fun=None,eta_fun=None):
         wv=np.zeros((nTH,nz_1))
         wi=np.zeros((nc,nz_1))
         for i in range(nTH): wv[i,:]=x[(nz_1)*(i):(nz_1)*(1+i)]
-        alpha=np.fmin(x[(nz_1)*(nTH):(nz_1)*(nTH+1)],0.999)
-        # if np.any(alpha>1):
-        #     print(alpha)
-        # r=x[(nz_1)*(nTH+1):(nz_1)*(nTH+2)]
-        dl_la = (wi0[crystallizes]-alpha*wi0[crystallizes])/(1-alpha*wi0[crystallizes])
+        alpha=x[(nz_1)*(nTH):(nz_1)*(nTH+1)]
+        dl_la = np.fmax(np.fmin((wi0[crystallizes]-alpha*wi0[crystallizes])/(1-alpha*wi0[crystallizes]),1),0)
         # print(alpha)
         
     
@@ -88,21 +78,14 @@ def crystallization_mode(ode,A,B,n,T,saftpar,wv_fun=None,eta_fun=None):
             wiB[:,crystallizes]=(1-np.sum(wiB[:,mobiles],axis=1))*dl_la[-1]
             argsmod[-1]=wiB
             wi[:,-1]=wiB[-1,:]
-        lnS=np.fmax(np.asarray([supersaturation(T,val,**saftpar)[crystallizes] for val in wi.T]),0)
+        
+        lnS=np.asarray([supersaturation(T,val,**saftpar)[crystallizes] for val in wi.T])
+
         argsmod[1]=wv.flatten()
-        # argsmod[3]=args[3].copy()*(np.fmax(1-alpha[None,:,None,None]*wi0[crystallizes][0],0))**1.5
 
         dwvdt=ode(*argsmod)
-        eta=np.asarray([eta_fun(val) for val in wi.T]) if eta_fun is not None else np.ones_like(alpha)
-        dalphadt=CNT(t,alpha,A/eta/eta,B,n,T,lnS)
+        dalphadt=CNT(t,alpha,A,B,n,T,lnS)
         # fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten(),drdt.flatten()))
         fvec=np.hstack((dwvdt.flatten(),dalphadt.flatten()))
         return fvec
-        
-    def cryst_event(*args):
-        nTH,nz_1=args[-2].shape
-        x=args[1]
-        alpha=x[(nz_1)*(nTH):(nz_1)*(nTH+1)]
-        return (1-alpha)
-
-    return crystallization_ode,cryst_event
+    return crystallization_ode
