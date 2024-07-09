@@ -30,9 +30,11 @@ def relaxation_mode(ode,EJ,etaJ,exponent,T=298.15,Mv=18.015,vv=0.001):
         sigmaJ=np.zeros((nz_1,nJ))
         for J in range(nJ):   sigmaJ[:,J]=x[(nz_1)*(nTH+J):(nz_1)*(nTH+1+J)]
         wv=np.ascontiguousarray(wv)
-        WL=np.prod(np.exp(-wv*np.expand_dims(exponent,-1)),0)
-        etaWL=np.expand_dims(WL,1)*np.expand_dims(etaJ,0)
-        dmuext=MDF(sigmaJ,EJ,RV)
+        WL=np.exp(-np.fmin(np.sum(wv,axis=0)[:,None],1)*exponent[None,:])
+        # print(WL)
+        # print(wv)
+        etaWL=WL*etaJ[None,:]
+        dmuext=MDF(sigmaJ,EJ,RV)*np.ones((nTH,nz_1))
         argsmod=list(args)
         argsmod[-2]=dmuext
         argsmod[1]=np.ascontiguousarray(wv.flatten())

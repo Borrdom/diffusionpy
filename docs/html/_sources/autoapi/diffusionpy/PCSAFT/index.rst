@@ -31,10 +31,10 @@ Functions
 
 .. py:function:: vpure(p, T, mi, si, ui, eAi, kAi, NAi, **kwargs)
 
-   solve the density mich yiels a given pressure p
+   solve the density mich yields a given pressure p
 
 
-.. py:function:: SAFTSAC(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA)
+.. py:function:: SAFTSAC(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij=np.zeros(10), kijA=np.zeros(10))
 
    Calculate the log of the activity coefficients via the SAFT-SAC approximation
    :param T: temperature
@@ -66,7 +66,7 @@ Functions
    :rtype: array_like
 
 
-.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA, **kwargs)
+.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij=np.zeros(10), kijA=np.zeros(10), **kwargs)
 
 
 .. py:function:: dlnai_dlnxi(T, xi, **kwargs)
@@ -87,9 +87,9 @@ Functions
 .. py:function:: dlnai_dlnxi_loop(T, xi, **kwargs)
 
 
-.. py:function:: NETVLE(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, epsAiBi, kapi, N, vpures, Mi, kij, kijA, n=2)
+.. py:function:: NETVLE(T, wi, v0p, ksw, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij=np.zeros(10), kijA=np.zeros(10), n=2)
 
 
-.. py:function:: supersaturation(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA, deltaHSL, TSL, cpSL)
+.. py:function:: supersaturation(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, deltaHSL, TSL, cpSL, kij=np.zeros(10), kijA=np.zeros(10))
 
 

@@ -26,25 +26,8 @@ Functions
    diffusionpy.xloil_functions.time_dep_surface_xloil
    diffusionpy.xloil_functions.gradient
    diffusionpy.xloil_functions.reduce_points
-   diffusionpy.xloil_functions.origin_plot
-   diffusionpy.xloil_functions.crank_xl
    diffusionpy.xloil_functions.interp1d
-   diffusionpy.xloil_functions.BHX_xloil
-   diffusionpy.xloil_functions.DasDennis_xloil
-   diffusionpy.xloil_functions.add_custom
-   diffusionpy.xloil_functions.get_path
-   diffusionpy.xloil_functions.get_par_xloil
-   diffusionpy.xloil_functions.create_header
-   diffusionpy.xloil_functions.PC_SAFT_NpT2
 
-
-
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   diffusionpy.xloil_functions._excelgui
 
 
 .. py:class:: xlo
@@ -73,37 +56,6 @@ Attributes
 .. py:function:: reduce_points(x, n: int)
 
 
-.. py:function:: origin_plot(x: xlo.Array(float, dims=1), y: xlo.Array(float, dims=1), xexp: xlo.Array(float, dims=1), yexp: xlo.Array(float, dims=1), xmin, xmax, ymin, ymax, xlabel, ylabel, xunit, yunit, spacing: int, fmt)
-
-
-.. py:function:: crank_xl(t, L0, Ds, ws0, ws8)
-
-
 .. py:function:: interp1d(x, xp, fp)
-
-
-.. py:function:: BHX_xloil(t: xlo.Array(float, dims=1), kf: float, kr: float, ws0: float, ws8: float, mfinfty: float, mrinfty: float)
-
-
-.. py:function:: DasDennis_xloil(p: int, dim: int)
-
-
-.. py:function:: add_custom(a, b)
-
-
-.. py:function:: get_path(ctrl)
-
-
-.. py:function:: get_par_xloil(subst_input, path)
-
-
-.. py:function:: create_header(ctrl)
-
-
-.. py:data:: _excelgui
-
-   
-
-.. py:function:: PC_SAFT_NpT2(pure, kij, header, inputs)
 
 

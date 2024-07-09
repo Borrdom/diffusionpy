@@ -45,7 +45,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/diffusionpy/xloil_functions/index';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="prev" title="diffusionpy.surface_activity" href="../surface_activity/index.html" />
+    <link rel="prev" title="diffusionpy.utilities" href="../utilities/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -135,19 +135,15 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy</span></code></a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="../DasDennisSpacing/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.DasDennisSpacing</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../Extract_DVS/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Extract_DVS</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../FEM_collocation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.FEM_collocation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../PyCSAFT_nue/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PyCSAFT_nue</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../Stefan_Maxwell_segmental/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.Stefan_Maxwell_segmental</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../crank_and_other/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crank_and_other</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../PCSAFT/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.PCSAFT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../ares/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.ares</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../crystallization/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.crystallization</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../diffusion/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.diffusion</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../distillation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.distillation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../liquidseperation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.liquidseperation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../plots/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.plots</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../read_componentdatabase/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.read_componentdatabase</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../relaxation/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.relaxation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../surface_activity/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../surface/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../utilities/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.utilities</span></code></a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.xloil_functions</span></code></a></li>
 </ul>
 </li>
@@ -301,8 +297,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo"><code class="docutils literal notranslate"><span class="pre">xlo</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo.func"><code class="docutils literal notranslate"><span class="pre">xlo.func</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo.Array"><code class="docutils literal notranslate"><span class="pre">xlo.Array()</span></code></a></li>
@@ -313,17 +308,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.time_dep_surface_xloil"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_xloil()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.gradient"><code class="docutils literal notranslate"><span class="pre">gradient()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.origin_plot"><code class="docutils literal notranslate"><span class="pre">origin_plot()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.crank_xl"><code class="docutils literal notranslate"><span class="pre">crank_xl()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.interp1d"><code class="docutils literal notranslate"><span class="pre">interp1d()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.BHX_xloil"><code class="docutils literal notranslate"><span class="pre">BHX_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.DasDennis_xloil"><code class="docutils literal notranslate"><span class="pre">DasDennis_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.add_custom"><code class="docutils literal notranslate"><span class="pre">add_custom()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.get_path"><code class="docutils literal notranslate"><span class="pre">get_path()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.get_par_xloil"><code class="docutils literal notranslate"><span class="pre">get_par_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.create_header"><code class="docutils literal notranslate"><span class="pre">create_header()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions._excelgui"><code class="docutils literal notranslate"><span class="pre">_excelgui</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2"><code class="docutils literal notranslate"><span class="pre">PC_SAFT_NpT2()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -372,44 +357,7 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.reduce_points" title="diffusionpy.xloil_functions.reduce_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_points</span></code></a>(x, n)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.origin_plot" title="diffusionpy.xloil_functions.origin_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">origin_plot</span></code></a>(x, y, xexp, yexp, xmin, xmax, ymin, ymax, ...)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.crank_xl" title="diffusionpy.xloil_functions.crank_xl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crank_xl</span></code></a>(t, L0, Ds, ws0, ws8)</p></td>
-<td><p></p></td>
-</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.interp1d" title="diffusionpy.xloil_functions.interp1d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp1d</span></code></a>(x, xp, fp)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.BHX_xloil" title="diffusionpy.xloil_functions.BHX_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BHX_xloil</span></code></a>(t, kf, kr, ws0, ws8, mfinfty, mrinfty)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.DasDennis_xloil" title="diffusionpy.xloil_functions.DasDennis_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DasDennis_xloil</span></code></a>(p, dim)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.add_custom" title="diffusionpy.xloil_functions.add_custom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_custom</span></code></a>(a, b)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.get_path" title="diffusionpy.xloil_functions.get_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_path</span></code></a>(ctrl)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.get_par_xloil" title="diffusionpy.xloil_functions.get_par_xloil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_par_xloil</span></code></a>(subst_input, path)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.create_header" title="diffusionpy.xloil_functions.create_header"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_header</span></code></a>(ctrl)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2" title="diffusionpy.xloil_functions.PC_SAFT_NpT2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PC_SAFT_NpT2</span></code></a>(pure, kij, header, inputs)</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="attributes">
-<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">#</a></h3>
-<table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#diffusionpy.xloil_functions._excelgui" title="diffusionpy.xloil_functions._excelgui"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_excelgui</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -455,58 +403,8 @@ document.write(`
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.origin_plot">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">origin_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xexp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yexp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ymax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xunit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yunit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.origin_plot" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.crank_xl">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">crank_xl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.crank_xl" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="diffusionpy.xloil_functions.interp1d">
 <span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">interp1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.interp1d" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.BHX_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">BHX_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">xlo.Array(float,</span> <span class="pre">dims=1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ws8</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mfinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mrinfty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.BHX_xloil" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.DasDennis_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">DasDennis_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.DasDennis_xloil" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.add_custom">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">add_custom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.add_custom" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.get_path">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctrl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.get_path" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.get_par_xloil">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">get_par_xloil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subst_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.get_par_xloil" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.create_header">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">create_header</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctrl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.create_header" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py data">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions._excelgui">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">_excelgui</span></span><a class="headerlink" href="#diffusionpy.xloil_functions._excelgui" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="diffusionpy.xloil_functions.PC_SAFT_NpT2">
-<span class="sig-prename descclassname"><span class="pre">diffusionpy.xloil_functions.</span></span><span class="sig-name descname"><span class="pre">PC_SAFT_NpT2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kij</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -525,12 +423,12 @@ document.write(`
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../surface_activity/index.html"
+       href="../utilities/index.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.surface_activity</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">diffusionpy.utilities</span></code></p>
       </div>
     </a>
 </div>
@@ -550,8 +448,7 @@ document.write(`
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo"><code class="docutils literal notranslate"><span class="pre">xlo</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo.func"><code class="docutils literal notranslate"><span class="pre">xlo.func</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.xlo.Array"><code class="docutils literal notranslate"><span class="pre">xlo.Array()</span></code></a></li>
@@ -562,17 +459,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.time_dep_surface_xloil"><code class="docutils literal notranslate"><span class="pre">time_dep_surface_xloil()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.gradient"><code class="docutils literal notranslate"><span class="pre">gradient()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.reduce_points"><code class="docutils literal notranslate"><span class="pre">reduce_points()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.origin_plot"><code class="docutils literal notranslate"><span class="pre">origin_plot()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.crank_xl"><code class="docutils literal notranslate"><span class="pre">crank_xl()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.interp1d"><code class="docutils literal notranslate"><span class="pre">interp1d()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.BHX_xloil"><code class="docutils literal notranslate"><span class="pre">BHX_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.DasDennis_xloil"><code class="docutils literal notranslate"><span class="pre">DasDennis_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.add_custom"><code class="docutils literal notranslate"><span class="pre">add_custom()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.get_path"><code class="docutils literal notranslate"><span class="pre">get_path()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.get_par_xloil"><code class="docutils literal notranslate"><span class="pre">get_par_xloil()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.create_header"><code class="docutils literal notranslate"><span class="pre">create_header()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions._excelgui"><code class="docutils literal notranslate"><span class="pre">_excelgui</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#diffusionpy.xloil_functions.PC_SAFT_NpT2"><code class="docutils literal notranslate"><span class="pre">PC_SAFT_NpT2()</span></code></a></li>
 </ul>
 </li>
 </ul>

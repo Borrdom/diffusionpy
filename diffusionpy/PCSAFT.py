@@ -55,7 +55,7 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
 #@njit(cache=True)
 # @njit(['Tuple((f8[::1], f8[::1], f8[::1],f8[::1]))(f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
 # 'Tuple((c16[::1], c16[::1], c16[::1],c16[::1]))(f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
-def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
+def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij=np.zeros(10),kijA=np.zeros(10)):
     """Calculate the log of the activity coefficients via the SAFT-SAC approximation
     Args:
         T (float): temperature
@@ -98,7 +98,7 @@ def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA):
 
 # @njit(['f8[::1](f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
 # 'c16[::1](f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
-def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,**kwargs):
+def lngi(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij=np.zeros(10),kijA=np.zeros(10),**kwargs):
     lngi_id,lngi_res,lngi_p,lngi_wx=SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA)
     return lngi_id+lngi_res+lngi_p+lngi_wx
 
@@ -136,7 +136,7 @@ def dlnai_dlnxi_loop(T,xi,**kwargs):
 # def lngi2(T,wi,mi,si,ui,eAi,kAi,NAi,Mi,kij,kijA):
 
 
-def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
+def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij=np.zeros(10),kijA=np.zeros(10),n=2):
     # vp=np.zeros(np.sum(polymers))
     mobile=v0p==-1.
     polymer=v0p>0.
@@ -179,7 +179,7 @@ def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,n=2):
     RS=re["x"]
     return RS
 
-def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij,kijA,deltaHSL,TSL,cpSL):
+def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,deltaHSL,TSL,cpSL,kij=np.zeros(10),kijA=np.zeros(10)):
     R=8.3145
     with np.errstate(divide='ignore',invalid='print'):
         lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))

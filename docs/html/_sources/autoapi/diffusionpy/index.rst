@@ -10,13 +10,16 @@ Submodules
    :titlesonly:
    :maxdepth: 1
 
+   Extract_DVS/index.rst
    PCSAFT/index.rst
    ares/index.rst
    crystallization/index.rst
    diffusion/index.rst
+   distillation/index.rst
    relaxation/index.rst
    surface/index.rst
    utilities/index.rst
+   xloil_functions/index.rst
 
 
 Package Contents
@@ -36,6 +39,8 @@ Functions
    diffusionpy.NETVLE
    diffusionpy.supersaturation
    diffusionpy.DasDennis
+   diffusionpy.Diffusion_MS_iter_xloil
+   diffusionpy.Diffusion_MS_xloil
 
 
 
@@ -101,18 +106,18 @@ Functions
    :rtype: array_like
 
 
-.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA, **kwargs)
+.. py:function:: lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij=np.zeros(10), kijA=np.zeros(10), **kwargs)
 
 
 .. py:function:: vpure(p, T, mi, si, ui, eAi, kAi, NAi, **kwargs)
 
-   solve the density mich yiels a given pressure p
+   solve the density mich yields a given pressure p
 
 
-.. py:function:: NETVLE(T, wi, v0p, mobile, polymer, ksw, mi, sigi, ui, epsAiBi, kapi, N, vpures, Mi, kij, kijA, n=2)
+.. py:function:: NETVLE(T, wi, v0p, ksw, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij=np.zeros(10), kijA=np.zeros(10), n=2)
 
 
-.. py:function:: supersaturation(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA, deltaHSL, TSL, cpSL)
+.. py:function:: supersaturation(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, deltaHSL, TSL, cpSL, kij=np.zeros(10), kijA=np.zeros(10))
 
 
 .. py:function:: DasDennis(p, dim)
@@ -125,5 +130,11 @@ Functions
    >>> dim=3
    >>> spacevec=DasDennis(p, dim)
    >>> pd.DataFrame(spacevec.T).to_excel("test.xlsx")
+
+
+.. py:function:: Diffusion_MS_iter_xloil(t: xlo.Array(float, dims=1), L: float, Dvec: xlo.Array(float, dims=1), w0: xlo.Array(float, dims=1), w8: xlo.Array(float, dims=1), Mi: xlo.Array(float, dims=1), mobile: xlo.Array(bool, dims=1), swelling: bool = False, witB: xlo.Array(float, dims=2) = None, T: float = 298.15, p: float = 100000.0, pure: xlo.Array(object, dims=2) = np.asarray([[]]), kij: xlo.Array(object, dims=2) = np.asarray([[]]), maxit: int = 10, full_output: bool = False)
+
+
+.. py:function:: Diffusion_MS_xloil(t: xlo.Array(float, dims=1), L: float, Dvec: xlo.Array(float, dims=1), w0: xlo.Array(float, dims=1), w8: xlo.Array(float, dims=1), Mi: xlo.Array(float, dims=1), mobile: xlo.Array(bool, dims=1), swelling: bool = False, witB: xlo.Array(float, dims=2) = None, full_output: bool = False)
 
 

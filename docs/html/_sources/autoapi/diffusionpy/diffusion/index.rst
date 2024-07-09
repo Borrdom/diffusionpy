@@ -96,7 +96,7 @@ Functions
 .. py:function:: DIdeal2DReal(Dvec, wave, wi0, dlnai_dlnwi, mobile, realtoideal=False)
 
 
-.. py:function:: wegstein(fun, x)
+.. py:function:: wegstein(fun, x, maxiter)
 
    Solving via wegsteins method
 
