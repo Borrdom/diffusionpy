@@ -1,10 +1,23 @@
 # diffusionpy
 
+Welcome to diffusionpy ! This python package provides a Stefan-Maxwell diffusion model and a PC-SAFT implementation. Furthermore, the package provides additional functions that consider diffusion with crystallization, the swelling and relaxation behavior of polymers and dissolution. 
+
+
+
 ![alt text](https://github.com/Borrdom/diffusionpy/blob/main/PyFusion.png?raw=true)
 
-Provides a one-dimensional Stefan-Maxwell diffusion model with a PC-SAFT implementation
 
 # Installation
+<u>Step 1:</u>
+A python installation is required. Please install python from the official website (https://www.python.org/downloads). Python versions 3.9-3.12 were tested and should work.
+
+<u>Step 2:</u>
+Download the zip from the URL https://github.com/Borrdom/diffusionpy/archive/refs/heads/main.zip or copy it to your Harddrive from the Network W: folder.
+
+<u>Step 3:</u>
+Install diffusionpy as python package. Open the console, cd in the unziped diffusionpy directory and run the pip install
+
+
 if you have git just open a console and type
 ```console
 git clone https://github.com/Borrdom/diffusionpy

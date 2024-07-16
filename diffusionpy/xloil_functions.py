@@ -1,5 +1,7 @@
 try:
     import xloil as xlo
+    import xloil.pandas
+    import pandas as pd
 except ImportError:
     class xlo: 
         func = lambda f: f
@@ -11,8 +13,8 @@ from .diffusion import Diffusion_MS,D_Matrix
 import numpy as np
 import time
 from tkinter import Tk,filedialog,simpledialog
-import xloil.pandas
-import pandas as pd
+
+
 from .surface import time_dep_surface
 #from epcsaftpy import pcsaft,component,mixture
 from .PCSAFT import lngi,vpure,dlnai_dlnxi
