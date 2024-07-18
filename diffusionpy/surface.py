@@ -1,8 +1,17 @@
 import numpy as np
-from numba import njit
 from scipy.optimize import root
 from scipy.interpolate import interp1d
+try:
+    from numba import njit
+except ImportError:
+    def njit(f=None, *args, **kwargs):
+        def decorator(func):
+            return func
 
+        if callable(f):
+            return f
+        else:
+            return decorator
 
 def time_dep_surface(t,wi0,wi8,mobile,taui,lngi_t=None):
     """_summary_

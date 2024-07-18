@@ -1,6 +1,16 @@
 import numpy as np
-from numba import njit
+try:
+    from numba import njit
+except ImportError:
+    def njit(f=None, *args, **kwargs):
+        def decorator(func):
+            return func
 
+        if callable(f):
+            return f
+        else:
+            return decorator
+    
 def relaxation_mode(ode,EJ,etaJ,exponent,T=298.15,Mv=18.015,vv=0.001):
     """alter the ode function in diffusionpy.Diffusion_MS, to also solve the relaxation of a component
     Args:

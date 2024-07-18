@@ -169,8 +169,9 @@ def NETVLE(T,wi,v0p,ksw,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij=np.zeros(10),kijA=np.z
         vpures2=vpure.copy()
         vpures2[immobiles]=np.fmax(vmoltrick,1E-12)
         lngid,lngres,_,lngw=SAFTSAC(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
-        logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
-        res=logRS-np.log(RS)
+        with np.errstate(divide='ignore',invalid='print'):
+            logRS=lngid[mobiles]+lngres[mobiles]+lngw[mobiles]+np.log(wi[mobiles])
+            res=logRS-np.log(RS)
         res[wi[mobiles]==0.]=0.
         return res
         # lngi[mobiles]=lngi2(T,wi,mi,si,ui,eAi,kAi,NAi,vpures2,Mi,kij,kijA)
@@ -183,7 +184,7 @@ def supersaturation(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,deltaHSL,TSL,cpSL,kij=np.
     R=8.3145
     with np.errstate(divide='ignore',invalid='print'):
         lnaiSLE=-deltaHSL/(R*T)*(1-T/TSL)+cpSL/R*(TSL/T-1-np.log(TSL/T))
-    lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
+        lnai=lngi(T, xi, mi, si, ui, eAi, kAi, NAi, vpure, Mi, kij, kijA) + np.log(xi)
     return lnai-lnaiSLE
 
 # def calc_isotherm(): 

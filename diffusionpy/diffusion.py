@@ -2,10 +2,21 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 from scipy.optimize import root
-from numba import njit,config,prange
+
 import time
 from .PCSAFT import dlnai_dlnxi_loop,dlnai_dlnxi,SAFTSAC,vpure,lngi
 from .surface import time_dep_surface
+try:
+    from numba import njit
+except ImportError:
+    def njit(f=None, *args, **kwargs):
+        def decorator(func):
+            return func
+
+        if callable(f):
+            return f
+        else:
+            return decorator
 
 
 def Diffusion_MS(tint,L,Dvec,wi0,wi8,mobile,T=298.15,p=1E5,saftpar=None,**kwargs):

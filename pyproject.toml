@@ -1,9 +1,9 @@
 
 [project]
 name = "diffusionpy"
-version = "0.0.9"
+version = "0.1.0"
 authors = [
-    {name = "Dominik Borrmann", email = "dominik.borrmann@tu-dortmund.de"},
+    {name = "Dominik Borrmann", email = "dominik.borrmann@outlook.de"},
 ]
 description = "A package for describing diffusion in and out of liquids and amorphous substances"
 readme = "README.md"
@@ -13,8 +13,7 @@ dependencies = [
     "numpy",
     "scipy",
     "matplotlib",
-    "mpltern",
-    "numba",]
+    "mpltern"]
 
 [build-system]
 requires = [

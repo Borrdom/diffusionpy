@@ -1,5 +1,16 @@
 import numpy as np
-from numba import njit
+try:
+    from numba import njit
+except ImportError:
+    def njit(f=None, *args, **kwargs):
+        def decorator(func):
+            return func
+
+        if callable(f):
+            return f
+        else:
+            return decorator
+
 
 @njit(['Tuple((f8, f8[:], f8))(f8,f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1])',
         'Tuple((c16, c16[:], c16))(f8,c16,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1])'],cache=True)

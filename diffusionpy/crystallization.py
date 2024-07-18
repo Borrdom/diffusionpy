@@ -1,10 +1,20 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from numba import njit,config,prange,jit
 import time
 from .diffusion import Diffusion_MS,wegstein
 from scipy.interpolate import interp1d
 from .PCSAFT import supersaturation
+try:
+    from numba import njit
+except ImportError:
+    def njit(f=None, *args, **kwargs):
+        def decorator(func):
+            return func
+
+        if callable(f):
+            return f
+        else:
+            return decorator
 
 # config.DISABLE_JIT = True
 # @njit(['Tuple((f8[:,::1], f8[:,::1]))(f8, f8[::1], f8[::1],  i8[::1], i8[::1],i8[::1], f8[::1], f8[::1],f8[::1],f8[::1], f8[::1], f8[::1], f8[::1], f8[::1],f8[::1],f8[::1],f8[::1],f8[:,::1],f8[:,::1])'],cache=True)
