@@ -24,8 +24,6 @@ requires = [
 [tool.setuptools.packages.find]
 include = ["diffusionpy"]
 
-[project.scripts]
-diffusionpy_cli = 'diffusionpy.tests.PyCSAFT_Benchmark_nue:start'
 
 
 
