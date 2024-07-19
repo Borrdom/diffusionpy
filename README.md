@@ -26,6 +26,13 @@ pip install .
 ```
 alternatively you can download the zip archive and unzip it. Then open your console, cd in the unziped directory and run the pip install  
 
+# Make it faster!!
+
+ If you have numba installed, the core functions will be precompiled on your machine and run faster. Please note that the first execution of most function will take longer, due to precompilation.
+
+```console
+pip install numba
+```
 # Minimal working example
 
 If no errors occoured during installation, the following lines will model the diffusion kinetics of three substances from a starting mass fraction of wi0 to the mass fraction wi8

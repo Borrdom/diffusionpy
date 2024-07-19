@@ -56,7 +56,7 @@ def vpure(p,T,mi,si,ui,eAi,kAi,NAi,**kwargs):
 # @njit(['Tuple((f8[::1], f8[::1], f8[::1],f8[::1]))(f8,f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])',
 # 'Tuple((c16[::1], c16[::1], c16[::1],c16[::1]))(f8,c16[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[::1],f8[:,:],f8[:,:])'],cache=True)
 def SAFTSAC(T,xi,mi,si,ui,eAi,kAi,NAi,vpure,Mi,kij=np.zeros(10),kijA=np.zeros(10)):
-    """Calculate the log of the activity coefficients via the SAFT-SAC approximation
+    """Calculate the log of the activity coefficients via the SAFT-SAC approximation (https://doi.org/10.1021/acs.iecr.2c02896)
     Args:
         T (float): temperature
         xi (array_like): mole/mass fraction. Becomes the mass fraction when the molar mass Mi is not None
